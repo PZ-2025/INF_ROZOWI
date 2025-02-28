@@ -1,4 +1,4 @@
-# INF_ROZOWI
+# INF_ROZOWI (Programowanie zespołowe)
 
 ## Opis projektu
 
@@ -14,6 +14,7 @@ INF_ROZOWI to system zarządzania zadaniami dedykowany firmom informatycznym, kt
 ## Architektura systemu
 
 Projekt opiera się na architekturze warstwowej, dzielącej się na:
+
 - **Frontend**: Interfejs użytkownika (wstępnie opracowany w JavaFX), zapewniający intuicyjną obsługę systemu.
 - **Backend**: Logika biznesowa, odpowiedzialna za przetwarzanie danych i komunikację z bazą danych.
 - **Baza Danych**: Magazynowanie informacji o użytkownikach, zadaniach, projektach oraz raportach.
