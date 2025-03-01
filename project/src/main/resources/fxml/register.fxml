@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.*?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="pl.infrozowi.project.controllers.RegisterController"
+            prefWidth="400" prefHeight="400">
+
+    <Label text="Rejestracja" layoutX="150" layoutY="20" style="-fx-font-size: 18px;"/>
+
+    <TextField fx:id="firstNameField" layoutX="100" layoutY="60" promptText="Imię"/>
+    <TextField fx:id="lastNameField"  layoutX="100" layoutY="100" promptText="Nazwisko"/>
+    <TextField fx:id="emailField"     layoutX="100" layoutY="140" promptText="Email"/>
+
+    <PasswordField fx:id="passwordField" layoutX="100" layoutY="180" promptText="Hasło"/>
+    <PasswordField fx:id="confirmPasswordField" layoutX="100" layoutY="220" promptText="Powtórz hasło"/>
+
+    <Button text="Zarejestruj" layoutX="100" layoutY="260" onAction="#handleRegister"/>
+    <Button text="Powrót do logowania" layoutX="200" layoutY="260" onAction="#goBack"/>
+
+</AnchorPane>

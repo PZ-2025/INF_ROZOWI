@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pl.infrozowi.project.controllers.AdminDashboardController"
+      spacing="10" alignment="CENTER" prefWidth="600" prefHeight="400">
+
+    <Label text="Panel Administratora" style="-fx-font-size: 18px;"/>
+
+    <Button text="Zarządzanie Użytkownikami" onAction="#goToUserManagement"/>
+    <Button text="Konfiguracja Systemu"       onAction="#goToConfig"/>
+    <Button text="Generowanie Raportów"       onAction="#goToReports"/>
+    <Button text="Wyloguj"                    onAction="#logout"/>
+
+</VBox>

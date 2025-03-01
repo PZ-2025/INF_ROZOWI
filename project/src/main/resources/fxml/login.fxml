@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="pl.infrozowi.project.controllers.LoginController"
+            prefWidth="400" prefHeight="300">
+
+    <!-- Tytuł lub logo -->
+    <Label text="Zaloguj się" layoutX="150" layoutY="20" style="-fx-font-size: 18px;"/>
+
+    <!-- Pole tekstowe na login -->
+    <TextField fx:id="usernameField" layoutX="100" layoutY="80" promptText="Nazwa użytkownika"/>
+
+    <!-- Pole tekstowe na hasło -->
+    <PasswordField fx:id="passwordField" layoutX="100" layoutY="120" promptText="Hasło"/>
+
+    <!-- Przycisk Zaloguj -->
+    <Button text="Zaloguj" layoutX="100" layoutY="160" onAction="#handleLogin"/>
+
+    <!-- Link / Przycisk do rejestracji -->
+    <Button text="Rejestracja" layoutX="200" layoutY="160" onAction="#goToRegister"/>
+
+</AnchorPane>
