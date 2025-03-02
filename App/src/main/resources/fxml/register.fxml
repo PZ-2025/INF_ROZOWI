@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="pl.rozowi.app.controllers.RegisterController"
+           style="-fx-background-color: #1E1E2F;">
+
+    <VBox alignment="CENTER" spacing="15" maxWidth="350">
+        <Label text="Rejestracja" style="-fx-font-size: 26px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+
+        <TextField fx:id="firstNameField" promptText="Imię"
+                   style="-fx-pref-width: 100%; -fx-max-width: 350px; -fx-font-size: 14px;"/>
+        <TextField fx:id="lastNameField"  promptText="Nazwisko"
+                   style="-fx-pref-width: 100%; -fx-max-width: 350px; -fx-font-size: 14px;"/>
+        <TextField fx:id="emailField"     promptText="Email"
+                   style="-fx-pref-width: 100%; -fx-max-width: 350px; -fx-font-size: 14px;"/>
+
+        <PasswordField fx:id="passwordField" promptText="Hasło"
+                       style="-fx-pref-width: 100%; -fx-max-width: 350px; -fx-font-size: 14px;"/>
+        <PasswordField fx:id="confirmPasswordField" promptText="Powtórz hasło"
+                       style="-fx-pref-width: 100%; -fx-max-width: 350px; -fx-font-size: 14px;"/>
+
+        <Button text="Zarejestruj" onAction="#handleRegister"
+                style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-pref-width: 150px; -fx-font-size: 14px;"/>
+
+        <Button text="Powrót do logowania" onAction="#goBack"
+                style="-fx-background-color: gray; -fx-text-fill: white; -fx-pref-width: 150px; -fx-font-size: 14px;"/>
+
+        <Label fx:id="messageLabel" text="" style="-fx-text-fill: red;"/>
+    </VBox>
+</StackPane>

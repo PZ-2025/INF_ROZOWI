@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      alignment="CENTER" spacing="15" style="-fx-padding: 20px; -fx-background-color: #1E1E2F;">
+
+    <Label text="Moje Zadania" style="-fx-font-size: 24px; -fx-text-fill: white;"/>
+    <ListView fx:id="tasksList" style="-fx-pref-width: 80%; -fx-pref-height: 300px;"/>
+</VBox>

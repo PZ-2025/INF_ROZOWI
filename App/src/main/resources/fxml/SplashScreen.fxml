@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane fx:id="rootPane" prefWidth="800" prefHeight="500"
+           style="-fx-background-color: #1E1E2F;"
+           xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="pl.rozowi.app.controllers.SplashScreenController">
+
+    <VBox alignment="CENTER" spacing="20">
+        <!-- Logo -->
+        <ImageView fx:id="logoImageView" fitHeight="200.0" fitWidth="300.0" pickOnBounds="true" preserveRatio="true">
+            <image>
+                <Image url="@../images/logo.png"/>
+            </image>
+        </ImageView>
+
+        <!-- Tekst "Programowanie zespołowe" -->
+        <Label text="Programowanie zespołowe"
+               style="-fx-font-size: 24px; -fx-text-fill: #FFFFFF; -fx-font-weight: bold;"/>
+
+        <!-- Lista autorów -->
+        <Label text="Wykonali: Dawid Olko, Piotr Smoła, Piotr Nowak, Łukasz Solecki"
+               style="-fx-font-size: 18px; -fx-text-fill: #CCCCCC;"/>
+    </VBox>
+
+</StackPane>
