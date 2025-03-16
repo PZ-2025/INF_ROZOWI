@@ -1,20 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <groupId>pl.rozowi</groupId>
     <artifactId>App</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>App</name>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.10.2</junit.version>
         <java.util.logging.ConsoleHandler.level>SEVERE</java.util.logging.ConsoleHandler.level>
     </properties>
-
     <dependencies>
         <!-- JavaFX Dependencies -->
         <dependency>
@@ -27,7 +23,6 @@
             <artifactId>javafx-fxml</artifactId>
             <version>21</version>
         </dependency>
-
         <!-- FormsFX -->
         <dependency>
             <groupId>com.dlsc.formsfx</groupId>
@@ -40,7 +35,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
         <!-- JUnit for Testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -54,8 +48,13 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- MariaDB Java Client -->
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <version>3.0.8</version>
+        </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <!-- Compiler Plugin -->
@@ -68,7 +67,6 @@
                     <target>21</target>
                 </configuration>
             </plugin>
-
             <!-- JavaFX Maven Plugin -->
             <plugin>
                 <groupId>org.openjfx</groupId>
@@ -85,12 +83,12 @@
                             <noManPages>true</noManPages>
                             <stripDebug>true</stripDebug>
                             <noHeaderFiles>true</noHeaderFiles>
+                            <vmArgs>--add-reads pl.rozowi.app=ALL-UNNAMED</vmArgs>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
-            <!-- Jar Plugin (Aby można było uruchomić aplikację jako jar) -->
+            <!-- Jar Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -103,8 +101,7 @@
                     </archive>
                 </configuration>
             </plugin>
-
-            <!-- Exec Plugin (Automatyczne dodanie flag JVM) -->
+            <!-- Exec Plugin -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -120,7 +117,6 @@
                     </arguments>
                 </configuration>
             </plugin>
-
         </plugins>
     </build>
 </project>

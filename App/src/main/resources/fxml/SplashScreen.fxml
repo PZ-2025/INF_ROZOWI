@@ -21,7 +21,10 @@
 
         <!-- Tekst "Programowanie zespołowe" -->
         <Label text="Programowanie zespołowe"
-               style="-fx-font-size: 24px; -fx-text-fill: #FFFFFF; -fx-font-weight: bold;"/>
+               style="-fx-font-size: 50px; -fx-text-fill: #FFFFFF; -fx-font-weight: bold;"/>
+
+        <Label text="System do zarządzania zadaniami w firmie programistycznej"
+               style="-fx-font-size: 21px; -fx-text-fill: #FFFFFF; -fx-font-weight: bold;"/>
 
         <!-- Lista autorów -->
         <Label text="Wykonali: Dawid Olko, Piotr Smoła, Piotr Nowak, Łukasz Solecki"

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.*?>
+
+<?import javafx.scene.layout.Region?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="pl.rozowi.app.controllers.TeamsController"
+            style="-fx-background-color: #1E1E2F;">
+    <HBox layoutX="20" layoutY="20" spacing="10">
+        <Label text="Zespoły" style="-fx-font-size: 20px; -fx-text-fill: white;"/>
+        <Region fx:id="spacer" HBox.hgrow="ALWAYS"/>
+        <TextField fx:id="searchField" promptText="Szukaj zespołu..." style="-fx-pref-width: 200px;"/>
+        <Button fx:id="searchButton" text="🔍" style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+    </HBox>
+
+    <TableView fx:id="teamsTable" layoutX="20" layoutY="60"
+               style="-fx-pref-width: 600; -fx-pref-height: 400;">
+        <columns>
+            <TableColumn fx:id="colTeamId" text="ID" style="-fx-pref-width: 50;"/>
+            <TableColumn fx:id="colTeamName" text="Nazwa Zespołu" style="-fx-pref-width: 250;"/>
+            <TableColumn fx:id="colMembersCount" text="Liczba członków" style="-fx-pref-width: 150;"/>
+        </columns>
+    </TableView>
+</AnchorPane>

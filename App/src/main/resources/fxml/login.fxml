@@ -31,6 +31,10 @@
         <Label text="Nie posiadasz konta?" style="-fx-text-fill: white; -fx-underline: true; -fx-font-size: 14px;"
                onMouseClicked="#goToRegister"/>
 
+        <!-- Etykieta Zapomniałem hasła? -->
+        <Label text="Zapomniałem hasła?" style="-fx-text-fill: white; -fx-underline: true; -fx-font-size: 14px; -fx-cursor: hand;"
+               onMouseClicked="#forgotPassword"/>
+
         <Label fx:id="errorLabel" text="" style="-fx-text-fill: red;"/>
     </VBox>
 </StackPane>

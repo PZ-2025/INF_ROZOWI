@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.*?>
 
-<VBox xmlns="http://javafx.com/javafx"
-      xmlns:fx="http://javafx.com/fxml"
-      alignment="CENTER" spacing="15"
-      style="-fx-padding: 20px; -fx-background-color: #1E1E2F;">
+<?import javafx.scene.layout.Region?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="pl.rozowi.app.controllers.ReportsController"
+            style="-fx-background-color: #1E1E2F;">
+    <HBox layoutX="20" layoutY="20" spacing="10">
+        <Label text="Generowanie Raportów" style="-fx-font-size: 20px; -fx-text-fill: white;"/>
+        <Region fx:id="spacer" HBox.hgrow="ALWAYS"/>
+        <Button fx:id="generateButton" text="Generuj" style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+    </HBox>
 
-    <Label text="Generowanie Raportów (Admin)"
-           style="-fx-font-size: 24px; -fx-text-fill: white;"/>
-
-    <!-- przykładowy obszar na raporty -->
-    <TextArea style="-fx-pref-width: 80%; -fx-pref-height: 200px;"
+    <TextArea fx:id="reportsArea" layoutX="20" layoutY="60"
+              style="-fx-pref-width: 600; -fx-pref-height: 400;"
               promptText="Tu wstaw np. generowane raporty..."/>
-</VBox>
+</AnchorPane>

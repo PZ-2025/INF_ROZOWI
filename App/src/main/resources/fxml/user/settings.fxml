@@ -6,7 +6,6 @@
 <VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
       alignment="CENTER" spacing="15"
       style="-fx-padding: 20px; -fx-background-color: #1E1E2F;">
-
     <Label text="Ustawienia" style="-fx-font-size: 24px; -fx-text-fill: white;"/>
 
     <Label text="Zmień hasło:" style="-fx-font-size: 16px; -fx-text-fill: white;"/>
@@ -16,6 +15,10 @@
     <Label text="Powtórz hasło:" style="-fx-font-size: 16px; -fx-text-fill: white;"/>
     <PasswordField fx:id="confirmPasswordField" promptText="Powtórz hasło"
                    style="-fx-pref-width: 80%; -fx-font-size: 14px;"/>
+
+    <Label text="Podpowiedź hasła:" style="-fx-font-size: 16px; -fx-text-fill: white;"/>
+    <TextField fx:id="passwordHintField" promptText="Podpowiedź hasła"
+               style="-fx-pref-width: 80%; -fx-font-size: 14px;"/>
 
     <Button text="Zapisz zmiany" fx:id="saveSettingsButton"
             style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-pref-width: 150px;"/>
