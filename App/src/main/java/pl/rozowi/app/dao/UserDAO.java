@@ -11,15 +11,15 @@ import java.sql.SQLException;
 public class UserDAO {
 
     public boolean insertUser(User user) {
+        String sql = "INSERT INTO users (name, last_name, password, email, role_id, group_id, password_hint) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(
-                     "INSERT INTO users (name, last_name, password, email, role_id, stanowisko, password_hint) VALUES (?, ?, ?, ?, ?, ?, ?)")) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, user.getName());
             stmt.setString(2, user.getLastName());
             stmt.setString(3, user.getPassword());
             stmt.setString(4, user.getEmail());
             stmt.setInt(5, user.getRoleId());
-            stmt.setString(6, user.getStanowisko());
+            stmt.setInt(6, user.getGroupId());
             stmt.setString(7, user.getPasswordHint());
             int affected = stmt.executeUpdate();
             return affected > 0;
@@ -30,8 +30,9 @@ public class UserDAO {
     }
 
     public User getUserByEmail(String email) {
+        String sql = "SELECT * FROM users WHERE email = ?";
         try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM users WHERE email = ?")) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, email);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -42,7 +43,7 @@ public class UserDAO {
                 user.setPassword(rs.getString("password"));
                 user.setEmail(rs.getString("email"));
                 user.setRoleId(rs.getInt("role_id"));
-                user.setStanowisko(rs.getString("stanowisko"));
+                user.setGroupId(rs.getInt("group_id"));
                 user.setPasswordHint(rs.getString("password_hint"));
                 return user;
             }

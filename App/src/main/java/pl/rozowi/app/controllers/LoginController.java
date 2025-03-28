@@ -6,10 +6,15 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import pl.rozowi.app.MainApplication;
+import pl.rozowi.app.dao.TeamMemberDAO;
 import pl.rozowi.app.dao.UserDAO;
 import pl.rozowi.app.models.User;
+import pl.rozowi.app.util.Session;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class LoginController {
 
@@ -19,6 +24,7 @@ public class LoginController {
     private PasswordField passwordField;
 
     private UserDAO userDAO = new UserDAO();
+    private TeamMemberDAO teamMemberDAO = new TeamMemberDAO();
 
     public void initialize() {
         usernameField.setOnKeyPressed(event -> {
@@ -38,8 +44,17 @@ public class LoginController {
         String email = usernameField.getText();
         String pass = passwordField.getText();
 
+        // Hashowanie hasła
+        String hashedPassword = hashPassword(pass);
+
         User user = userDAO.getUserByEmail(email);
-        if (user != null && user.getPassword().equals(pass)) {
+        if (user != null && user.getPassword().equals(hashedPassword)) {
+            MainApplication.setCurrentUser(user);
+            Session.currentUserId = user.getId();
+            // Dynamiczne ID zespołu
+            int teamId = teamMemberDAO.getTeamIdForUser(user.getId());
+            Session.currentUserTeam = String.valueOf(teamId);
+
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Logowanie udane");
             alert.setHeaderText(null);
@@ -56,10 +71,7 @@ public class LoginController {
                         MainApplication.switchScene("/fxml/manager/managerDashboard.fxml", "TaskApp - Kierownik");
                         break;
                     case 3:
-                        MainApplication.switchScene("/fxml/teamleader/teamLeaderDashboard.fxml", "TaskApp - Team Leader");
-                        break;
-                    case 4:
-                        MainApplication.switchScene("/fxml/user/userDashboard.fxml", "TaskApp - Pracownik");
+                        MainApplication.switchScene("/fxml/user/userDashboard.fxml", "TaskApp - Użytkownik");
                         break;
                     default:
                         MainApplication.switchScene("/fxml/user/userDashboard.fxml", "TaskApp - Dashboard");
@@ -75,6 +87,23 @@ public class LoginController {
             alert.setContentText("Błędne dane logowania!");
             alert.getDialogPane().setStyle("-fx-background-color: red;");
             alert.showAndWait();
+        }
+    }
+
+    private String hashPassword(String password) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

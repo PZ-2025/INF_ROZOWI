@@ -10,6 +10,9 @@ import pl.rozowi.app.dao.UserDAO;
 import pl.rozowi.app.models.User;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class SettingsController {
 
@@ -24,21 +27,20 @@ public class SettingsController {
 
     private UserDAO userDAO = new UserDAO();
     private User currentUser;
-
-    // Metoda wywoływana z dashboardu, aby ustawić aktualnego użytkownika
+    
     public void setUser(User user) {
         this.currentUser = user;
-        // Jeśli istnieje zapisana podpowiedź, ustaw ją w polu
         passwordHintField.setText(user.getPasswordHint() != null ? user.getPasswordHint() : "");
     }
 
     @FXML
     private void initialize() {
-        saveSettingsButton.setOnAction(e -> handleSaveSettings());
+        // saveSettingsButton.setOnAction(e -> handleSaveSettings());
     }
 
+    @FXML
     private void handleSaveSettings() {
-        if(currentUser == null) {
+        if (currentUser == null) {
             showAlert(Alert.AlertType.ERROR, "Błąd", "Nie znaleziono danych użytkownika!");
             return;
         }
@@ -46,31 +48,52 @@ public class SettingsController {
         String confirmPassword = confirmPasswordField.getText().trim();
         String newHint = passwordHintField.getText().trim();
 
-        if(newPassword.isEmpty() || confirmPassword.isEmpty()) {
+        if (newPassword.isEmpty() || confirmPassword.isEmpty()) {
             showAlert(Alert.AlertType.ERROR, "Błąd", "Pole hasła nie może być puste!");
             return;
         }
-        if(!newPassword.equals(confirmPassword)) {
+        if (!newPassword.equals(confirmPassword)) {
             showAlert(Alert.AlertType.ERROR, "Błąd", "Hasła nie są takie same!");
             return;
         }
 
-        // Tutaj można dodać dodatkową walidację (np. minimalna długość, znak specjalny, itd.)
+        String hashedPassword = hashPassword(newPassword);
+        if (hashedPassword == null) {
+            showAlert(Alert.AlertType.ERROR, "Błąd", "Wystąpił błąd przy hashowaniu hasła!");
+            return;
+        }
 
-        // Aktualizacja danych użytkownika
-        currentUser.setPassword(newPassword);
+        currentUser.setPassword(hashedPassword);
         currentUser.setPasswordHint(newHint);
 
         boolean success = userDAO.updateUser(currentUser);
-        if(success) {
+        if (success) {
             showAlert(Alert.AlertType.INFORMATION, "Sukces", "Zmiany zapisane pomyślnie!");
             try {
                 MainApplication.switchScene("/fxml/user/userDashboard.fxml", "TaskApp - Dashboard");
-            } catch(IOException ex) {
+            } catch (IOException ex) {
                 ex.printStackTrace();
             }
         } else {
             showAlert(Alert.AlertType.ERROR, "Błąd", "Nie udało się zapisać zmian!");
+        }
+    }
+
+
+    private String hashPassword(String password) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

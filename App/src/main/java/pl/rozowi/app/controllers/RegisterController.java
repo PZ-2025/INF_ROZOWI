@@ -2,6 +2,7 @@ package pl.rozowi.app.controllers;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
@@ -10,6 +11,9 @@ import pl.rozowi.app.dao.UserDAO;
 import pl.rozowi.app.models.User;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,10 +23,16 @@ public class RegisterController {
     private TextField firstNameField, lastNameField, emailField;
     @FXML
     private PasswordField passwordField, confirmPasswordField;
+    @FXML
+    private Label errorLabel;
 
     private UserDAO userDAO = new UserDAO();
 
     public void initialize() {
+        addEnterKeyHandlers();
+    }
+
+    private void addEnterKeyHandlers() {
         firstNameField.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER) handleRegister();
         });
@@ -42,30 +52,29 @@ public class RegisterController {
 
     @FXML
     private void handleRegister() {
-        // Walidacja imienia i nazwiska - muszą zaczynać się od wielkiej litery
+        errorLabel.setText("");
+
         if (!isCapitalized(firstNameField.getText())) {
-            showAlert(Alert.AlertType.ERROR, "Rejestracja nieudana", "Imię musi zaczynać się od wielkiej litery!");
+            showError("Imię musi zaczynać się od wielkiej litery!");
             return;
         }
         if (!isCapitalized(lastNameField.getText())) {
-            showAlert(Alert.AlertType.ERROR, "Rejestracja nieudana", "Nazwisko musi zaczynać się od wielkiej litery!");
+            showError("Nazwisko musi zaczynać się od wielkiej litery!");
             return;
         }
 
-        // Walidacja emaila - musi zawierać przynajmniej jeden @ oraz co najmniej 2 znaki przed i po '@'
         if (!isValidEmail(emailField.getText())) {
-            showAlert(Alert.AlertType.ERROR, "Rejestracja nieudana", "Email musi zawierać znak '@' z co najmniej dwoma znakami przed i po nim!");
+            showError("Email musi zawierać znak '@' z co najmniej dwoma znakami przed i po nim!");
             return;
         }
 
-        // Walidacja hasła - musi zawierać przynajmniej jeden znak specjalny
         if (!hasSpecialChar(passwordField.getText())) {
-            showAlert(Alert.AlertType.ERROR, "Rejestracja nieudana", "Hasło musi zawierać przynajmniej jeden znak specjalny!");
+            showError("Hasło musi zawierać przynajmniej jeden znak specjalny!");
             return;
         }
 
         if (!passwordField.getText().equals(confirmPasswordField.getText())) {
-            showAlert(Alert.AlertType.ERROR, "Rejestracja nieudana", "Hasła nie są takie same!");
+            showError("Hasła nie są takie same!");
             return;
         }
 
@@ -73,21 +82,22 @@ public class RegisterController {
         newUser.setName(firstNameField.getText());
         newUser.setLastName(lastNameField.getText());
         newUser.setEmail(emailField.getText());
-        newUser.setPassword(passwordField.getText());
-        newUser.setRoleId(4); // domyślny: PRACOWNIK
-        newUser.setStanowisko("Pracownik");
+        newUser.setPassword(hashPassword(passwordField.getText()));
+        newUser.setRoleId(3);       // domyślna rola: użytkownik (role id 3)
+        newUser.setGroupId(1);      // domyślne przypisanie nowego użytkownika do teamu 1
         newUser.setPasswordHint("");
 
         boolean inserted = userDAO.insertUser(newUser);
         if (inserted) {
-            showAlert(Alert.AlertType.INFORMATION, "Rejestracja udana", "Rejestracja udana!");
+            showSuccessAlert("Rejestracja udana!", "Konto zostało utworzone pomyślnie.");
             try {
                 MainApplication.switchScene("/fxml/login.fxml", "TaskApp - Panel logowania");
             } catch (IOException e) {
                 e.printStackTrace();
+                showError("Błąd podczas przechodzenia do panelu logowania.");
             }
         } else {
-            showAlert(Alert.AlertType.ERROR, "Rejestracja nieudana", "Rejestracja nie powiodła się!");
+            showError("Rejestracja nie powiodła się! Sprawdź, czy email nie jest już zajęty.");
         }
     }
 
@@ -96,36 +106,48 @@ public class RegisterController {
         MainApplication.switchScene("/fxml/login.fxml", "TaskApp - Panel logowania");
     }
 
-    // Metoda pomocnicza do wyświetlania modali
-    private void showAlert(Alert.AlertType type, String title, String message) {
-        Alert alert = new Alert(type);
+    private void showError(String message) {
+        errorLabel.setText(message);
+    }
+
+    private void showSuccessAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
-        // W zależności od typu alertu możesz dostosować styl (na przykład zmieniając tło)
-        if (type == Alert.AlertType.ERROR) {
-            alert.getDialogPane().setStyle("-fx-background-color: red;");
-        } else if (type == Alert.AlertType.INFORMATION) {
-            alert.getDialogPane().setStyle("-fx-background-color: green;");
-        }
+        alert.getDialogPane().setStyle("-fx-background-color: green;");
         alert.showAndWait();
     }
 
-    // Sprawdza, czy ciąg zaczyna się od wielkiej litery
+    // Hashowanie hasła używając sha-256
+    private String hashPassword(String password) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     private boolean isCapitalized(String text) {
         if (text == null || text.isEmpty()) return false;
         return Character.isUpperCase(text.charAt(0));
     }
 
-    // Walidacja emaila: minimum 2 znaki przed i po '@'
     private boolean isValidEmail(String email) {
         if (email == null) return false;
-        // Prosty regex: minimum 2 znaki przed @, jeden @, minimum 2 znaki po @
         String regex = "^.{2,}@.{2,}$";
         return email.matches(regex);
     }
 
-    // Walidacja hasła: sprawdza, czy zawiera przynajmniej jeden znak specjalny (nie literę ani cyfrę)
     private boolean hasSpecialChar(String password) {
         if (password == null) return false;
         Pattern pattern = Pattern.compile(".*[^A-Za-z0-9].*");

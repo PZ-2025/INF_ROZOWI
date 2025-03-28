@@ -38,7 +38,6 @@ public class TasksController {
 
     @FXML
     private void initialize() {
-        // Ustawienie cell value factory dla kolumn
         taskIdColumn.setCellValueFactory(cellData -> cellData.getValue().idProperty());
         taskNameColumn.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
         taskDescriptionColumn.setCellValueFactory(cellData -> cellData.getValue().descriptionProperty());
@@ -48,15 +47,21 @@ public class TasksController {
         taskTeamColumn.setCellValueFactory(cellData -> cellData.getValue().teamProperty());
         taskAssignedToColumn.setCellValueFactory(cellData -> cellData.getValue().assignedToProperty().asString());
 
-        // Ustawienie polityki automatycznego dopasowywania kolumn
+        // automatyczne dopasowywanie rozmiaru kolumn
         tasksTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         loadTasks();
     }
 
     private void loadTasks() {
-        // Pobierz zadania kolegów – te, które należą do tego samego zespołu, ale nie są przypisane do aktualnego użytkownika
-        List<Task> tasks = taskDAO.getColleagueTasks(Session.currentUserId, Session.currentUserTeam);
+        int teamId = 0;
+        try {
+            teamId = Integer.parseInt(Session.currentUserTeam);
+        } catch (NumberFormatException e) {
+            System.err.println("Błąd konwersji Session.currentUserTeam na int: " + Session.currentUserTeam);
+            e.printStackTrace();
+        }
+        List<Task> tasks = taskDAO.getColleagueTasks(Session.currentUserId, teamId);
         allTasks = FXCollections.observableArrayList(tasks);
         tasksTable.setItems(allTasks);
     }
@@ -86,6 +91,5 @@ public class TasksController {
     @FXML
     private void handleAddTask() {
         System.out.println("Dodawanie nowego zadania...");
-        // Tutaj możesz otworzyć okno dialogowe lub nowy widok dodawania zadania.
     }
 }

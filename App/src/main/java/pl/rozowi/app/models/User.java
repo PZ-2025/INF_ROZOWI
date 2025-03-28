@@ -7,10 +7,9 @@ public class User {
     private String password;
     private String email;
     private int roleId;
-    private String stanowisko;
+    private int groupId;
     private String passwordHint;
 
-    
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
     public String getName() { return name; }
@@ -23,8 +22,8 @@ public class User {
     public void setEmail(String email) { this.email = email; }
     public int getRoleId() { return roleId; }
     public void setRoleId(int roleId) { this.roleId = roleId; }
-    public String getStanowisko() { return stanowisko; }
-    public void setStanowisko(String stanowisko) { this.stanowisko = stanowisko; }
+    public int getGroupId() { return groupId; }
+    public void setGroupId(int groupId) { this.groupId = groupId; }
     public String getPasswordHint() { return passwordHint; }
     public void setPasswordHint(String passwordHint) { this.passwordHint = passwordHint; }
 }

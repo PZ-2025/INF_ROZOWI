@@ -1,21 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.geometry.Insets?>
 
-<VBox xmlns:fx="http://javafx.com/fxml" alignment="CENTER" spacing="15"
-      style="-fx-padding: 20px; -fx-background-color: #1E1E2F;">
-    <Label text="Moje Zadania" style="-fx-font-size: 24px; -fx-text-fill: white;"/>
-    <TableView fx:id="tasksTable" style="-fx-pref-width: 80%; -fx-pref-height: 300px;"
-               columnResizePolicy="CONSTRAINED_RESIZE_POLICY">
-        <columns>
-            <TableColumn fx:id="taskIdColumn" text="ID" prefWidth="50"/>
-            <TableColumn fx:id="taskNameColumn" text="Nazwa" prefWidth="150"/>
-            <TableColumn fx:id="taskDescriptionColumn" text="Opis" prefWidth="200"/>
-            <TableColumn fx:id="taskStatusColumn" text="Status" prefWidth="100"/>
-            <TableColumn fx:id="taskStartDateColumn" text="Data rozpoczęcia" prefWidth="120"/>
-            <TableColumn fx:id="taskDeadlineColumn" text="Deadline" prefWidth="120"/>
-            <TableColumn fx:id="taskTeamColumn" text="Team" prefWidth="150"/>
-        </columns>
-    </TableView>
-</VBox>
+<StackPane xmlns:fx="http://javafx.com/fxml"
+           fx:controller="pl.rozowi.app.controllers.RegisterController"
+           style="-fx-background-color: #1E1E2F;">
+
+    <VBox alignment="CENTER" spacing="15" maxWidth="350">
+        <padding>
+            <Insets top="20" bottom="20" left="20" right="20"/>
+        </padding>
+
+        <Label text="Rejestracja" style="-fx-font-size: 26px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+
+        <TextField fx:id="firstNameField" promptText="Imię"
+                   style="-fx-pref-width: 100%; -fx-max-width: 350px; -fx-font-size: 14px;"/>
+
+        <TextField fx:id="lastNameField" promptText="Nazwisko"
+                   style="-fx-pref-width: 100%; -fx-max-width: 350px; -fx-font-size: 14px;"/>
+
+        <TextField fx:id="emailField" promptText="Email"
+                   style="-fx-pref-width: 100%; -fx-max-width: 350px; -fx-font-size: 14px;"/>
+
+        <PasswordField fx:id="passwordField" promptText="Hasło"
+                       style="-fx-pref-width: 100%; -fx-max-width: 350px; -fx-font-size: 14px;"/>
+
+        <PasswordField fx:id="confirmPasswordField" promptText="Potwierdź hasło"
+                       style="-fx-pref-width: 100%; -fx-max-width: 350px; -fx-font-size: 14px;"/>
+
+        <HBox alignment="CENTER" spacing="10">
+            <Button text="Zarejestruj" onAction="#handleRegister"
+                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-pref-width: 120px; -fx-font-size: 14px;"/>
+
+            <Button text="Wróć" onAction="#goBack"
+                    style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-pref-width: 120px; -fx-font-size: 14px;"/>
+        </HBox>
+
+        <Label fx:id="errorLabel" style="-fx-text-fill: red; -fx-alignment: center;"/>
+    </VBox>
+</StackPane>

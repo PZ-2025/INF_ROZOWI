@@ -8,16 +8,23 @@ import java.sql.SQLException;
 
 public class DatabaseManager {
 
-    // Używamy prefiksu "jdbc:mariadb://" dla MariaDB
-    private static final String URL = "jdbc:mariadb://localhost:3306/it_task_management?useUnicode=true&characterEncoding=utf8";
+    private static final String URL = "jdbc:mariadb://localhost:3306/it_task_management?charset=utf8";
     private static final String USER = "root";
     private static final String PASSWORD = "";
+
+    static {
+        try {
+            Class.forName("org.mariadb.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            System.err.println("Nie udało się załadować sterownika MariaDB.");
+            e.printStackTrace();
+        }
+    }
 
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
-    // Metoda sprawdzająca, czy schemat (baza) już istnieje
     public static boolean schemaExists(String schemaName) {
         String urlWithoutSchema = "jdbc:mariadb://localhost:3306/";
         try (Connection conn = DriverManager.getConnection(urlWithoutSchema, USER, PASSWORD);

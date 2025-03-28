@@ -13,12 +13,15 @@ import java.util.List;
 public class ReportDAO {
 
     public boolean insertReport(Report report) {
-        String sql = "INSERT INTO reports (report_name, report_scope, details) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO reports (report_name, report_type, report_scope, created_by, created_at, exported_file) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, report.getReportName());
-            stmt.setString(2, report.getReportScope());
-            stmt.setString(3, report.getDetails());
+            stmt.setString(2, report.getReportType());
+            stmt.setString(3, report.getReportScope());
+            stmt.setInt(4, report.getCreatedBy());
+            stmt.setTimestamp(5, report.getCreatedAt());
+            stmt.setString(6, report.getExportedFile());
             int affected = stmt.executeUpdate();
             return affected > 0;
         } catch (SQLException ex) {
@@ -37,8 +40,11 @@ public class ReportDAO {
                 Report report = new Report();
                 report.setId(rs.getInt("id"));
                 report.setReportName(rs.getString("report_name"));
+                report.setReportType(rs.getString("report_type"));
                 report.setReportScope(rs.getString("report_scope"));
-                report.setDetails(rs.getString("details"));
+                report.setCreatedBy(rs.getInt("created_by"));
+                report.setCreatedAt(rs.getTimestamp("created_at"));
+                report.setExportedFile(rs.getString("exported_file"));
                 reports.add(report);
             }
         } catch (SQLException ex) {

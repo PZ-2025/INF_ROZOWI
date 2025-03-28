@@ -1,5 +1,6 @@
 package pl.rozowi.app.controllers;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -9,11 +10,14 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import pl.rozowi.app.MainApplication;
+import pl.rozowi.app.dao.NotificationDAO;
+import pl.rozowi.app.models.Notification;
 import pl.rozowi.app.models.NotificationItem;
 import pl.rozowi.app.models.User;
 
 import java.io.IOException;
-import java.time.LocalDate;
+import java.text.SimpleDateFormat;
+import java.util.List;
 
 public class UserDashboardController {
 
@@ -38,39 +42,68 @@ public class UserDashboardController {
     @FXML
     private Button searchButton;
 
-    // Przechowujemy pełną listę powiadomień, aby później filtrować
-    private ObservableList<NotificationItem> allNotifications;
+    private ObservableList<NotificationItem> allNotifications = FXCollections.observableArrayList();
 
     public void setUser(User user) {
         welcomeLabel.setText("Witaj, " + user.getName());
+        loadNotifications(user);
     }
-
-
 
     @FXML
     private void initialize() {
-        // Ustawienie cell value factory dla kolumn
         colName.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
         colDescription.setCellValueFactory(cellData -> cellData.getValue().descriptionProperty());
         colDate.setCellValueFactory(cellData -> cellData.getValue().dateProperty());
 
-        // Automatyczne dopasowanie kolumn
         notificationsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-
-        // Przykładowe dane powiadomień
-        allNotifications = FXCollections.observableArrayList(
-                new NotificationItem("Zadanie #1", "Aktualizacja dokumentacji", LocalDate.of(2025, 3, 16).toString()),
-                new NotificationItem("Zadanie #2", "Testowanie modułu logowania", LocalDate.of(2025, 3, 17).toString()),
-                new NotificationItem("Zadanie #3", "Przygotowanie raportu tygodniowego", LocalDate.of(2025, 3, 18).toString())
-        );
         notificationsTable.setItems(allNotifications);
 
-        // Inline stylesheet – nagłówki kolumn na granatowo z białym tekstem
         notificationsTable.getStylesheets().add("data:text/css, .table-view .column-header-background { -fx-background-color: #000080; } .table-view .column-header .label { -fx-text-fill: white; }");
 
-        // Dodaj listener do pola wyszukiwania
         searchField.textProperty().addListener((obs, oldValue, newValue) -> {
             filterNotifications(newValue);
+        });
+    }
+
+    private void loadNotifications(User user) {
+        NotificationDAO notificationDAO = new NotificationDAO();
+        List<Notification> notifications = notificationDAO.getNotificationsForUser(user.getId());
+
+        if (notifications.isEmpty()) {
+            showNoNotificationsMessage();
+            return;
+        }
+
+        ObservableList<NotificationItem> items = FXCollections.observableArrayList();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        for (Notification n : notifications) {
+            String dateStr = (n.getDate() != null) ? sdf.format(n.getDate()) : "Brak daty";
+            String notificationName = n.getNotificationType() != null ?
+                    n.getNotificationType() : "Powiadomienie";
+
+            NotificationItem item = new NotificationItem(
+                    notificationName,
+                    n.getDescription() != null ? n.getDescription() : "Brak opisu",
+                    dateStr
+            );
+            items.add(item);
+        }
+
+        Platform.runLater(() -> {
+            allNotifications.clear();
+            allNotifications.addAll(items);
+            notificationsTable.refresh();
+        });
+    }
+
+    private void showNoNotificationsMessage() {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Powiadomienia");
+            alert.setHeaderText(null);
+            alert.setContentText("Brak nowych powiadomień.");
+            alert.showAndWait();
         });
     }
 
@@ -79,17 +112,14 @@ public class UserDashboardController {
             notificationsTable.setItems(allNotifications);
             return;
         }
-        ObservableList<NotificationItem> filtered = FXCollections.observableArrayList();
-        String lowerFilter = filter.toLowerCase();
-        for (NotificationItem item : allNotifications) {
-            if (item.getName().toLowerCase().contains(lowerFilter)
-                    || item.getDescription().toLowerCase().contains(lowerFilter)
-                    || item.getDate().toLowerCase().contains(lowerFilter)) {
-                filtered.add(item);
-            }
-        }
-        notificationsTable.setItems(filtered);
 
+        ObservableList<NotificationItem> filtered = allNotifications.filtered(item ->
+                item.getName().toLowerCase().contains(filter.toLowerCase()) ||
+                        item.getDescription().toLowerCase().contains(filter.toLowerCase()) ||
+                        item.getDate().toLowerCase().contains(filter.toLowerCase())
+        );
+
+        notificationsTable.setItems(filtered);
     }
 
     @FXML
@@ -115,6 +145,10 @@ public class UserDashboardController {
     private void loadView(String fxmlPath) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
         Parent view = loader.load();
+        Object controller = loader.getController();
+        if (controller instanceof pl.rozowi.app.controllers.SettingsController) {
+            ((pl.rozowi.app.controllers.SettingsController) controller).setUser(MainApplication.getCurrentUser());
+        }
         mainPane.getChildren().clear();
         mainPane.getChildren().add(view);
         AnchorPane.setTopAnchor(view, 0.0);

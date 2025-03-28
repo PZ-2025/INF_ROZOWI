@@ -7,13 +7,13 @@ import javafx.scene.control.ListView;
 import pl.rozowi.app.dao.TaskDAO;
 import pl.rozowi.app.models.Task;
 import pl.rozowi.app.util.Session;
+
 import java.util.List;
 
 public class MyTasksController {
 
     @FXML
     private ListView<String> tasksList;
-
 
     private TaskDAO taskDAO = new TaskDAO();
     private ObservableList<String> myTasks;
@@ -23,11 +23,10 @@ public class MyTasksController {
         loadTasks();
     }
 
-
     private void loadTasks() {
         List<Task> tasks = taskDAO.getTasksForUser(Session.currentUserId);
         myTasks = FXCollections.observableArrayList();
-        for(Task task : tasks) {
+        for (Task task : tasks) {
             myTasks.add("[" + task.getStatus() + "] " + task.getName() + " - " + task.getDescription());
         }
         tasksList.setItems(myTasks);
