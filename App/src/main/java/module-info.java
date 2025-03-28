@@ -2,7 +2,6 @@ module pl.rozowi.app {
     requires javafx.controls;
     requires javafx.fxml;
     requires java.sql;
-    requires org.flywaydb.core;
 
     opens pl.rozowi.app.controllers to javafx.fxml;
     exports pl.rozowi.app;
