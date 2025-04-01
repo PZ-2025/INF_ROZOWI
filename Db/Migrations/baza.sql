@@ -87,11 +87,7 @@ CREATE TABLE `roles` (
 CREATE TABLE `settings` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `authentication_method` varchar(20) DEFAULT NULL,
-  `data_storage` varchar(20) DEFAULT NULL,
   `language` varchar(10) DEFAULT NULL,
-  `theme` varchar(20) DEFAULT NULL,
-  `notifications_enabled` tinyint(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -165,6 +161,18 @@ CREATE TABLE `team_members` (
 -- --------------------------------------------------------
 
 --
+-- Struktura tabeli dla tabeli `groups`
+--
+
+CREATE TABLE `groups` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `group_name` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
 -- Struktura tabeli dla tabeli `users`
 --
 
@@ -176,6 +184,7 @@ CREATE TABLE `users` (
   `password` varchar(255) NOT NULL,
   `password_hint` varchar(255) DEFAULT NULL,
   `role_id` int(11) DEFAULT NULL
+  `group_id` int(11) AFTER `role_id`
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
