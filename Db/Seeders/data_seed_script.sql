@@ -16,57 +16,58 @@ INSERT INTO groups (id, group_name) VALUES
   (9, 'Wsparcie'),
   (10, 'HR');
 
+-- Hasło to: Haslo#12345
 -- Administratorzy (3)
 INSERT INTO users (id, name, last_name, email, password, password_hint, role_id, group_id) VALUES
-  (1, 'Jan', 'Kowalski', 'jan.kowalski@firma.pl', 'haslo1', 'podpowiedz1', 3, 5),
-  (2, 'Anna', 'Nowak', 'anna.nowak@firma.pl', 'haslo2', 'podpowiedz2', 3, 5),
-  (3, 'Piotr', 'Wiśniewski', 'piotr.wisniewski@firma.pl', 'haslo3', 'podpowiedz3', 3, 5);
+  (1, 'Jan', 'Kowalski', 'jan.kowalski@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz1', 3, 5),
+  (2, 'Anna', 'Nowak', 'anna.nowak@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz2', 3, 5),
+  (3, 'Piotr', 'Wiśniewski', 'piotr.wisniewski@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz3', 3, 5);
 
 -- Kierownicy (3)
 INSERT INTO users (id, name, last_name, email, password, password_hint, role_id, group_id) VALUES
-  (4, 'Katarzyna', 'Zielińska', 'katarzyna.zielinska@firma.pl', 'haslo4', 'podpowiedz4', 2, 5),
-  (5, 'Tomasz', 'Wójcik', 'tomasz.wojcik@firma.pl', 'haslo5', 'podpowiedz5', 2, 5),
-  (6, 'Agnieszka', 'Krawczyk', 'agnieszka.krawczyk@firma.pl', 'haslo6', 'podpowiedz6', 2, 5);
+  (4, 'Katarzyna', 'Zielińska', 'katarzyna.zielinska@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz4', 2, 5),
+  (5, 'Tomasz', 'Wójcik', 'tomasz.wojcik@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz5', 2, 5),
+  (6, 'Agnieszka', 'Krawczyk', 'agnieszka.krawczyk@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz6', 2, 5);
 
 -- Team Liderzy (10)
 INSERT INTO users (id, name, last_name, email, password, password_hint, role_id, group_id) VALUES
-  (7, 'Michał', 'Lewandowski', 'michal.lewandowski@firma.pl', 'haslo7', 'podpowiedz7', 1, 1),
-  (8, 'Monika', 'Szymańska', 'monika.szymansk@firma.pl', 'haslo8', 'podpowiedz8', 1, 2),
-  (9, 'Paweł', 'Dąbrowski', 'pawel.dabrowski@firma.pl', 'haslo9', 'podpowiedz9', 1, 1),
-  (10, 'Ewa', 'Kozłowska', 'ewa.kozlowska@firma.pl', 'haslo10', 'podpowiedz10', 1, 3),
-  (11, 'Krzysztof', 'Jankowski', 'krzysztof.jankowski@firma.pl', 'haslo11', 'podpowiedz11', 1, 2),
-  (12, 'Barbara', 'Wojciechowska', 'barbara.wojciechowska@firma.pl', 'haslo12', 'podpowiedz12', 1, 3),
-  (13, 'Adam', 'Kubiak', 'adam.kubiak@firma.pl', 'haslo13', 'podpowiedz13', 1, 1),
-  (14, 'Elżbieta', 'Wróblewska', 'elzbieta.wroblewska@firma.pl', 'haslo14', 'podpowiedz14', 1, 2),
-  (15, 'Robert', 'Nowicki', 'robert.nowicki@firma.pl', 'haslo15', 'podpowiedz15', 1, 3),
-  (16, 'Iwona', 'Mazur', 'iwona.mazur@firma.pl', 'haslo16', 'podpowiedz16', 1, 1);
+  (7, 'Michał', 'Lewandowski', 'michal.lewandowski@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz7', 1, 1),
+  (8, 'Monika', 'Szymańska', 'monika.szymansk@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz8', 1, 2),
+  (9, 'Paweł', 'Dąbrowski', 'pawel.dabrowski@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz9', 1, 1),
+  (10, 'Ewa', 'Kozłowska', 'ewa.kozlowska@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz10', 1, 3),
+  (11, 'Krzysztof', 'Jankowski', 'krzysztof.jankowski@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz11', 1, 2),
+  (12, 'Barbara', 'Wojciechowska', 'barbara.wojciechowska@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz12', 1, 3),
+  (13, 'Adam', 'Kubiak', 'adam.kubiak@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz13', 1, 1),
+  (14, 'Elżbieta', 'Wróblewska', 'elzbieta.wroblewska@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz14', 1, 2),
+  (15, 'Robert', 'Nowicki', 'robert.nowicki@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz15', 1, 3),
+  (16, 'Iwona', 'Mazur', 'iwona.mazur@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz16', 1, 1);
 
 -- Pracownicy (24)
 INSERT INTO users (id, name, last_name, email, password, password_hint, role_id, group_id) VALUES
-  (17, 'Łukasz', 'Grabowski', 'lukasz.grabowski@firma.pl', 'haslo17', 'podpowiedz17', 4, 1),
-  (18, 'Karolina', 'Nowakowska', 'karolina.nowakowska@firma.pl', 'haslo18', 'podpowiedz18', 4, 2),
-  (19, 'Sebastian', 'Walczak', 'sebastian.walczak@firma.pl', 'haslo19', 'podpowiedz19', 4, 3),
-  (20, 'Julia', 'Baran', 'julia.baran@firma.pl', 'haslo20', 'podpowiedz20', 4, 4),
-  (21, 'Damian', 'Sikorski', 'damian.sikorski@firma.pl', 'haslo21', 'podpowiedz21', 4, 6),
-  (22, 'Natalia', 'Pawłowska', 'natalia.pawlowska@firma.pl', 'haslo22', 'podpowiedz22', 4, 7),
-  (23, 'Marek', 'Zawadzki', 'marek.zawadzki@firma.pl', 'haslo23', 'podpowiedz23', 4, 8),
-  (24, 'Dorota', 'Piotrowska', 'dorota.piotrowska@firma.pl', 'haslo24', 'podpowiedz24', 4, 9),
-  (25, 'Szymon', 'Król', 'szymon.krol@firma.pl', 'haslo25', 'podpowiedz25', 4, 10),
-  (26, 'Weronika', 'Majewska', 'weronika.majewska@firma.pl', 'haslo26', 'podpowiedz26', 4, 1),
-  (27, 'Oskar', 'Górski', 'oskar.gorski@firma.pl', 'haslo27', 'podpowiedz27', 4, 2),
-  (28, 'Renata', 'Walczak', 'renata.walczak@firma.pl', 'haslo28', 'podpowiedz28', 4, 3),
-  (29, 'Adrian', 'Stępień', 'adrian.stepien@firma.pl', 'haslo29', 'podpowiedz29', 4, 4),
-  (30, 'Klaudia', 'Michalska', 'klaudia.michalska@firma.pl', 'haslo30', 'podpowiedz30', 4, 6),
-  (31, 'Igor', 'Lis', 'igor.lis@firma.pl', 'haslo31', 'podpowiedz31', 4, 7),
-  (32, 'Agata', 'Wójcik', 'agata.wojcik@firma.pl', 'haslo32', 'podpowiedz32', 4, 8),
-  (33, 'Filip', 'Brzeziński', 'filip.brzezinski@firma.pl', 'haslo33', 'podpowiedz33', 4, 9),
-  (34, 'Martyna', 'Nowak', 'martyna.nowak@firma.pl', 'haslo34', 'podpowiedz34', 4, 10),
-  (35, 'Konstanty', 'Ostrowski', 'konstanty.ostrowski@firma.pl', 'haslo35', 'podpowiedz35', 4, 1),
-  (36, 'Emilia', 'Adamczyk', 'emilia.adamczyk@firma.pl', 'haslo36', 'podpowiedz36', 4, 2),
-  (37, 'Dawid', 'Jasiński', 'dawid.jasinski@firma.pl', 'haslo37', 'podpowiedz37', 4, 3),
-  (38, 'Irek', 'Barczak', 'irek.barczak@firma.pl', 'haslo38', 'podpowiedz38', 4, 4),
-  (39, 'Julia', 'Kowalczyk', 'julia.kowalczyk@firma.pl', 'haslo39', 'podpowiedz39', 4, 6),
-  (40, 'Sylwia', 'Głowacka', 'sylwia.glowacka@firma.pl', 'haslo40', 'podpowiedz40', 4, 7);
+  (17, 'Łukasz', 'Grabowski', 'lukasz.grabowski@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz17', 4, 1),
+  (18, 'Karolina', 'Nowakowska', 'karolina.nowakowska@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz18', 4, 2),
+  (19, 'Sebastian', 'Walczak', 'sebastian.walczak@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz19', 4, 3),
+  (20, 'Julia', 'Baran', 'julia.baran@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz20', 4, 4),
+  (21, 'Damian', 'Sikorski', 'damian.sikorski@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz21', 4, 6),
+  (22, 'Natalia', 'Pawłowska', 'natalia.pawlowska@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz22', 4, 7),
+  (23, 'Marek', 'Zawadzki', 'marek.zawadzki@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz23', 4, 8),
+  (24, 'Dorota', 'Piotrowska', 'dorota.piotrowska@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz24', 4, 9),
+  (25, 'Szymon', 'Król', 'szymon.krol@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz25', 4, 10),
+  (26, 'Weronika', 'Majewska', 'weronika.majewska@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz26', 4, 1),
+  (27, 'Oskar', 'Górski', 'oskar.gorski@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz27', 4, 2),
+  (28, 'Renata', 'Walczak', 'renata.walczak@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz28', 4, 3),
+  (29, 'Adrian', 'Stępień', 'adrian.stepien@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz29', 4, 4),
+  (30, 'Klaudia', 'Michalska', 'klaudia.michalska@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz30', 4, 6),
+  (31, 'Igor', 'Lis', 'igor.lis@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz31', 4, 7),
+  (32, 'Agata', 'Wójcik', 'agata.wojcik@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz32', 4, 8),
+  (33, 'Filip', 'Brzeziński', 'filip.brzezinski@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz33', 4, 9),
+  (34, 'Martyna', 'Nowak', 'martyna.nowak@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz34', 4, 10),
+  (35, 'Konstanty', 'Ostrowski', 'konstanty.ostrowski@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz35', 4, 1),
+  (36, 'Emilia', 'Adamczyk', 'emilia.adamczyk@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz36', 4, 2),
+  (37, 'Dawid', 'Jasiński', 'dawid.jasinski@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz37', 4, 3),
+  (38, 'Irek', 'Barczak', 'irek.barczak@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz38', 4, 4),
+  (39, 'Julia', 'Kowalczyk', 'julia.kowalczyk@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz39', 4, 6),
+  (40, 'Sylwia', 'Głowacka', 'sylwia.glowacka@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz40', 4, 7);
 
 INSERT INTO projects (id, project_name, description, start_date, end_date, manager_id) VALUES
   (1, 'Projekt 1', 'Opis projektu 1', '2025-05-01', '2025-07-01', 4),
