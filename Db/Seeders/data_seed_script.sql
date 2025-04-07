@@ -1,11 +1,9 @@
--- 1. Wstawiamy role
 INSERT INTO roles (id, role_name, permissions) VALUES
   (1, 'Team Lider', 'VIEW_TASKS,CREATE_TASKS,ASSIGN_TASKS,UPDATE_TASKS'),
   (2, 'Kierownik', 'VIEW_TASKS,UPDATE_TASKS,MANAGE_TEAMS,MANAGE_PROJECTS,VIEW_REPORTS'),
   (3, 'Administrator', 'VIEW_TASKS,CREATE_TASKS,UPDATE_TASKS,DELETE_TASKS,MANAGE_USERS,MANAGE_TEAMS,MANAGE_PROJECTS,VIEW_REPORTS'),
   (4, 'Pracownik', 'VIEW_TASKS,UPDATE_OWN_TASKS');
 
--- 2. Wstawiamy grupy (profesje)
 INSERT INTO groups (id, group_name) VALUES
   (1, 'Developerzy'),
   (2, 'Testerzy'),
@@ -18,7 +16,6 @@ INSERT INTO groups (id, group_name) VALUES
   (9, 'Wsparcie'),
   (10, 'HR');
 
--- 3. Wstawiamy użytkowników (łącznie 40)
 -- Administratorzy (3)
 INSERT INTO users (id, name, last_name, email, password, password_hint, role_id, group_id) VALUES
   (1, 'Jan', 'Kowalski', 'jan.kowalski@firma.pl', 'haslo1', 'podpowiedz1', 3, 5),
@@ -71,7 +68,29 @@ INSERT INTO users (id, name, last_name, email, password, password_hint, role_id,
   (39, 'Julia', 'Kowalczyk', 'julia.kowalczyk@firma.pl', 'haslo39', 'podpowiedz39', 4, 6),
   (40, 'Sylwia', 'Głowacka', 'sylwia.glowacka@firma.pl', 'haslo40', 'podpowiedz40', 4, 7);
 
--- 4. Wstawiamy teamy (10) – przypisujemy każdy do projektu (dla teamów projektowych projekt_id od 1 do 10)
+INSERT INTO projects (id, project_name, description, start_date, end_date, manager_id) VALUES
+  (1, 'Projekt 1', 'Opis projektu 1', '2025-05-01', '2025-07-01', 4),
+  (2, 'Projekt 2', 'Opis projektu 2', '2025-05-05', '2025-07-05', 5),
+  (3, 'Projekt 3', 'Opis projektu 3', '2025-05-10', '2025-07-10', 6),
+  (4, 'Projekt 4', 'Opis projektu 4', '2025-05-15', '2025-07-15', 4),
+  (5, 'Projekt 5', 'Opis projektu 5', '2025-05-20', '2025-07-20', 5),
+  (6, 'Projekt 6', 'Opis projektu 6', '2025-05-25', '2025-07-25', 6),
+  (7, 'Projekt 7', 'Opis projektu 7', '2025-06-01', '2025-08-01', 4),
+  (8, 'Projekt 8', 'Opis projektu 8', '2025-06-05', '2025-08-05', 5),
+  (9, 'Projekt 9', 'Opis projektu 9', '2025-06-10', '2025-08-10', 6),
+  (10, 'Projekt 10', 'Opis projektu 10', '2025-06-15', '2025-08-15', 4),
+  (11, 'Projekt 11', 'Opis projektu 11', '2025-06-20', '2025-08-20', 5),
+  (12, 'Projekt 12', 'Opis projektu 12', '2025-06-25', '2025-08-25', 6),
+  (13, 'Projekt 13', 'Opis projektu 13', '2025-07-01', '2025-09-01', 4),
+  (14, 'Projekt 14', 'Opis projektu 14', '2025-07-05', '2025-09-05', 5),
+  (15, 'Projekt 15', 'Opis projektu 15', '2025-07-10', '2025-09-10', 6),
+  (16, 'Projekt 16', 'Opis projektu 16', '2025-07-15', '2025-09-15', 4),
+  (17, 'Projekt 17', 'Opis projektu 17', '2025-07-20', '2025-09-20', 5),
+  (18, 'Projekt 18', 'Opis projektu 18', '2025-07-25', '2025-09-25', 6),
+  (19, 'Projekt 19', 'Opis projektu 19', '2025-08-01', '2025-10-01', 4),
+  (20, 'Projekt 20', 'Opis projektu 20', '2025-08-05', '2025-10-05', 5);
+
+
 INSERT INTO teams (id, team_name, project_id) VALUES
   (1, 'Zespół Alfa', 1),
   (2, 'Zespół Beta', 2),
@@ -84,7 +103,6 @@ INSERT INTO teams (id, team_name, project_id) VALUES
   (9, 'Zespół Iota', 9),
   (10, 'Zespół Downa', 10);
 
--- 5. Wstawiamy członków teamów (team_members)
 -- Każdy team ma przypisanego team lidera (użytkownicy id 7-16) oraz kilku pracowników
 -- Team 1: lider: id=7, członkowie: 17, 18, 37
 INSERT INTO team_members (team_id, user_id, is_leader) VALUES
@@ -150,30 +168,7 @@ INSERT INTO team_members (team_id, user_id, is_leader) VALUES
   (10, 35, 0),
   (10, 36, 0);
 
--- 6. Wstawiamy projekty (20)
-INSERT INTO projects (id, project_name, description, start_date, end_date, manager_id) VALUES
-  (1, 'Projekt 1', 'Opis projektu 1', '2025-05-01', '2025-07-01', 4),
-  (2, 'Projekt 2', 'Opis projektu 2', '2025-05-05', '2025-07-05', 5),
-  (3, 'Projekt 3', 'Opis projektu 3', '2025-05-10', '2025-07-10', 6),
-  (4, 'Projekt 4', 'Opis projektu 4', '2025-05-15', '2025-07-15', 4),
-  (5, 'Projekt 5', 'Opis projektu 5', '2025-05-20', '2025-07-20', 5),
-  (6, 'Projekt 6', 'Opis projektu 6', '2025-05-25', '2025-07-25', 6),
-  (7, 'Projekt 7', 'Opis projektu 7', '2025-06-01', '2025-08-01', 4),
-  (8, 'Projekt 8', 'Opis projektu 8', '2025-06-05', '2025-08-05', 5),
-  (9, 'Projekt 9', 'Opis projektu 9', '2025-06-10', '2025-08-10', 6),
-  (10, 'Projekt 10', 'Opis projektu 10', '2025-06-15', '2025-08-15', 4),
-  (11, 'Projekt 11', 'Opis projektu 11', '2025-06-20', '2025-08-20', 5),
-  (12, 'Projekt 12', 'Opis projektu 12', '2025-06-25', '2025-08-25', 6),
-  (13, 'Projekt 13', 'Opis projektu 13', '2025-07-01', '2025-09-01', 4),
-  (14, 'Projekt 14', 'Opis projektu 14', '2025-07-05', '2025-09-05', 5),
-  (15, 'Projekt 15', 'Opis projektu 15', '2025-07-10', '2025-09-10', 6),
-  (16, 'Projekt 16', 'Opis projektu 16', '2025-07-15', '2025-09-15', 4),
-  (17, 'Projekt 17', 'Opis projektu 17', '2025-07-20', '2025-09-20', 5),
-  (18, 'Projekt 18', 'Opis projektu 18', '2025-07-25', '2025-09-25', 6),
-  (19, 'Projekt 19', 'Opis projektu 19', '2025-08-01', '2025-10-01', 4),
-  (20, 'Projekt 20', 'Opis projektu 20', '2025-08-05', '2025-10-05', 5);
 
--- 7. Wstawiamy zadania (60)
 -- Każde zadanie powiązane jest z projektem (project_id) oraz teamem (team_id)
 -- Używamy cyklicznego przypisania: project_id = (id_zadania mod 20)+1, team_id = (id_zadania mod 10)+1
 INSERT INTO tasks (id, project_id, team_id, title, description, status, priority, start_date, end_date) VALUES
@@ -238,7 +233,6 @@ INSERT INTO tasks (id, project_id, team_id, title, description, status, priority
   (59, ((59 % 20) + 1), ((59 % 10) + 1), 'Zadanie 59', 'Opis zadania 59', 'TO_DO', 'MEDIUM', '2025-06-28', '2025-07-12'),
   (60, ((60 % 20) + 1), ((60 % 10) + 1), 'Zadanie 60', 'Opis zadania 60', 'TO_DO', 'MEDIUM', '2025-06-29', '2025-07-13');
 
--- 8. Wstawiamy aktywności zadaniowe (100)
 -- Przykładowe typy aktywności: 'Komentarz', 'Aktualizacja', 'Załącznik dodany'
 -- Przypisujemy: task_id = ((id % 60)+1), user_id = ((id % 40)+1)
 INSERT INTO task_activities (id, task_id, user_id, activity_type, description, created_at) VALUES

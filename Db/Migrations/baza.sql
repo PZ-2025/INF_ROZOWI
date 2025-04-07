@@ -1,27 +1,5 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Host: 127.0.0.1
--- Generation Time: Mar 30, 2025 at 08:29 PM
--- Wersja serwera: 10.4.28-MariaDB
--- Wersja PHP: 8.2.4
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
---
--- Database: `it_task_management`
---
-
--- --------------------------------------------------------
+CREATE DATABASE IF NOT EXISTS it_task_management;
+USE it_task_management;
 
 --
 -- Struktura tabeli dla tabeli `notifications`
@@ -87,7 +65,7 @@ CREATE TABLE `roles` (
 CREATE TABLE `settings` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `language` varchar(10) DEFAULT NULL,
+  `language` varchar(10) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -183,8 +161,8 @@ CREATE TABLE `users` (
   `email` varchar(100) NOT NULL,
   `password` varchar(255) NOT NULL,
   `password_hint` varchar(255) DEFAULT NULL,
-  `role_id` int(11) DEFAULT NULL
-  `group_id` int(11) AFTER `role_id`
+  `role_id` int(11) DEFAULT NULL,
+  `group_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -395,8 +373,4 @@ ALTER TABLE `team_members`
 --
 ALTER TABLE `users`
   ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`);
-COMMIT;
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
