@@ -65,7 +65,9 @@ CREATE TABLE `roles` (
 CREATE TABLE `settings` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `language` varchar(10) DEFAULT NULL
+  `theme` varchar(255) NOT NULL,
+  `default_view` varchar(255) NOT NULL,
+  `last_password_change` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
