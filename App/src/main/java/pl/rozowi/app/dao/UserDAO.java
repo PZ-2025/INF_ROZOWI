@@ -54,17 +54,34 @@ public class UserDAO {
     }
 
     public boolean updateUser(User user) {
-        String sql = "UPDATE users SET password = ?, password_hint = ? WHERE id = ?";
+        String sqlUser = "UPDATE users SET email = ?, password = ?, password_hint = ? WHERE id = ?";
+        String sqlSettings = "UPDATE settings SET theme = ?, default_view = ? WHERE user_id = ?";
+
         try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, user.getPassword());
-            stmt.setString(2, user.getPasswordHint());
-            stmt.setInt(3, user.getId());
-            int affected = stmt.executeUpdate();
-            return affected > 0;
+             PreparedStatement stmtUser = conn.prepareStatement(sqlUser);
+             PreparedStatement stmtSettings = conn.prepareStatement(sqlSettings)) {
+
+            stmtUser.setString(1, user.getEmail());
+            stmtUser.setString(2, user.getPassword());
+            stmtUser.setString(3, user.getPasswordHint());
+            stmtUser.setInt(4, user.getId());
+
+            if (user.getTheme() != null) {
+                stmtSettings.setString(1, user.getTheme());
+            }
+            if (user.getDefaultView() != null) {
+                stmtSettings.setString(2, user.getDefaultView());
+            }
+            stmtSettings.setInt(3, user.getId());
+
+            int affectedUser = stmtUser.executeUpdate();
+            int affectedSettings = stmtSettings.executeUpdate();
+
+            return affectedUser > 0 && affectedSettings > 0;
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
         return false;
     }
+
 }

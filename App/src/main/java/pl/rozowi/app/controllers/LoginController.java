@@ -40,7 +40,7 @@ public class LoginController {
     }
 
     @FXML
-    private void handleLogin() {
+    public void handleLogin() {
         String email = usernameField.getText();
         String pass = passwordField.getText();
 
@@ -51,7 +51,6 @@ public class LoginController {
         if (user != null && user.getPassword().equals(hashedPassword)) {
             MainApplication.setCurrentUser(user);
             Session.currentUserId = user.getId();
-            // Dynamiczne ID zespołu
             int teamId = teamMemberDAO.getTeamIdForUser(user.getId());
             Session.currentUserTeam = String.valueOf(teamId);
 
@@ -64,14 +63,17 @@ public class LoginController {
 
             try {
                 switch (user.getRoleId()) {
-                    case 1:
+                    case 1: // Admin
                         MainApplication.switchScene("/fxml/admin/adminDashboard.fxml", "TaskApp - Admin");
                         break;
-                    case 2:
-                        MainApplication.switchScene("/fxml/manager/managerDashboard.fxml", "TaskApp - Kierownik");
+                    case 2: // Manager
+                        MainApplication.switchScene("/fxml/manager/managerDashboard.fxml", "TaskApp - Manager");
                         break;
-                    case 3:
-                        MainApplication.switchScene("/fxml/user/userDashboard.fxml", "TaskApp - Użytkownik");
+                    case 3: // Team Leader
+                        MainApplication.switchScene("/fxml/teamleader/teamLeaderDashboard.fxml", "TaskApp - Team Leader");
+                        break;
+                    case 4: // User (Employee)
+                        MainApplication.switchScene("/fxml/user/userDashboard.fxml", "TaskApp - User");
                         break;
                     default:
                         MainApplication.switchScene("/fxml/user/userDashboard.fxml", "TaskApp - Dashboard");

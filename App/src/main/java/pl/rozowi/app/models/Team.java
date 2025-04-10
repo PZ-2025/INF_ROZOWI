@@ -4,7 +4,6 @@ public class Team {
     private int id;
     private String teamName;
     private int projectId;
-    private int managerId;
 
     public int getId() {
         return id;
@@ -28,13 +27,5 @@ public class Team {
 
     public void setProjectId(int projectId) {
         this.projectId = projectId;
-    }
-
-    public int getManagerId() {
-        return managerId;
-    }
-
-    public void setManagerId(int managerId) {
-        this.managerId = managerId;
     }
 }

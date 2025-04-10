@@ -31,6 +31,9 @@
                     style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
             <Button text="Zadania" onAction="#goToAllTasks"
                     style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
+            <!-- Bez akcji, możliwie do wyrzucenia -->
+            <Button text="Powiadomienia"
+                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
             <!-- Spacer aby przyciski Ustawienia i Wyloguj znalazły się na dole -->
             <Region fx:id="spacer" VBox.vgrow="ALWAYS"/>
             <Button text="Ustawienia" onAction="#goToSettings"

@@ -27,7 +27,7 @@ public class MyTasksController {
         List<Task> tasks = taskDAO.getTasksForUser(Session.currentUserId);
         myTasks = FXCollections.observableArrayList();
         for (Task task : tasks) {
-            myTasks.add("[" + task.getStatus() + "] " + task.getName() + " - " + task.getDescription());
+            myTasks.add("[" + task.getStatus() + "] " + task.getTitle() + " - " + task.getDescription());
         }
         tasksList.setItems(myTasks);
     }

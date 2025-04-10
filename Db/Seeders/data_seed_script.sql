@@ -69,6 +69,18 @@ INSERT INTO users (id, name, last_name, email, password, password_hint, role_id,
   (39, 'Julia', 'Kowalczyk', 'julia.kowalczyk@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz39', 4, 6),
   (40, 'Sylwia', 'Głowacka', 'sylwia.glowacka@firma.pl', '95b49eab894a32254b0990346390a167a45ec751e5e72da9f45abae5f7d9340d', 'podpowiedz40', 4, 7);
 
+INSERT INTO settings (user_id, theme, default_view, last_password_change) VALUES
+  (1, 'light', 'moje_zadania', CURRENT_TIMESTAMP()),
+  (2, 'dark', 'zadania', CURRENT_TIMESTAMP()),
+  (3, 'light', 'moje_zadania', CURRENT_TIMESTAMP()),
+  (4, 'dark', 'zadania', CURRENT_TIMESTAMP()),
+  (5, 'light', 'moje_zadania', CURRENT_TIMESTAMP()),
+  (6, 'dark', 'zadania', CURRENT_TIMESTAMP()),
+  (7, 'light', 'moje_zadania', CURRENT_TIMESTAMP()),
+  (8, 'dark', 'zadania', CURRENT_TIMESTAMP()),
+  (9, 'light', 'moje_zadania', CURRENT_TIMESTAMP()),
+  (10, 'dark', 'zadania', CURRENT_TIMESTAMP());
+
 INSERT INTO projects (id, project_name, description, start_date, end_date, manager_id) VALUES
   (1, 'Projekt 1', 'Opis projektu 1', '2025-05-01', '2025-07-01', 4),
   (2, 'Projekt 2', 'Opis projektu 2', '2025-05-05', '2025-07-05', 5),
@@ -337,3 +349,44 @@ INSERT INTO task_activities (id, task_id, user_id, activity_type, description, c
   (98, ((98 % 60) + 1), ((98 % 40) + 1), 'Aktualizacja', 'Aktywność 98 dla zadania 98', NOW()),
   (99, ((99 % 60) + 1), ((99 % 40) + 1), 'Załącznik dodany', 'Aktywność 99 dla zadania 99', NOW()),
   (100, ((100 % 60) + 1), ((100 % 40) + 1), 'Komentarz', 'Aktywność 100 dla zadania 100', NOW());
+
+  INSERT INTO task_assignments (task_id, user_id) VALUES
+    (1, 1),
+    (2, 2),
+    (3, 3),
+    (4, 4),
+    (5, 5),
+    (6, 6),
+    (7, 7),
+    (8, 8),
+    (9, 9),
+    (10, 10);
+
+INSERT INTO notifications (user_id, content, is_read, created_at) VALUES
+  (1, 'Notification 1', 0, CURRENT_TIMESTAMP()),
+  (2, 'Notification 2', 0, CURRENT_TIMESTAMP()),
+  (3, 'Notification 3', 0, CURRENT_TIMESTAMP()),
+  (4, 'Notification 4', 0, CURRENT_TIMESTAMP()),
+  (5, 'Notification 5', 0, CURRENT_TIMESTAMP()),
+  (6, 'Notification 6', 0, CURRENT_TIMESTAMP()),
+  (7, 'Notification 7', 0, CURRENT_TIMESTAMP()),
+  (8, 'Notification 8', 0, CURRENT_TIMESTAMP()),
+  (9, 'Notification 9', 0, CURRENT_TIMESTAMP()),
+  (10, 'Notification 10', 0, CURRENT_TIMESTAMP());
+
+-- Trigger – aktualizacja pola last_password_change w tabeli settings
+DELIMITER //
+
+CREATE TRIGGER trg_update_password_change
+AFTER UPDATE ON users
+FOR EACH ROW
+BEGIN
+    -- Sprawdzamy, czy hasło zostało zmienione
+    IF NEW.password <> OLD.password THEN
+        -- Wstawiamy nowy rekord do tabeli settings z odpowiednim user_id i timestampem
+        INSERT INTO settings (user_id, last_password_change)
+        VALUES (NEW.id, CURRENT_TIMESTAMP());
+    END IF;
+END//
+
+DELIMITER ;

@@ -1,17 +1,9 @@
 package pl.rozowi.app.models;
 
 public class TeamMember {
-    private int id;
     private int teamId;
     private int userId;
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
+    private boolean isLeader;
 
     public int getTeamId() {
         return teamId;
@@ -27,5 +19,13 @@ public class TeamMember {
 
     public void setUserId(int userId) {
         this.userId = userId;
+    }
+
+    public boolean isLeader() {
+        return isLeader;
+    }
+
+    public void setLeader(boolean isLeader) {
+        this.isLeader = isLeader;
     }
 }

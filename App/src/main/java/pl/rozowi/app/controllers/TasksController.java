@@ -29,7 +29,7 @@ public class TasksController {
     @FXML
     private TableColumn<Task, String> taskTeamColumn;
     @FXML
-    private TableColumn<Task, String> taskAssignedToColumn;
+    private TableColumn<Task, Integer> taskAssignedToColumn;
     @FXML
     private TextField filterField;
 
@@ -39,15 +39,11 @@ public class TasksController {
     @FXML
     private void initialize() {
         taskIdColumn.setCellValueFactory(cellData -> cellData.getValue().idProperty());
-        taskNameColumn.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
+        taskNameColumn.setCellValueFactory(cellData -> cellData.getValue().titleProperty());
         taskDescriptionColumn.setCellValueFactory(cellData -> cellData.getValue().descriptionProperty());
         taskStatusColumn.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
         taskStartDateColumn.setCellValueFactory(cellData -> cellData.getValue().startDateProperty());
         taskDeadlineColumn.setCellValueFactory(cellData -> cellData.getValue().endDateProperty());
-        taskTeamColumn.setCellValueFactory(cellData -> cellData.getValue().teamProperty());
-        taskAssignedToColumn.setCellValueFactory(cellData -> cellData.getValue().assignedToProperty().asString());
-
-        // automatyczne dopasowywanie rozmiaru kolumn
         tasksTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
         loadTasks();
@@ -76,12 +72,12 @@ public class TasksController {
         ObservableList<Task> filtered = FXCollections.observableArrayList();
         String lower = filterText.toLowerCase();
         for (Task task : allTasks) {
-            if (task.getName().toLowerCase().contains(lower) ||
+            if (task.getTitle().toLowerCase().contains(lower) ||
                     task.getDescription().toLowerCase().contains(lower) ||
                     task.getStatus().toLowerCase().contains(lower) ||
                     task.getStartDate().toLowerCase().contains(lower) ||
                     task.getEndDate().toLowerCase().contains(lower) ||
-                    task.getTeam().toLowerCase().contains(lower)) {
+                    task.getTeamName().toLowerCase().contains(lower)) {
                 filtered.add(task);
             }
         }

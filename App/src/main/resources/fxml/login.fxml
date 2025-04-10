@@ -19,7 +19,7 @@
 
         <Label text="Logowanie" style="-fx-font-size: 26px; -fx-text-fill: white; -fx-font-weight: bold;"/>
 
-        <TextField fx:id="usernameField" promptText="Nazwa użytkownika"
+        <TextField fx:id="usernameField" promptText="Email"
                    style="-fx-pref-width: 100%; -fx-max-width: 350px; -fx-font-size: 14px;"/>
 
         <PasswordField fx:id="passwordField" promptText="Hasło"
