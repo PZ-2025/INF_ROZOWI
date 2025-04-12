@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" alignment="CENTER" spacing="15"
+      style="-fx-padding: 20px; -fx-background-color: #1E1E2F;">
+    <Label text="Zadania (Team Leader)" style="-fx-font-size: 24px; -fx-text-fill: white;"/>
+    <TableView fx:id="tasksTable" style="-fx-pref-width: 80%; -fx-pref-height: 300px;">
+        <columns>
+            <TableColumn fx:id="taskIdColumn" text="ID" prefWidth="50"/>
+            <TableColumn fx:id="taskNameColumn" text="Nazwa" prefWidth="150"/>
+            <TableColumn fx:id="taskDescriptionColumn" text="Opis" prefWidth="200"/>
+            <TableColumn fx:id="taskStatusColumn" text="Status" prefWidth="100"/>
+            <TableColumn fx:id="taskStartDateColumn" text="Data rozpoczęcia" prefWidth="120"/>
+            <TableColumn fx:id="taskDeadlineColumn" text="Deadline" prefWidth="120"/>
+            <TableColumn fx:id="taskTeamColumn" text="Team" prefWidth="150"/>
+            <TableColumn fx:id="taskAssignedToColumn" text="Przypisany do" prefWidth="100"/>
+        </columns>
+    </TableView>
+    <HBox spacing="10">
+        <TextField fx:id="filterField" promptText="Filtruj zadania..." style="-fx-pref-width: 300px;"/>
+        <Button text="Filtruj" onAction="#handleFilter"/>
+        <Button text="Dodaj zadanie" onAction="#handleAddTask"/>
+    </HBox>
+</VBox>
