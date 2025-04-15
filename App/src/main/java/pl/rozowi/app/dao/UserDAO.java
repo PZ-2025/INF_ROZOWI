@@ -39,13 +39,12 @@ public class UserDAO {
         return false;
     }
 
-    /**
-     * Pobiera użytkownika z bazy na podstawie emaila.
-     * @param email adres email użytkownika
-     * @return obiekt User, jeśli znaleziono użytkownika; null w przeciwnym razie.
-     */
+
     public User getUserByEmail(String email) {
-        String sql = "SELECT * FROM users WHERE email = ?";
+        String sql = "SELECT u.*, s.theme, s.default_view " +
+                "FROM users u " +
+                "LEFT JOIN settings s ON u.id = s.user_id " +
+                "WHERE u.email = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, email);
@@ -60,6 +59,9 @@ public class UserDAO {
                     user.setRoleId(rs.getInt("role_id"));
                     user.setGroupId(rs.getInt("group_id"));
                     user.setPasswordHint(rs.getString("password_hint"));
+
+                    user.setTheme(rs.getString("theme"));
+                    user.setDefaultView(rs.getString("default_view"));
                     return user;
                 }
             }
@@ -68,6 +70,7 @@ public class UserDAO {
         }
         return null;
     }
+
 
     /**
      * Aktualizuje dane użytkownika oraz powiązane ustawienia.

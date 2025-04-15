@@ -45,12 +45,15 @@ public class UserDashboardController {
 
     private ObservableList<NotificationItem> allNotifications = FXCollections.observableArrayList();
 
+
     public void setUser(User user) throws IOException {
         welcomeLabel.setText("Witaj, " + user.getName());
-        loadNotifications(user);
 
-        // Ładowanie domyślnego widoku na podstawie ustawień użytkownika
-        if (user.getDefaultView() != null) {
+        if (user.getDefaultView() != null && !user.getDefaultView().isEmpty()) {
+            notificationsTable.setVisible(false);
+            searchField.setVisible(false);
+            searchButton.setVisible(false);
+
             switch (user.getDefaultView()) {
                 case "Moje zadania":
                     goToMyTasks();
@@ -65,7 +68,10 @@ public class UserDashboardController {
                     goToMyTasks();
             }
         } else {
-            goToMyTasks();
+            notificationsTable.setVisible(true);
+            searchField.setVisible(true);
+            searchButton.setVisible(true);
+            loadNotifications(user);
         }
     }
 
@@ -99,8 +105,7 @@ public class UserDashboardController {
 
         for (Notification n : notifications) {
             String dateStr = (n.getDate() != null) ? sdf.format(n.getDate()) : "Brak daty";
-            String notificationName = n.getNotificationType() != null ?
-                    n.getNotificationType() : "Powiadomienie";
+            String notificationName = n.getNotificationType() != null ? n.getNotificationType() : "Powiadomienie";
 
             NotificationItem item = new NotificationItem(
                     notificationName,
@@ -176,7 +181,9 @@ public class UserDashboardController {
         AnchorPane.setLeftAnchor(view, 0.0);
         AnchorPane.setRightAnchor(view, 0.0);
 
-        Stage stage = (Stage) mainPane.getScene().getWindow();
-        stage.sizeToScene();
+        Platform.runLater(() -> {
+            Stage stage = (Stage) mainPane.getScene().getWindow();
+            stage.sizeToScene();
+        });
     }
 }

@@ -1,10 +1,14 @@
 package pl.rozowi.app.controllers;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import javafx.stage.Stage;
 import pl.rozowi.app.MainApplication;
 import pl.rozowi.app.dao.TeamMemberDAO;
 import pl.rozowi.app.dao.UserDAO;
@@ -21,11 +25,9 @@ public class LoginController {
     @FXML
     private PasswordField passwordField;
 
-    // Zamieniamy userDAO i teamMemberDAO na loginService
     private LoginService loginService;
 
     public LoginController() {
-        // Tworzymy nowy LoginService z DAO
         this.loginService = new LoginService(new UserDAO(), new TeamMemberDAO());
     }
 
@@ -47,7 +49,6 @@ public class LoginController {
         String email = usernameField.getText();
         String pass = passwordField.getText();
 
-        // Używamy loginService do autoryzacji
         User user = loginService.authenticate(email, pass);
         if (user != null) {
             MainApplication.setCurrentUser(user);
@@ -62,21 +63,29 @@ public class LoginController {
             alert.showAndWait();
 
             try {
-                switch (user.getRoleId()) {
-                    case 1:
-                        MainApplication.switchScene("/fxml/admin/adminDashboard.fxml", "TaskApp - Admin");
-                        break;
-                    case 2:
-                        MainApplication.switchScene("/fxml/manager/managerDashboard.fxml", "TaskApp - Manager");
-                        break;
-                    case 3:
-                        MainApplication.switchScene("/fxml/teamleader/teamLeaderDashboard.fxml", "TaskApp - Team Leader");
-                        break;
-                    case 4:
-                        MainApplication.switchScene("/fxml/user/userDashboard.fxml", "TaskApp - User");
-                        break;
-                    default:
-                        MainApplication.switchScene("/fxml/user/userDashboard.fxml", "TaskApp - Dashboard");
+                if (user.getRoleId() == 4) {
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/user/userDashboard.fxml"));
+                    Parent root = loader.load();
+                    pl.rozowi.app.controllers.UserDashboardController controller = loader.getController();
+                    controller.setUser(user);
+
+                    Stage stage = MainApplication.getPrimaryStage();
+                    stage.setScene(new Scene(root));
+                    stage.show();
+                } else {
+                    switch (user.getRoleId()) {
+                        case 1:
+                            MainApplication.switchScene("/fxml/admin/adminDashboard.fxml", "TaskApp - Admin");
+                            break;
+                        case 2:
+                            MainApplication.switchScene("/fxml/manager/managerDashboard.fxml", "TaskApp - Manager");
+                            break;
+                        case 3:
+                            MainApplication.switchScene("/fxml/teamleader/teamLeaderDashboard.fxml", "TaskApp - Team Leader");
+                            break;
+                        default:
+                            MainApplication.switchScene("/fxml/user/userDashboard.fxml", "TaskApp - Dashboard");
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -107,8 +116,6 @@ public class LoginController {
             return;
         }
 
-        // Zamiast userDAO.getUserByEmail(), korzystamy z metody w loginService
-        // Musisz więc utworzyć analogiczną metodę w LoginService (np. getUserByEmail).
         User user = loginService.findUserByEmail(email);
 
         if (user == null) {
