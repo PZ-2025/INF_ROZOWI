@@ -1,19 +1,13 @@
 package pl.rozowi.app.controllers;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
-import javafx.scene.control.ComboBox;
+import javafx.scene.control.*;
 import pl.rozowi.app.MainApplication;
 import pl.rozowi.app.dao.UserDAO;
 import pl.rozowi.app.models.User;
+import pl.rozowi.app.services.PasswordChangeService;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 public class SettingsController {
 
@@ -32,7 +26,9 @@ public class SettingsController {
     @FXML
     private Button saveSettingsButton;
 
-    private UserDAO userDAO = new UserDAO();
+
+    private final UserDAO userDAO = new UserDAO();
+    private final PasswordChangeService passwordService = new PasswordChangeService();
     private User currentUser;
 
     public void setUser(User user) {
@@ -71,23 +67,18 @@ public class SettingsController {
             return;
         }
 
+        // Obsługa hasła z serwisu
         if (!newPassword.isEmpty() || !confirmPassword.isEmpty()) {
-            if (newPassword.isEmpty() || confirmPassword.isEmpty()) {
-                showAlert(Alert.AlertType.ERROR, "Błąd", "Pole hasła nie może być puste!");
+            try {
+                String hashedPassword = passwordService.validateAndHashPassword(newPassword, confirmPassword);
+                currentUser.setPassword(hashedPassword);
+            } catch (IllegalArgumentException e) {
+                showAlert(Alert.AlertType.ERROR, "Błąd", e.getMessage());
                 return;
-            }
-
-            if (!newPassword.equals(confirmPassword)) {
-                showAlert(Alert.AlertType.ERROR, "Błąd", "Hasła nie są takie same!");
-                return;
-            }
-
-            String hashedPassword = hashPassword(newPassword);
-            if (hashedPassword == null) {
+            } catch (RuntimeException e) {
                 showAlert(Alert.AlertType.ERROR, "Błąd", "Wystąpił błąd przy hashowaniu hasła!");
                 return;
             }
-            currentUser.setPassword(hashedPassword);
         }
 
         if (!newEmail.equals(currentUser.getEmail())) {
@@ -121,23 +112,6 @@ public class SettingsController {
 
     private boolean isValidEmail(String email) {
         return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
-    }
-
-    private String hashPassword(String password) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
-            }
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     private void showAlert(Alert.AlertType type, String title, String content) {
