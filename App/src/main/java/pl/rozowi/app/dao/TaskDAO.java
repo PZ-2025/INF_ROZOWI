@@ -83,4 +83,19 @@ public class TaskDAO {
         }
         return tasks;
     }
+
+    public boolean updateTask(Task task) {
+        String sql = "UPDATE tasks SET status = ? WHERE id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, task.getStatus());
+            stmt.setInt(2, task.getId());
+            int affected = stmt.executeUpdate();
+            return affected > 0;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return false;
+    }
+
 }

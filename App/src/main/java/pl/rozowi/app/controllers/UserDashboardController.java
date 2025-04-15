@@ -9,6 +9,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
 import pl.rozowi.app.MainApplication;
 import pl.rozowi.app.dao.NotificationDAO;
 import pl.rozowi.app.models.Notification;
@@ -44,9 +45,28 @@ public class UserDashboardController {
 
     private ObservableList<NotificationItem> allNotifications = FXCollections.observableArrayList();
 
-    public void setUser(User user) {
+    public void setUser(User user) throws IOException {
         welcomeLabel.setText("Witaj, " + user.getName());
         loadNotifications(user);
+
+        // Ładowanie domyślnego widoku na podstawie ustawień użytkownika
+        if (user.getDefaultView() != null) {
+            switch (user.getDefaultView()) {
+                case "Moje zadania":
+                    goToMyTasks();
+                    break;
+                case "Zadania":
+                    goToAllTasks();
+                    break;
+                case "Ustawienia":
+                    goToSettings();
+                    break;
+                default:
+                    goToMyTasks();
+            }
+        } else {
+            goToMyTasks();
+        }
     }
 
     @FXML
@@ -155,5 +175,8 @@ public class UserDashboardController {
         AnchorPane.setBottomAnchor(view, 0.0);
         AnchorPane.setLeftAnchor(view, 0.0);
         AnchorPane.setRightAnchor(view, 0.0);
+
+        Stage stage = (Stage) mainPane.getScene().getWindow();
+        stage.sizeToScene();
     }
 }

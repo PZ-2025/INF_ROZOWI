@@ -76,8 +76,7 @@ public class TasksController {
                     task.getDescription().toLowerCase().contains(lower) ||
                     task.getStatus().toLowerCase().contains(lower) ||
                     task.getStartDate().toLowerCase().contains(lower) ||
-                    task.getEndDate().toLowerCase().contains(lower) ||
-                    task.getTeamName().toLowerCase().contains(lower)) {
+                    task.getEndDate().toLowerCase().contains(lower)) {
                 filtered.add(task);
             }
         }
