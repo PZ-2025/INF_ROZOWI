@@ -17,12 +17,18 @@ class RegisterServiceTest {
 
     private RegisterService registerService;
 
+    /**
+     * Inicjalizuje mocki i tworzy instancję serwisu rejestracji przed każdym testem.
+     */
     @BeforeEach
     void setUp() {
         MockitoAnnotations.initMocks(this);
         registerService = new RegisterService(userDaoMock);
     }
 
+    /**
+     * Test sprawdzający poprawną rejestrację użytkownika przy prawidłowych danych.
+     */
     @Test
     void testRegister_success() {
         // given
@@ -32,7 +38,7 @@ class RegisterServiceTest {
         String password = "pass@123";
         String confirm = "pass@123";
 
-        // Zakładamy, że userDAO.insertUser(...) się powiedzie
+        // Symulujemy powodzenie inserta w bazie
         when(userDaoMock.insertUser(any(User.class))).thenReturn(true);
 
         // when
@@ -43,6 +49,9 @@ class RegisterServiceTest {
         verify(userDaoMock, times(1)).insertUser(any(User.class));
     }
 
+    /**
+     * Test walidacji: imię powinno zaczynać się od wielkiej litery.
+     */
     @Test
     void testRegister_failWrongCaseForFirstName() {
         String firstName = "adam"; // z małej litery
@@ -51,21 +60,21 @@ class RegisterServiceTest {
         String password = "pass@123";
         String confirm = "pass@123";
 
-        // when
         RegistrationResult result = registerService.register(firstName, lastName, email, password, confirm);
 
-        // then
         assertFalse(result.isSuccess());
         assertEquals("Imię musi zaczynać się od wielkiej litery!", result.getMessage());
         verify(userDaoMock, never()).insertUser(any(User.class));
     }
 
+    /**
+     * Test walidacji adresu e-mail: musi zawierać znak @ oraz przynajmniej 2 znaki przed i po nim.
+     */
     @Test
     void testRegister_failEmailRegex() {
-        // Brak znaku '@', albo za mało znaków
         String firstName = "Adam";
         String lastName = "Kowalski";
-        String email = "a@";
+        String email = "a@"; // za krótko po @
         String password = "xyz@";
         String confirm = "xyz@";
 
@@ -76,6 +85,9 @@ class RegisterServiceTest {
         verify(userDaoMock, never()).insertUser(any(User.class));
     }
 
+    /**
+     * Test sprawdzający niezgodność haseł – użytkownik nie powinien zostać zarejestrowany.
+     */
     @Test
     void testRegister_failPasswordsDifferent() {
         String firstName = "Adam";
@@ -90,6 +102,4 @@ class RegisterServiceTest {
         assertEquals("Hasła nie są takie same!", result.getMessage());
         verify(userDaoMock, never()).insertUser(any(User.class));
     }
-
-    // itp. Możesz dodać test sprawdzający, gdy insertUser zwraca false
 }

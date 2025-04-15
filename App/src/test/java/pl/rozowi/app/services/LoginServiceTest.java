@@ -22,32 +22,43 @@ class LoginServiceTest {
 
     private LoginService loginService;
 
+    // Potrzebne do zamknięcia zasobów Mockito po każdym teście
     AutoCloseable closeable;
 
+    /**
+     * Inicjalizacja mocków przed każdym testem oraz utworzenie instancji testowanego LoginService.
+     */
     @BeforeEach
     void setUp() {
         closeable = MockitoAnnotations.openMocks(this);
         loginService = new LoginService(userDaoMock, teamMemberDaoMock);
     }
 
+    /**
+     * Zamyka kontekst mocków po każdym teście, aby uniknąć wycieków pamięci.
+     */
     @AfterEach
     void tearDown() throws Exception {
         closeable.close();
     }
 
+    /**
+     * Test sprawdzający poprawne uwierzytelnienie użytkownika przy prawidłowych danych logowania.
+     * Wykorzystuje prawidłowy hash SHA-256 dla hasła "secret".
+     */
     @Test
     void testAuthenticate_validCredentials() {
         // given
         String email = "john@domain.com";
         String rawPassword = "secret";
 
-        // Tworzymy usera z poprawnie zahashowanym hasłem "secret" (SHA-256)
+        // Tworzymy użytkownika z poprawnym hashem hasła (SHA-256 z "secret")
         User user = new User();
         user.setId(123);
         user.setEmail(email);
-        // Rzeczywisty hash SHA-256("secret") -> 2bb80d537b1da3e38bd30361aa855686bde0baeae0efb56f8b493b7852b855
         user.setPassword("2bb80d537b1da3e38bd30361aa855686bde0eacd7162fef6a25fe97bf527a25b");
 
+        // Symulacja: DAO zwraca użytkownika przy podanym emailu
         when(userDaoMock.getUserByEmail(email)).thenReturn(user);
 
         // when
@@ -55,16 +66,20 @@ class LoginServiceTest {
 
         // then
         assertNotNull(result, "Użytkownik powinien zostać poprawnie zalogowany, nie może być null.");
-        assertEquals(123, result.getId());
+        assertEquals(123, result.getId(), "Zwrócony użytkownik powinien mieć prawidłowe ID.");
     }
 
+    /**
+     * Test sprawdzający przypadek, gdy podano nieprawidłowy email (użytkownik nie istnieje).
+     * Oczekujemy zwrócenia null i wywołania metody DAO.
+     */
     @Test
     void testAuthenticate_invalidCredentials() {
         // given
         String email = "wrong@domain.com";
         String rawPassword = "pass";
 
-        // Zwracamy null, żeby symulować brak użytkownika o takim emailu
+        // Symulacja: DAO nie znajduje użytkownika
         when(userDaoMock.getUserByEmail(email)).thenReturn(null);
 
         // when
@@ -75,6 +90,9 @@ class LoginServiceTest {
         verify(userDaoMock).getUserByEmail(email);
     }
 
+    /**
+     * Test sprawdzający, czy LoginService poprawnie pobiera identyfikator zespołu użytkownika.
+     */
     @Test
     void testFindTeamIdForUser() {
         // given
@@ -84,7 +102,7 @@ class LoginServiceTest {
         int teamId = loginService.findTeamIdForUser(123);
 
         // then
-        assertEquals(10, teamId);
+        assertEquals(10, teamId, "Metoda powinna zwrócić poprawny ID zespołu.");
         verify(teamMemberDaoMock).getTeamIdForUser(123);
     }
 }
