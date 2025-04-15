@@ -4,8 +4,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.*?>
 
-<VBox xmlns:fx="http://javafx.com/fxml" alignment="CENTER" spacing="15"
-      style="-fx-padding: 20px; -fx-background-color: #1E1E2F;">
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="pl.rozowi.app.controllers.TasksController"
+      alignment="CENTER" spacing="15" style="-fx-padding: 20px; -fx-background-color: #1E1E2F;">
     <Label text="Zadania (Team Leader)" style="-fx-font-size: 24px; -fx-text-fill: white;"/>
     <TableView fx:id="tasksTable" style="-fx-pref-width: 80%; -fx-pref-height: 300px;">
         <columns>

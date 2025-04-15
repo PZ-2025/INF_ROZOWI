@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.*?>
-
 <VBox xmlns:fx="http://javafx.com/fxml" alignment="CENTER" spacing="15"
-      style="-fx-padding: 20px; -fx-background-color: #1E1E2F;">
+      style="-fx-padding: 20px; -fx-background-color: #1E1E2F;"
+      fx:controller="pl.rozowi.app.controllers.MyTasksController">
     <Label text="Moje Zadania (Team Leader)" style="-fx-font-size: 24px; -fx-text-fill: white;"/>
-    <!-- Możesz użyć ListView lub TableView; poniżej przykład ListView -->
-    <ListView fx:id="tasksList" style="-fx-pref-width: 80%; -fx-pref-height: 300px;"/>
+    <ListView fx:id="tasksList" style="-fx-pref-width: 100%; -fx-pref-height: 300px;"/>
+    <Button text="Odśwież" onAction="#handleRefresh"/>
 </VBox>
+
