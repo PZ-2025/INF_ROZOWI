@@ -50,52 +50,57 @@ public class LoginController {
         String pass = passwordField.getText();
 
         User user = loginService.authenticate(email, pass);
-        if (user != null) {
-            MainApplication.setCurrentUser(user);
-            Session.currentUserId = user.getId();
-            int teamId = loginService.findTeamIdForUser(user.getId());
-            Session.currentUserTeam = String.valueOf(teamId);
+        if (user == null) {
+            Alert err = new Alert(Alert.AlertType.ERROR, "Błędne dane logowania!");
+            err.setHeaderText(null);
+            err.showAndWait();
+            return;
+        }
 
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Logowanie udane");
-            alert.setHeaderText(null);
-            alert.setContentText("Logowanie udane!");
-            alert.showAndWait();
+        // zapisujemy zalogowanego
+        MainApplication.setCurrentUser(user);
+        Session.currentUserId = user.getId();
+        Session.currentUserTeam = String.valueOf(loginService.findTeamIdForUser(user.getId()));
 
-            try {
-                if (user.getRoleId() == 4) {
-                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/user/userDashboard.fxml"));
+        Alert ok = new Alert(Alert.AlertType.INFORMATION, "Logowanie udane!");
+        ok.setHeaderText(null);
+        ok.showAndWait();
+
+        try {
+            Stage stage = (Stage) usernameField.getScene().getWindow();
+
+            switch (user.getRoleId()) {
+                case 3 -> {  // Team Leader
+                    FXMLLoader loader = new FXMLLoader(
+                            getClass().getResource("/fxml/teamleader/teamLeaderDashboard.fxml"));
                     Parent root = loader.load();
-                    pl.rozowi.app.controllers.UserDashboardController controller = loader.getController();
-                    controller.setUser(user);
-
-                    Stage stage = MainApplication.getPrimaryStage();
+                    TeamLeaderDashboardController ctrl =
+                            loader.getController();
+                    ctrl.setUser(user);
                     stage.setScene(new Scene(root));
+                    stage.setTitle("TaskApp - Team Leader");
                     stage.show();
-                } else {
-                    switch (user.getRoleId()) {
-                        case 1:
-                            MainApplication.switchScene("/fxml/admin/adminDashboard.fxml", "TaskApp - Admin");
-                            break;
-                        case 2:
-                            MainApplication.switchScene("/fxml/manager/managerDashboard.fxml", "TaskApp - Manager");
-                            break;
-                        case 3:
-                            MainApplication.switchScene("/fxml/teamleader/teamLeaderDashboard.fxml", "TaskApp - Team Leader");
-                            break;
-                        default:
-                            MainApplication.switchScene("/fxml/user/userDashboard.fxml", "TaskApp - Dashboard");
-                    }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+                case 4 -> {  // User
+                    FXMLLoader loader = new FXMLLoader(
+                            getClass().getResource("/fxml/user/userDashboard.fxml"));
+                    Parent root = loader.load();
+                    UserDashboardController ctrl =
+                            loader.getController();
+                    ctrl.setUser(user);
+                    stage.setScene(new Scene(root));
+                    stage.setTitle("TaskApp - User");
+                    stage.show();
+                }
+                case 1 -> MainApplication.switchScene(
+                        "/fxml/admin/adminDashboard.fxml", "TaskApp - Admin");
+                case 2 -> MainApplication.switchScene(
+                        "/fxml/manager/managerDashboard.fxml", "TaskApp - Manager");
+                default -> MainApplication.switchScene(
+                        "/fxml/user/userDashboard.fxml", "TaskApp - Dashboard");
             }
-        } else {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Błąd logowania");
-            alert.setHeaderText(null);
-            alert.setContentText("Błędne dane logowania!");
-            alert.showAndWait();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

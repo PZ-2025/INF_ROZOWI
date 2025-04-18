@@ -1,7 +1,12 @@
 package pl.rozowi.app.controllers;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
 import pl.rozowi.app.MainApplication;
 import pl.rozowi.app.dao.UserDAO;
 import pl.rozowi.app.models.User;
@@ -26,7 +31,6 @@ public class SettingsController {
     @FXML
     private Button saveSettingsButton;
 
-
     private final UserDAO userDAO = new UserDAO();
     private final PasswordChangeService passwordService = new PasswordChangeService();
     private User currentUser;
@@ -35,11 +39,9 @@ public class SettingsController {
         this.currentUser = user;
         emailField.setText(user.getEmail());
         passwordHintField.setText(user.getPasswordHint() != null ? user.getPasswordHint() : "");
-
-        themeComboBox.getItems().addAll("Light", "Dark");
+        themeComboBox.getItems().setAll("Light", "Dark");
         themeComboBox.setValue(user.getTheme());
-
-        defaultViewComboBox.getItems().addAll("Moje zadania", "Zadania");
+        defaultViewComboBox.getItems().setAll("Moje zadania", "Zadania");
         defaultViewComboBox.setValue(user.getDefaultView());
     }
 
@@ -62,51 +64,75 @@ public class SettingsController {
         String newTheme = themeComboBox.getValue();
         String newDefaultView = defaultViewComboBox.getValue();
 
+        // Walidacja emaila
         if (!newEmail.equals(currentUser.getEmail()) && !isValidEmail(newEmail)) {
             showAlert(Alert.AlertType.ERROR, "Błąd", "Niepoprawny adres e-mail!");
             return;
         }
 
-        // Obsługa hasła z serwisu
+        // Hashowanie nowego hasła
         if (!newPassword.isEmpty() || !confirmPassword.isEmpty()) {
             try {
-                String hashedPassword = passwordService.validateAndHashPassword(newPassword, confirmPassword);
-                currentUser.setPassword(hashedPassword);
-            } catch (IllegalArgumentException e) {
-                showAlert(Alert.AlertType.ERROR, "Błąd", e.getMessage());
+                String hashed = passwordService.validateAndHashPassword(newPassword, confirmPassword);
+                currentUser.setPassword(hashed);
+            } catch (IllegalArgumentException ex) {
+                showAlert(Alert.AlertType.ERROR, "Błąd", ex.getMessage());
                 return;
-            } catch (RuntimeException e) {
+            } catch (RuntimeException ex) {
                 showAlert(Alert.AlertType.ERROR, "Błąd", "Wystąpił błąd przy hashowaniu hasła!");
                 return;
             }
         }
 
-        if (!newEmail.equals(currentUser.getEmail())) {
-            currentUser.setEmail(newEmail);
-        }
+        // Ustaw nowe wartości
+        currentUser.setEmail(newEmail);
+        currentUser.setTheme(newTheme);
+        currentUser.setDefaultView(newDefaultView);
+        currentUser.setPasswordHint(newHint);
 
-        if (!newTheme.equals(currentUser.getTheme())) {
-            currentUser.setTheme(newTheme);
-        }
-
-        if (!newDefaultView.equals(currentUser.getDefaultView())) {
-            currentUser.setDefaultView(newDefaultView);
-        }
-
-        if (!newHint.equals(currentUser.getPasswordHint())) {
-            currentUser.setPasswordHint(newHint);
-        }
-
+        // Zapis
         boolean success = userDAO.updateUser(currentUser);
-        if (success) {
-            showAlert(Alert.AlertType.INFORMATION, "Sukces", "Zmiany zapisane pomyślnie!");
-            try {
-                MainApplication.switchScene("/fxml/user/userDashboard.fxml", "TaskApp - Dashboard");
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        } else {
+        if (!success) {
             showAlert(Alert.AlertType.ERROR, "Błąd", "Nie udało się zapisać zmian!");
+            return;
+        }
+
+        showAlert(Alert.AlertType.INFORMATION, "Sukces", "Zmiany zapisane pomyślnie!");
+
+        // Przekierowanie według roli
+        try {
+            Stage stage = (Stage) saveSettingsButton.getScene().getWindow();
+            switch (currentUser.getRoleId()) {
+                case 1 -> MainApplication.switchScene(
+                        "/fxml/admin/adminDashboard.fxml", "TaskApp - Admin");
+                case 2 -> MainApplication.switchScene(
+                        "/fxml/manager/managerDashboard.fxml", "TaskApp - Manager");
+                case 3 -> {
+                    FXMLLoader loader = new FXMLLoader(
+                            getClass().getResource("/fxml/teamleader/teamLeaderDashboard.fxml"));
+                    Parent root = loader.load();
+                    TeamLeaderDashboardController ctrl =
+                            loader.getController();
+                    ctrl.setUser(currentUser);
+                    stage.setScene(new Scene(root));
+                    stage.setTitle("TaskApp - Team Leader");
+                }
+                case 4 -> {
+                    FXMLLoader loader = new FXMLLoader(
+                            getClass().getResource("/fxml/user/userDashboard.fxml"));
+                    Parent root = loader.load();
+                    UserDashboardController ctrl =
+                            loader.getController();
+                    ctrl.setUser(currentUser);
+                    stage.setScene(new Scene(root));
+                    stage.setTitle("TaskApp - User");
+                }
+                default -> MainApplication.switchScene(
+                        "/fxml/user/userDashboard.fxml", "TaskApp - Dashboard");
+            }
+            stage.show();
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
 
@@ -115,10 +141,10 @@ public class SettingsController {
     }
 
     private void showAlert(Alert.AlertType type, String title, String content) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
+        Alert a = new Alert(type);
+        a.setTitle(title);
+        a.setHeaderText(null);
+        a.setContentText(content);
+        a.showAndWait();
     }
 }
