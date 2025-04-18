@@ -94,61 +94,61 @@ public class AdminDashboardController {
         AnchorPane.setRightAnchor(view, 0.0);
     }
 
-    private void loadNotifications(User user) {
-        NotificationDAO notificationDAO = new NotificationDAO();
-        List<Notification> notifications = notificationDAO.getNotificationsForUser(user.getId());
-
-        if (notifications.isEmpty()) {
-            showNoNotificationsMessage();
-            return;
-        }
-
-        ObservableList<NotificationItem> items = FXCollections.observableArrayList();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-        for (Notification n : notifications) {
-            String dateStr = (n.getDate() != null) ? sdf.format(n.getDate()) : "Brak daty";
-            String notificationName = n.getNotificationType() != null ? n.getNotificationType() : "Powiadomienie";
-
-            NotificationItem item = new NotificationItem(
-                    notificationName,
-                    n.getDescription() != null ? n.getDescription() : "Brak opisu",
-                    dateStr
-            );
-            items.add(item);
-        }
-
-        Platform.runLater(() -> {
-            allNotifications.clear();
-            allNotifications.addAll(items);
-            notificationsTable.refresh();
-        });
-    }
-
-    private void showNoNotificationsMessage() {
-        Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Powiadomienia");
-            alert.setHeaderText(null);
-            alert.setContentText("Brak nowych powiadomień.");
-            alert.showAndWait();
-        });
-    }
-
-    private void filterNotifications(String filter) {
-        if (filter == null || filter.isEmpty()) {
-            notificationsTable.setItems(allNotifications);
-            return;
-        }
-
-        ObservableList<NotificationItem> filtered = allNotifications.filtered(item ->
-                item.getName().toLowerCase().contains(filter.toLowerCase()) ||
-                        item.getDescription().toLowerCase().contains(filter.toLowerCase()) ||
-                        item.getDate().toLowerCase().contains(filter.toLowerCase())
-        );
-
-        notificationsTable.setItems(filtered);
-    }
+//    private void loadNotifications(User user) {
+//        NotificationDAO notificationDAO = new NotificationDAO();
+//        List<Notification> notifications = notificationDAO.getNotificationsForUser(user.getId());
+//
+//        if (notifications.isEmpty()) {
+//            showNoNotificationsMessage();
+//            return;
+//        }
+//
+//        ObservableList<NotificationItem> items = FXCollections.observableArrayList();
+//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//
+//        for (Notification n : notifications) {
+//            String dateStr = (n.getDate() != null) ? sdf.format(n.getDate()) : "Brak daty";
+//            String notificationName = n.getNotificationType() != null ? n.getNotificationType() : "Powiadomienie";
+//
+//            NotificationItem item = new NotificationItem(
+//                    notificationName,
+//                    n.getDescription() != null ? n.getDescription() : "Brak opisu",
+//                    dateStr
+//            );
+//            items.add(item);
+//        }
+//
+//        Platform.runLater(() -> {
+//            allNotifications.clear();
+//            allNotifications.addAll(items);
+//            notificationsTable.refresh();
+//        });
+//    }
+//
+//    private void showNoNotificationsMessage() {
+//        Platform.runLater(() -> {
+//            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+//            alert.setTitle("Powiadomienia");
+//            alert.setHeaderText(null);
+//            alert.setContentText("Brak nowych powiadomień.");
+//            alert.showAndWait();
+//        });
+//    }
+//
+//    private void filterNotifications(String filter) {
+//        if (filter == null || filter.isEmpty()) {
+//            notificationsTable.setItems(allNotifications);
+//            return;
+//        }
+//
+//        ObservableList<NotificationItem> filtered = allNotifications.filtered(item ->
+//                item.getName().toLowerCase().contains(filter.toLowerCase()) ||
+//                        item.getDescription().toLowerCase().contains(filter.toLowerCase()) ||
+//                        item.getDate().toLowerCase().contains(filter.toLowerCase())
+//        );
+//
+//        notificationsTable.setItems(filtered);
+//    }
 
     public void setUser(User user) throws IOException {
         welcomeLabel.setText("Witaj, " + user.getName());
@@ -179,7 +179,7 @@ public class AdminDashboardController {
             notificationsTable.setVisible(true);
             searchField.setVisible(true);
             searchButton.setVisible(true);
-            loadNotifications(user);
+//            loadNotifications(user);
         }
     }
 }

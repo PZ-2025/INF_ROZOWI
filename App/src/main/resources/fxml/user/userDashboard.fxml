@@ -32,7 +32,7 @@
             <Button text="Zadania" onAction="#goToAllTasks"
                     style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
             <!-- Bez akcji, możliwie do wyrzucenia -->
-            <Button text="Powiadomienia"
+            <Button text="Powiadomienia" onAction="#goToNotifications"
                     style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
             <!-- Spacer aby przyciski Ustawienia i Wyloguj znalazły się na dole -->
             <Region fx:id="spacer" VBox.vgrow="ALWAYS"/>
@@ -54,7 +54,8 @@
                 <Button fx:id="searchButton" text="🔍" style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
             </HBox>
             <!-- Tabela powiadomień -->
-            <TableView fx:id="notificationsTable" layoutX="20" layoutY="60" style="-fx-pref-width: 400; -fx-pref-height: 400;">
+            <TableView fx:id="notificationsTable" layoutX="20" layoutY="60"
+                       style="-fx-pref-width: 400; -fx-pref-height: 400;">
                 <columns>
                     <TableColumn fx:id="colName" text="Nazwa"/>
                     <TableColumn fx:id="colDescription" text="Opis"/>

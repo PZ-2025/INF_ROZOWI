@@ -1,19 +1,23 @@
 package pl.rozowi.app.controllers;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.TableRow;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import pl.rozowi.app.MainApplication;
 import pl.rozowi.app.dao.NotificationDAO;
 import pl.rozowi.app.models.Notification;
-import pl.rozowi.app.models.NotificationItem;
 import pl.rozowi.app.models.User;
 
 import java.io.IOException;
@@ -29,23 +33,27 @@ public class UserDashboardController {
     @FXML
     private AnchorPane mainPane;
 
+    // Powiadomienia
     @FXML
-    private TableView<NotificationItem> notificationsTable;
+    private TableView<Notification> notificationsTable;
     @FXML
-    private TableColumn<NotificationItem, String> colName;
+    private TableColumn<Notification, String> colName;
     @FXML
-    private TableColumn<NotificationItem, String> colDescription;
+    private TableColumn<Notification, String> colDescription;
     @FXML
-    private TableColumn<NotificationItem, String> colDate;
+    private TableColumn<Notification, String> colDate;
 
     @FXML
     private TextField searchField;
     @FXML
     private Button searchButton;
 
-    private ObservableList<NotificationItem> allNotifications = FXCollections.observableArrayList();
+    private final NotificationDAO notificationDAO = new NotificationDAO();
+    private final ObservableList<Notification> allNotifications = FXCollections.observableArrayList();
 
-
+    /**
+     * Ustawia usera i ładuje odpowiedni widok po zalogowaniu
+     */
     public void setUser(User user) throws IOException {
         welcomeLabel.setText("Witaj, " + user.getName());
 
@@ -53,7 +61,6 @@ public class UserDashboardController {
             notificationsTable.setVisible(false);
             searchField.setVisible(false);
             searchButton.setVisible(false);
-
             switch (user.getDefaultView()) {
                 case "Moje zadania":
                     goToMyTasks();
@@ -66,85 +73,107 @@ public class UserDashboardController {
                     break;
                 default:
                     goToMyTasks();
+                    break;
             }
         } else {
             notificationsTable.setVisible(true);
             searchField.setVisible(true);
             searchButton.setVisible(true);
-            loadNotifications(user);
+            loadNotifications(user.getId());
         }
     }
 
     @FXML
     private void initialize() {
-        colName.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
-        colDescription.setCellValueFactory(cellData -> cellData.getValue().descriptionProperty());
-        colDate.setCellValueFactory(cellData -> cellData.getValue().dateProperty());
+        colName.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().getNotificationType()));
+        colDescription.setCellValueFactory(c ->
+                new SimpleStringProperty(c.getValue().getDescription()));
+        colDate.setCellValueFactory(c ->
+                new SimpleStringProperty(
+                        new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                .format(c.getValue().getCreatedAt())
+                ));
 
-        notificationsTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         notificationsTable.setItems(allNotifications);
 
-        notificationsTable.getStylesheets().add("data:text/css, .table-view .column-header-background { -fx-background-color: #000080; } .table-view .column-header .label { -fx-text-fill: white; }");
-
-        searchField.textProperty().addListener((obs, oldValue, newValue) -> {
-            filterNotifications(newValue);
+        notificationsTable.setRowFactory(tv -> new TableRow<>() {
+            @Override
+            protected void updateItem(Notification item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item == null || empty) {
+                    setStyle("");
+                } else {
+                    setStyle(item.isRead() ? "" : "-fx-font-weight:bold;");
+                }
+            }
         });
+
+        notificationsTable.setOnMouseClicked(evt -> {
+            if (evt.getButton() == MouseButton.PRIMARY && evt.getClickCount() == 2) {
+                Notification sel = notificationsTable.getSelectionModel().getSelectedItem();
+                if (sel != null) openNotificationDetails(sel);
+            }
+        });
+
+        searchButton.setOnAction(e -> filterNotifications(searchField.getText()));
     }
 
-    private void loadNotifications(User user) {
-        NotificationDAO notificationDAO = new NotificationDAO();
-        List<Notification> notifications = notificationDAO.getNotificationsForUser(user.getId());
-
-        if (notifications.isEmpty()) {
-            showNoNotificationsMessage();
-            return;
-        }
-
-        ObservableList<NotificationItem> items = FXCollections.observableArrayList();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-        for (Notification n : notifications) {
-            String dateStr = (n.getDate() != null) ? sdf.format(n.getDate()) : "Brak daty";
-            String notificationName = n.getNotificationType() != null ? n.getNotificationType() : "Powiadomienie";
-
-            NotificationItem item = new NotificationItem(
-                    notificationName,
-                    n.getDescription() != null ? n.getDescription() : "Brak opisu",
-                    dateStr
-            );
-            items.add(item);
-        }
-
+    private void loadNotifications(int userId) {
         Platform.runLater(() -> {
-            allNotifications.clear();
-            allNotifications.addAll(items);
-            notificationsTable.refresh();
-        });
-    }
-
-    private void showNoNotificationsMessage() {
-        Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Powiadomienia");
-            alert.setHeaderText(null);
-            alert.setContentText("Brak nowych powiadomień.");
-            alert.showAndWait();
+            List<Notification> list = notificationDAO.getAll(userId);
+            allNotifications.setAll(list);
         });
     }
 
     private void filterNotifications(String filter) {
         if (filter == null || filter.isEmpty()) {
             notificationsTable.setItems(allNotifications);
-            return;
+        } else {
+            ObservableList<Notification> filtered = FXCollections.observableArrayList();
+            String lower = filter.toLowerCase();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            for (Notification n : allNotifications) {
+                if (n.getNotificationType().toLowerCase().contains(lower)
+                        || n.getDescription().toLowerCase().contains(lower)
+                        || sdf.format(n.getCreatedAt()).toLowerCase().contains(lower)) {
+                    filtered.add(n);
+                }
+            }
+            notificationsTable.setItems(filtered);
         }
+    }
 
-        ObservableList<NotificationItem> filtered = allNotifications.filtered(item ->
-                item.getName().toLowerCase().contains(filter.toLowerCase()) ||
-                        item.getDescription().toLowerCase().contains(filter.toLowerCase()) ||
-                        item.getDate().toLowerCase().contains(filter.toLowerCase())
-        );
+    private void openNotificationDetails(Notification n) {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/fxml/user/notificationDetails.fxml"));
+            Parent root = loader.load();
+            NotificationDetailsController ctrl = loader.getController();
+            ctrl.setNotification(n);
 
-        notificationsTable.setItems(filtered);
+            if (!n.isRead()) {
+                notificationDAO.updateReadStatus(n.getId(), true);
+                n.setRead(true);
+                notificationsTable.refresh();
+            }
+
+            Stage st = new Stage();
+            st.initModality(Modality.APPLICATION_MODAL);
+            st.setScene(new Scene(root));
+            st.setTitle("Powiadomienie");
+            st.showAndWait();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    // ─── Przyciski nawigacji ─────────────────────────────────────────────────
+
+    @FXML
+    private void goToNotifications() throws IOException {
+        // Poprawna ścieżka do pliku FXML z listą powiadomień
+        loadView("/fxml/notifications.fxml");
     }
 
     @FXML
@@ -156,6 +185,7 @@ public class UserDashboardController {
     private void goToAllTasks() throws IOException {
         loadView("/fxml/user/tasks.fxml");
     }
+
 
     @FXML
     private void goToSettings() throws IOException {
@@ -170,12 +200,13 @@ public class UserDashboardController {
     private void loadView(String fxmlPath) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
         Parent view = loader.load();
+
         Object controller = loader.getController();
-        if (controller instanceof pl.rozowi.app.controllers.SettingsController) {
-            ((pl.rozowi.app.controllers.SettingsController) controller).setUser(MainApplication.getCurrentUser());
+        if (controller instanceof SettingsController) {
+            ((SettingsController) controller).setUser(MainApplication.getCurrentUser());
         }
-        mainPane.getChildren().clear();
-        mainPane.getChildren().add(view);
+
+        mainPane.getChildren().setAll(view);
         AnchorPane.setTopAnchor(view, 0.0);
         AnchorPane.setBottomAnchor(view, 0.0);
         AnchorPane.setLeftAnchor(view, 0.0);
