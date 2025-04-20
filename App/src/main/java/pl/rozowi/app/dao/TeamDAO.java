@@ -34,4 +34,17 @@ public class TeamDAO {
         }
         return teams;
     }
+
+    public String getTeamNameById(int teamId) {
+        String sql = "SELECT team_name FROM teams WHERE id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, teamId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) return rs.getString("team_name");
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return "–";
+    }
 }
