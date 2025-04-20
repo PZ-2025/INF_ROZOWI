@@ -3,14 +3,130 @@ package pl.rozowi.app.dao;
 import pl.rozowi.app.database.DatabaseManager;
 import pl.rozowi.app.models.Task;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TaskDAO {
+
+    public List<Task> getTasksForLeader(int leaderId) {
+        List<Task> tasks = new ArrayList<>();
+        String sql =
+                "SELECT t.id,\n" +
+                        "       t.project_id,\n" +
+                        "       t.team_id,\n" +
+                        "       ta.user_id           AS assigned_to,\n" +
+                        "       t.title,\n" +
+                        "       t.description,\n" +
+                        "       t.status,\n" +
+                        "       t.priority,\n" +
+                        "       t.start_date,\n" +
+                        "       t.end_date,\n" +
+                        "       teams.team_name      AS team_name,\n" +
+                        "       u.email              AS assigned_email\n" +
+                        "FROM task_assignments ta\n" +
+                        "JOIN tasks t ON ta.task_id = t.id\n" +
+                        "JOIN team_members tm ON t.team_id = tm.team_id\n" +
+                        "     AND tm.user_id = ? AND tm.is_leader = TRUE\n" +
+                        "JOIN teams ON t.team_id = teams.id\n" +
+                        "JOIN users u ON ta.user_id = u.id\n" +
+                        "ORDER BY t.id";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, leaderId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Task task = new Task();
+                    task.setId(rs.getInt("id"));
+                    task.setProjectId(rs.getInt("project_id"));
+                    task.setTeamId(rs.getInt("team_id"));
+                    task.setAssignedTo(rs.getInt("assigned_to"));
+                    task.setTitle(rs.getString("title"));
+                    task.setDescription(rs.getString("description"));
+                    task.setStatus(rs.getString("status"));
+                    task.setPriority(rs.getString("priority"));
+                    task.setStartDate(rs.getString("start_date"));
+                    task.setEndDate(rs.getString("end_date"));
+                    task.setTeamName(rs.getString("team_name"));
+                    task.setAssignedEmail(rs.getString("assigned_email"));
+                    tasks.add(task);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return tasks;
+    }
+
+    /**
+     * Wstawia nowe zadanie i pobiera wygenerowane ID
+     */
+    public boolean insertTask(Task task) {
+        String sql =
+                "INSERT INTO tasks (project_id, team_id, title, description, status, priority, start_date, end_date) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            stmt.setInt(1, task.getProjectId());
+            stmt.setInt(2, task.getTeamId());
+            stmt.setString(3, task.getTitle());
+            stmt.setString(4, task.getDescription());
+            stmt.setString(5, task.getStatus());
+            stmt.setString(6, task.getPriority());
+            stmt.setString(7, task.getStartDate());
+            stmt.setString(8, task.getEndDate());
+
+            int affected = stmt.executeUpdate();
+            if (affected == 0) return false;
+
+            try (ResultSet keys = stmt.getGeneratedKeys()) {
+                if (keys.next()) {
+                    task.setId(keys.getInt(1));
+                }
+            }
+            return true;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean updateTaskStatus(int taskId, String newStatus) {
+        String sql = "UPDATE tasks SET status = ? WHERE id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, newStatus);
+            stmt.setInt(2, taskId);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean assignTask(int taskId, int userId) {
+        // usuwamy poprzednie assignment i wstawiamy nowe
+        try (Connection conn = DatabaseManager.getConnection()) {
+            conn.setAutoCommit(false);
+            try (PreparedStatement del = conn.prepareStatement(
+                    "DELETE FROM task_assignments WHERE task_id = ?");
+                 PreparedStatement ins = conn.prepareStatement(
+                         "INSERT INTO task_assignments (task_id, user_id) VALUES (?, ?)")) {
+                del.setInt(1, taskId);
+                del.executeUpdate();
+                ins.setInt(1, taskId);
+                ins.setInt(2, userId);
+                ins.executeUpdate();
+                conn.commit();
+                return true;
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
 
     public List<Task> getTasksForUser(int userId) {
         List<Task> tasks = new ArrayList<>();

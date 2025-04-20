@@ -3,8 +3,13 @@ package pl.rozowi.app.controllers;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import pl.rozowi.app.MainApplication;
 import pl.rozowi.app.dao.TaskDAO;
+import pl.rozowi.app.dao.TeamMemberDAO;
 import pl.rozowi.app.models.Task;
+import pl.rozowi.app.models.User;
+
+import java.util.List;
 
 public class TaskDetailsController {
 
@@ -26,11 +31,15 @@ public class TaskDetailsController {
     @FXML
     private ComboBox<String> statusComboBox;
     @FXML
+    private ComboBox<User> assigneeComboBox;
+    @FXML
     private Button saveButton;
     @FXML
     private Button cancelButton;
 
     private Task task;
+    private final TaskDAO taskDAO = new TaskDAO();
+    private final TeamMemberDAO teamMemberDAO = new TeamMemberDAO();
 
     public void setTask(Task task) {
         this.task = task;
@@ -48,23 +57,48 @@ public class TaskDetailsController {
 
         statusComboBox.getItems().setAll("Nowe", "W toku", "Zakończone");
         statusComboBox.setValue(task.getStatus());
+
+        User current = MainApplication.getCurrentUser();
+        boolean isLeader = current.getRoleId() == 3;
+        statusComboBox.setDisable(!isLeader);
+
+        if (assigneeComboBox != null) {
+            if (isLeader) {
+                List<User> members = teamMemberDAO.getTeamMembers(task.getTeamId());
+                assigneeComboBox.getItems().setAll(members);
+                members.stream()
+                        .filter(u -> u.getId() == task.getAssignedTo())
+                        .findFirst()
+                        .ifPresent(assigneeComboBox::setValue);
+            }
+            assigneeComboBox.setDisable(!isLeader);
+        }
+
+        saveButton.setVisible(isLeader);
     }
 
     @FXML
     private void handleSave() {
-        task.setStatus(statusComboBox.getValue());
+        if (MainApplication.getCurrentUser().getRoleId() != 3) {
+            closeWindow();
+            return;
+        }
 
-        TaskDAO taskDAO = new TaskDAO();
-        boolean success = taskDAO.updateTask(task);
+        String newStatus = statusComboBox.getValue();
+        boolean okStatus = taskDAO.updateTaskStatus(task.getId(), newStatus);
 
-        if (success) {
+        boolean okAssign = true;
+        if (assigneeComboBox != null) {
+            User newAssignee = assigneeComboBox.getValue();
+            if (newAssignee != null) {
+                okAssign = taskDAO.assignTask(task.getId(), newAssignee.getId());
+            }
+        }
+
+        if (okStatus && okAssign) {
             closeWindow();
         } else {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Błąd");
-            alert.setHeaderText(null);
-            alert.setContentText("Nie udało się zapisać zmian w zadaniu.");
-            alert.showAndWait();
+            new Alert(Alert.AlertType.ERROR, "Nie udało się zapisać zmian w zadaniu.").showAndWait();
         }
     }
 
@@ -74,7 +108,7 @@ public class TaskDetailsController {
     }
 
     private void closeWindow() {
-        Stage stage = (Stage) saveButton.getScene().getWindow();
+        Stage stage = (Stage) cancelButton.getScene().getWindow();
         stage.close();
     }
 }

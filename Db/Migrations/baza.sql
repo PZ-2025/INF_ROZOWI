@@ -239,7 +239,6 @@ ALTER TABLE `teams`
 -- Indeksy dla tabeli `team_members`
 --
 ALTER TABLE `team_members`
-  ADD PRIMARY KEY (`team_id`,`user_id`),
   ADD KEY `user_id` (`user_id`);
 
 --
