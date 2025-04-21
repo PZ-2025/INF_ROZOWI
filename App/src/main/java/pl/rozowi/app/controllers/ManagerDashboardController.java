@@ -7,6 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import pl.rozowi.app.MainApplication;
+import pl.rozowi.app.models.User;
 
 import java.io.IOException;
 
@@ -21,7 +22,6 @@ public class ManagerDashboardController {
 
     @FXML
     private void initialize() {
-        // Na starcie ładujemy domyślny widok – "Zadania"
         try {
             goToTasks();
         } catch (IOException e) {
@@ -29,31 +29,61 @@ public class ManagerDashboardController {
         }
     }
 
-    public void setManagerName(String managerName) {
-        welcomeLabel.setText("Panel Kierownika: " + managerName);
-    }
+    public void setUser(User user) throws IOException {
+        welcomeLabel.setText("Witaj, " + user.getName());
 
-    @FXML
-    private void goToTasks() throws IOException {
-        // Ładujemy widok z zadaniami (dla kierownika)
-        loadView("/fxml/manager/managerTasks.fxml");
-    }
+        String def = user.getDefaultView();
+        if (def != null) {
+            switch (def) {
+                case "Pracownicy":
+                    goToEmployees();
+                    break;
+                case "Zadania":
+                    goToTasks();
+                    break;
+                case "Ustawienia":
+                    goToSettings();
+                    break;
+                case "Zespoły":
+                    goToTeams();
+                    break;
+                default:
+                    goToProjects();
+                    break;
+            }
+            return;
+        }
+        goToProjects();
 
-    @FXML
-    private void goToReports() throws IOException {
-        // Ładujemy widok raportów
-        loadView("/fxml/manager/managerReports.fxml");
     }
 
     @FXML
     private void goToEmployees() throws IOException {
-        // Ładujemy widok pracowników
         loadView("/fxml/manager/managerEmployees.fxml");
     }
 
     @FXML
+    private void goToTasks() throws IOException {
+        loadView("/fxml/manager/managerTasks.fxml");
+    }
+
+    @FXML
+    private void goToTeams() throws IOException {
+        loadView("/fxml/manager/managerTeams.fxml");
+    }
+
+    @FXML
+    private void goToProjects() throws IOException {
+        loadView("/fxml/manager/managerProjects.fxml");
+    }
+
+    @FXML
+    private void goToReports() throws IOException {
+        loadView("/fxml/manager/managerReports.fxml");
+    }
+
+    @FXML
     private void goToSettings() throws IOException {
-        // Używamy widoku ustawień (możesz użyć tego samego co w panelu użytkownika)
         loadView("/fxml/user/settings.fxml");
     }
 
@@ -67,7 +97,6 @@ public class ManagerDashboardController {
         Parent view = loader.load();
         mainPane.getChildren().clear();
         mainPane.getChildren().add(view);
-        // Ustawienie widoku, aby wypełniał cały obszar mainPane
         AnchorPane.setTopAnchor(view, 0.0);
         AnchorPane.setBottomAnchor(view, 0.0);
         AnchorPane.setLeftAnchor(view, 0.0);

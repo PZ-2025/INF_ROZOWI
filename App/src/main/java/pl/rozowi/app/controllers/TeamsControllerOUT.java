@@ -3,7 +3,7 @@ package pl.rozowi.app.controllers;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
-public class TeamsController {
+public class TeamsControllerOUT {
 
     @FXML
     private TextField searchField;

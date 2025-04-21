@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="10" xmlns:fx="http://javafx.com/fxml" fx:controller="pl.rozowi.app.controllers.ManagerTeamsController"
+      style="-fx-padding:10">
+    <HBox spacing="10">
+        <Button text="Dodaj zespół" onAction="#onAddTeam"/>
+        <Button text="Edytuj wybrany" onAction="#onEditTeam"/>
+        <Button text="Przypisz członków" onAction="#onAssignMembers"/>
+        <Pane HBox.hgrow="ALWAYS"/>
+    </HBox>
+    <TableView fx:id="teamsTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn text="ID" prefWidth="50" cellValueFactory="new PropertyValueFactory('id')"/>
+            <TableColumn text="Nazwa" prefWidth="300" cellValueFactory="new PropertyValueFactory('name')"/>
+        </columns>
+    </TableView>
+</VBox>

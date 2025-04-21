@@ -9,6 +9,46 @@ import java.util.List;
 
 public class TaskDAO {
 
+    public List<Task> getTasksByProjectId(int projectId) {
+        List<Task> tasks = new ArrayList<>();
+        String sql = """
+                    SELECT id,
+                           project_id,
+                           team_id,
+                           title,
+                           description,
+                           status,
+                           priority,
+                           start_date,
+                           end_date
+                      FROM tasks
+                     WHERE project_id = ?
+                """;
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, projectId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Task t = new Task();
+                    t.setId(rs.getInt("id"));
+                    t.setProjectId(rs.getInt("project_id"));
+                    t.setTeamId(rs.getInt("team_id"));
+                    t.setTitle(rs.getString("title"));
+                    t.setDescription(rs.getString("description"));
+                    t.setStatus(rs.getString("status"));
+                    t.setPriority(rs.getString("priority"));
+                    t.setStartDate(rs.getString("start_date"));
+                    t.setEndDate(rs.getString("end_date"));
+                    tasks.add(t);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return tasks;
+    }
+
     public List<Task> getTasksForLeader(int leaderId) {
         List<Task> tasks = new ArrayList<>();
         String sql =
@@ -59,9 +99,6 @@ public class TaskDAO {
         return tasks;
     }
 
-    /**
-     * Wstawia nowe zadanie i pobiera wygenerowane ID
-     */
     public boolean insertTask(Task task) {
         String sql =
                 "INSERT INTO tasks (project_id, team_id, title, description, status, priority, start_date, end_date) " +

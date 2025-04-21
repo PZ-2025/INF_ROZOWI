@@ -68,8 +68,18 @@ public class LoginController {
 
         try {
             Stage stage = (Stage) usernameField.getScene().getWindow();
-
             switch (user.getRoleId()) {
+                case 2 -> {  // Manager-Kierownik
+                    FXMLLoader loader = new FXMLLoader(
+                            getClass().getResource("/fxml/manager/managerDashboard.fxml"));
+                    Parent root = loader.load();
+                    ManagerDashboardController ctrl =
+                            loader.getController();
+                    ctrl.setUser(user);
+                    stage.setScene(new Scene(root));
+                    stage.setTitle("TaskApp - Kierownik");
+                    stage.show();
+                }
                 case 3 -> {  // Team Leader
                     FXMLLoader loader = new FXMLLoader(
                             getClass().getResource("/fxml/teamleader/teamLeaderDashboard.fxml"));
@@ -94,8 +104,7 @@ public class LoginController {
                 }
                 case 1 -> MainApplication.switchScene(
                         "/fxml/admin/adminDashboard.fxml", "TaskApp - Admin");
-                case 2 -> MainApplication.switchScene(
-                        "/fxml/manager/managerDashboard.fxml", "TaskApp - Manager");
+
                 default -> MainApplication.switchScene(
                         "/fxml/user/userDashboard.fxml", "TaskApp - Dashboard");
             }

@@ -47,9 +47,9 @@ public class MainApplication extends Application {
             ((pl.rozowi.app.controllers.UserDashboardController) controller).setUser(currentUser);
         } else if (controller instanceof pl.rozowi.app.controllers.AdminDashboardController) {
             ((pl.rozowi.app.controllers.AdminDashboardController) controller).setUser(currentUser);
+        } else if (controller instanceof pl.rozowi.app.controllers.ManagerDashboardController) {
+            ((pl.rozowi.app.controllers.ManagerDashboardController) controller).setUser(currentUser);
         }
-//        else if (controller instanceof pl.rozowi.app.controllers.ManagerDashboardController) {
-//            ((pl.rozowi.app.controllers.ManagerDashboardController) controller).setUser(currentUser);
 //        } else if (controller instanceof pl.rozowi.app.controllers.TeamLeaderDashboardController) {
 //            ((pl.rozowi.app.controllers.TeamLeaderDashboardController) controller).setUser(currentUser);
 //        }

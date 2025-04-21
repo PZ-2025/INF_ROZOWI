@@ -8,6 +8,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,11 +17,6 @@ public class UserDAO {
 
     private static final Logger LOGGER = Logger.getLogger(UserDAO.class.getName());
 
-    /**
-     * Wstawia nowego użytkownika do bazy.
-     * @param user obiekt User zawierający dane do rejestracji
-     * @return true, jeśli wstawienie przebiegło pomyślnie, w przeciwnym razie false
-     */
     public boolean insertUser(User user) {
         String sql = "INSERT INTO users (name, last_name, password, email, role_id, group_id, password_hint) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
@@ -71,12 +68,6 @@ public class UserDAO {
         return null;
     }
 
-
-    /**
-     * Aktualizuje dane użytkownika oraz powiązane ustawienia.
-     * @param user obiekt User z danymi do aktualizacji
-     * @return true, jeśli aktualizacja przebiegła pomyślnie, w przeciwnym razie false
-     */
     public boolean updateUser(User user) {
         String sqlUser = "UPDATE users SET email = ?, password = ?, password_hint = ? WHERE id = ?";
         String sqlSettings = "UPDATE settings SET theme = ?, default_view = ? WHERE user_id = ?";
@@ -84,13 +75,11 @@ public class UserDAO {
              PreparedStatement stmtUser = conn.prepareStatement(sqlUser);
              PreparedStatement stmtSettings = conn.prepareStatement(sqlSettings)) {
 
-            // Aktualizacja danych użytkownika
             stmtUser.setString(1, user.getEmail());
             stmtUser.setString(2, user.getPassword());
             stmtUser.setString(3, user.getPasswordHint());
             stmtUser.setInt(4, user.getId());
 
-            // Aktualizacja ustawień użytkownika (jeśli występują)
             if (user.getTheme() != null) {
                 stmtSettings.setString(1, user.getTheme());
             } else {
@@ -111,5 +100,47 @@ public class UserDAO {
             LOGGER.log(Level.SEVERE, "Error updating user", ex);
         }
         return false;
+    }
+
+    public List<User> getAllUsers() throws SQLException {
+        List<User> list = new ArrayList<>();
+        String sql = "SELECT * FROM users";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                User u = new User();
+                u.setId(rs.getInt("id"));
+                u.setName(rs.getString("name"));
+                u.setLastName(rs.getString("last_name"));
+                u.setEmail(rs.getString("email"));
+                // ...
+                list.add(u);
+            }
+        }
+        return list;
+    }
+
+    public List<User> getAllManagers() {
+        List<User> list = new ArrayList<>();
+        String sql = "SELECT id, name, last_name, email, role_id " +
+                "FROM users " +
+                "WHERE role_id = 2";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                User u = new User();
+                u.setId(rs.getInt("id"));
+                u.setName(rs.getString("name"));
+                u.setLastName(rs.getString("last_name"));
+                u.setEmail(rs.getString("email"));
+                u.setRoleId(rs.getInt("role_id"));
+                list.add(u);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return list;
     }
 }
