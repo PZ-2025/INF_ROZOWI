@@ -55,13 +55,19 @@ public class TaskDetailsController {
         startDateLabel.setText("Start: " + task.getStartDate());
         endDateLabel.setText("Koniec: " + task.getEndDate());
 
+        // status
         statusComboBox.getItems().setAll("Nowe", "W toku", "Zakończone");
         statusComboBox.setValue(task.getStatus());
 
+        // kto może edytować
         User current = MainApplication.getCurrentUser();
         boolean isLeader = current.getRoleId() == 3;
-        statusComboBox.setDisable(!isLeader);
+        boolean isEmployee = current.getRoleId() == 4;
 
+        // status edytowalny dla leadera i pracownika
+        statusComboBox.setDisable(!(isLeader || isEmployee));
+
+        // assignee tylko dla leadera
         if (assigneeComboBox != null) {
             if (isLeader) {
                 List<User> members = teamMemberDAO.getTeamMembers(task.getTeamId());
@@ -74,23 +80,33 @@ public class TaskDetailsController {
             assigneeComboBox.setDisable(!isLeader);
         }
 
-        saveButton.setVisible(isLeader);
+        // przycisk Zapisz widoczny dla leadera i pracownika
+        saveButton.setVisible(isLeader || isEmployee);
     }
 
     @FXML
     private void handleSave() {
-        if (MainApplication.getCurrentUser().getRoleId() != 3) {
+        User current = MainApplication.getCurrentUser();
+        int role = current.getRoleId();
+
+        // tylko leader (3) i pracownik (4) mogą zapisać zmiany
+        if (role != 3 && role != 4) {
             closeWindow();
             return;
         }
 
-        String newStatus = statusComboBox.getValue();
-        boolean okStatus = taskDAO.updateTaskStatus(task.getId(), newStatus);
+        boolean okStatus = true, okAssign = true;
 
-        boolean okAssign = true;
-        if (assigneeComboBox != null) {
+        // zapis statusu
+        String newStatus = statusComboBox.getValue();
+        if (newStatus != null && !newStatus.equals(task.getStatus())) {
+            okStatus = taskDAO.updateTaskStatus(task.getId(), newStatus);
+        }
+
+        // jeśli leader, to też zapis przypisania
+        if (role == 3 && assigneeComboBox != null) {
             User newAssignee = assigneeComboBox.getValue();
-            if (newAssignee != null) {
+            if (newAssignee != null && newAssignee.getId() != task.getAssignedTo()) {
                 okAssign = taskDAO.assignTask(task.getId(), newAssignee.getId());
             }
         }
@@ -98,7 +114,9 @@ public class TaskDetailsController {
         if (okStatus && okAssign) {
             closeWindow();
         } else {
-            new Alert(Alert.AlertType.ERROR, "Nie udało się zapisać zmian w zadaniu.").showAndWait();
+            new Alert(Alert.AlertType.ERROR,
+                    "Nie udało się zapisać zmian w zadaniu.")
+                    .showAndWait();
         }
     }
 

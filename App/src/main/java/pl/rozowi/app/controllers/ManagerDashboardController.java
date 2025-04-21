@@ -20,8 +20,11 @@ public class ManagerDashboardController {
     @FXML
     private AnchorPane mainPane;
 
+    private User currentUser;
+
     @FXML
     private void initialize() {
+        // Na starcie ładujemy domyślny widok – "Zadania"
         try {
             goToTasks();
         } catch (IOException e) {
@@ -29,7 +32,9 @@ public class ManagerDashboardController {
         }
     }
 
+
     public void setUser(User user) throws IOException {
+        this.currentUser = user;
         welcomeLabel.setText("Witaj, " + user.getName());
 
         String def = user.getDefaultView();
@@ -37,24 +42,22 @@ public class ManagerDashboardController {
             switch (def) {
                 case "Pracownicy":
                     goToEmployees();
-                    break;
+                    return;
                 case "Zadania":
                     goToTasks();
-                    break;
+                    return;
                 case "Ustawienia":
                     goToSettings();
-                    break;
+                    return;
                 case "Zespoły":
                     goToTeams();
-                    break;
+                    return;
                 default:
                     goToProjects();
-                    break;
+                    return;
             }
-            return;
         }
         goToProjects();
-
     }
 
     @FXML
@@ -95,6 +98,12 @@ public class ManagerDashboardController {
     private void loadView(String fxmlPath) throws IOException {
         FXMLLoader loader = new FXMLLoader(MainApplication.class.getResource(fxmlPath));
         Parent view = loader.load();
+
+        Object controller = loader.getController();
+        if (controller instanceof SettingsController) {
+            ((SettingsController) controller).setUser(currentUser);
+        }
+
         mainPane.getChildren().clear();
         mainPane.getChildren().add(view);
         AnchorPane.setTopAnchor(view, 0.0);

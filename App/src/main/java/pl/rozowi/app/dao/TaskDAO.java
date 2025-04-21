@@ -49,6 +49,52 @@ public class TaskDAO {
         return tasks;
     }
 
+    public List<Task> getTasksByTeamId(int teamId) {
+        List<Task> tasks = new ArrayList<>();
+        String sql = """
+                    SELECT t.id,
+                           t.project_id,
+                           t.team_id,
+                           t.title,
+                           t.description,
+                           t.status,
+                           t.priority,
+                           t.start_date,
+                           t.end_date,
+                           u.email           AS assigned_email,
+                           teams.team_name   AS team_name
+                      FROM tasks t
+                      JOIN task_assignments ta ON t.id = ta.task_id
+                      JOIN users u             ON ta.user_id = u.id
+                      JOIN teams               ON t.team_id = teams.id
+                     WHERE t.team_id = ?
+                """;
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, teamId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Task t = new Task();
+                    t.setId(rs.getInt("id"));
+                    t.setProjectId(rs.getInt("project_id"));
+                    t.setTeamId(rs.getInt("team_id"));
+                    t.setTitle(rs.getString("title"));
+                    t.setDescription(rs.getString("description"));
+                    t.setStatus(rs.getString("status"));
+                    t.setPriority(rs.getString("priority"));
+                    t.setStartDate(rs.getString("start_date"));
+                    t.setEndDate(rs.getString("end_date"));
+                    t.setAssignedEmail(rs.getString("assigned_email"));
+                    t.setTeamName(rs.getString("team_name"));
+                    tasks.add(t);
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return tasks;
+    }
+
     public List<Task> getTasksForLeader(int leaderId) {
         List<Task> tasks = new ArrayList<>();
         String sql =
