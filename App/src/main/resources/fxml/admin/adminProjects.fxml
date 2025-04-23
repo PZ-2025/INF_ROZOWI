@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="pl.rozowi.app.controllers.AdminProjectsController"
+            style="-fx-background-color: #1E1E2F;">
+    <HBox layoutX="20" layoutY="20" spacing="10">
+        <Label text="Projekty" style="-fx-font-size: 20px; -fx-text-fill: white;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Dodaj projekt" onAction="#onAddProject"
+                style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+        <Button text="Edytuj projekt" onAction="#onEditProject"
+                style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+        <Button text="Usuń projekt" onAction="#onDeleteProject"
+                style="-fx-background-color: #FF5555; -fx-text-fill: white;"/>
+    </HBox>
+
+    <TableView fx:id="projectsTable" layoutX="20" layoutY="60"
+               style="-fx-pref-width: 700; -fx-pref-height: 500;">
+        <columns>
+            <TableColumn fx:id="colId" text="ID" style="-fx-pref-width: 50;"/>
+            <TableColumn fx:id="colName" text="Nazwa" style="-fx-pref-width: 150;"/>
+            <TableColumn fx:id="colDesc" text="Opis" style="-fx-pref-width: 200;"/>
+            <TableColumn fx:id="colStart" text="Data rozpoczęcia" style="-fx-pref-width: 120;"/>
+            <TableColumn fx:id="colEnd" text="Data zakończenia" style="-fx-pref-width: 120;"/>
+            <TableColumn fx:id="colManager" text="Manager" style="-fx-pref-width: 100;"/>
+            <TableColumn fx:id="colTeam" text="Zespół" style="-fx-pref-width: 100;"/>
+        </columns>
+    </TableView>
+</AnchorPane>

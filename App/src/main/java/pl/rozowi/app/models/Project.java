@@ -16,6 +16,7 @@ public class Project {
     private final ObjectProperty<LocalDate> startDate = new SimpleObjectProperty<>();
     private final ObjectProperty<LocalDate> endDate = new SimpleObjectProperty<>();
     private final IntegerProperty managerId = new SimpleIntegerProperty();
+    private final IntegerProperty teamId = new SimpleIntegerProperty();
 
     public int getId() {
         return id.get();
@@ -65,6 +66,14 @@ public class Project {
         this.managerId.set(managerId);
     }
 
+    public int getTeamId() {
+        return teamId.get();
+    }
+
+    public void setTeamId(int teamId) {
+        this.teamId.set(teamId);
+    }
+
     public IntegerProperty idProperty() {
         return id;
     }
@@ -87,6 +96,10 @@ public class Project {
 
     public IntegerProperty managerIdProperty() {
         return managerId;
+    }
+
+    public IntegerProperty teamIdProperty() {
+        return teamId;
     }
 
     public String getName() {

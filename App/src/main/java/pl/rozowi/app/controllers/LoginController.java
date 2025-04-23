@@ -62,54 +62,52 @@ public class LoginController {
         Session.currentUserId = user.getId();
         Session.currentUserTeam = String.valueOf(loginService.findTeamIdForUser(user.getId()));
 
-        Alert ok = new Alert(Alert.AlertType.INFORMATION, "Logowanie udane!");
-        ok.setHeaderText(null);
-        ok.showAndWait();
-
         try {
             Stage stage = (Stage) usernameField.getScene().getWindow();
             switch (user.getRoleId()) {
-                case 2 -> {  // Manager-Kierownik
-                    FXMLLoader loader = new FXMLLoader(
-                            getClass().getResource("/fxml/manager/managerDashboard.fxml"));
+                case 1 -> {  // Administrator
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/admin/adminDashboard.fxml"));
                     Parent root = loader.load();
-                    ManagerDashboardController ctrl =
-                            loader.getController();
+                    AdminDashboardController ctrl = loader.getController();
+                    ctrl.setUser(user);
+                    stage.setScene(new Scene(root));
+                    stage.setTitle("TaskApp - Administrator");
+                    stage.show();
+                }
+                case 2 -> {  // Manager-Kierownik
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/manager/managerDashboard.fxml"));
+                    Parent root = loader.load();
+                    ManagerDashboardController ctrl = loader.getController();
                     ctrl.setUser(user);
                     stage.setScene(new Scene(root));
                     stage.setTitle("TaskApp - Kierownik");
                     stage.show();
                 }
                 case 3 -> {  // Team Leader
-                    FXMLLoader loader = new FXMLLoader(
-                            getClass().getResource("/fxml/teamleader/teamLeaderDashboard.fxml"));
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/teamleader/teamLeaderDashboard.fxml"));
                     Parent root = loader.load();
-                    TeamLeaderDashboardController ctrl =
-                            loader.getController();
+                    TeamLeaderDashboardController ctrl = loader.getController();
                     ctrl.setUser(user);
                     stage.setScene(new Scene(root));
                     stage.setTitle("TaskApp - Team Leader");
                     stage.show();
                 }
                 case 4 -> {  // User
-                    FXMLLoader loader = new FXMLLoader(
-                            getClass().getResource("/fxml/user/userDashboard.fxml"));
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/user/userDashboard.fxml"));
                     Parent root = loader.load();
-                    UserDashboardController ctrl =
-                            loader.getController();
+                    UserDashboardController ctrl = loader.getController();
                     ctrl.setUser(user);
                     stage.setScene(new Scene(root));
                     stage.setTitle("TaskApp - User");
                     stage.show();
                 }
-                case 1 -> MainApplication.switchScene(
-                        "/fxml/admin/adminDashboard.fxml", "TaskApp - Admin");
-
-                default -> MainApplication.switchScene(
-                        "/fxml/user/userDashboard.fxml", "TaskApp - Dashboard");
+                default -> MainApplication.switchScene("/fxml/user/userDashboard.fxml", "TaskApp - Dashboard");
             }
         } catch (IOException e) {
             e.printStackTrace();
+            Alert err = new Alert(Alert.AlertType.ERROR, "Błąd przejścia do panelu: " + e.getMessage());
+            err.setHeaderText(null);
+            err.showAndWait();
         }
     }
 
@@ -118,7 +116,7 @@ public class LoginController {
         MainApplication.switchScene("/fxml/register.fxml", "TaskApp - Rejestracja");
     }
 
-    @FXML
+@FXML
     private void forgotPassword() {
         String email = usernameField.getText();
         if (email == null || email.isEmpty()) {

@@ -16,6 +16,19 @@ public class NotificationDAO {
         n.setDescription(rs.getString("content"));
         n.setCreatedAt(rs.getTimestamp("created_at"));
         n.setRead(rs.getBoolean("is_read"));
+        // Ustawiamy domyślny typ powiadomienia jeśli nie ma go w bazie
+        n.setNotificationType("Powiadomienie systemowe");
+
+        // Próbujemy pobrać typ powiadomienia jeśli istnieje kolumna
+        try {
+            String type = rs.getString("notification_type");
+            if (type != null && !type.isEmpty()) {
+                n.setNotificationType(type);
+            }
+        } catch (SQLException ex) {
+            // Kolumna może nie istnieć, ignorujemy błąd
+        }
+
         return n;
     }
 
@@ -79,4 +92,34 @@ public class NotificationDAO {
             return false;
         }
     }
+
+    /**
+     * Dodaje nowe powiadomienie do bazy danych
+     */
+public boolean addNotification(int userId, String content, String notificationType) {
+    String sql = "INSERT INTO notifications (user_id, content, notification_type, is_read, created_at) VALUES (?, ?, ?, FALSE, NOW())";
+    try (Connection conn = DatabaseManager.getConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, userId);
+        ps.setString(2, content);
+        ps.setString(3, notificationType);
+        return ps.executeUpdate() > 0;
+    } catch (SQLException ex) {
+        // Jeśli kolumna notification_type nie istnieje, spróbuj prostszą wersję
+        try {
+            String simpleSql = "INSERT INTO notifications (user_id, content, is_read, created_at) VALUES (?, ?, FALSE, NOW())";
+            try (Connection conn = DatabaseManager.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(simpleSql)) {
+                ps.setInt(1, userId);
+                ps.setString(2, content);
+                return ps.executeUpdate() > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        // Przesunąłem ten return poza blok try-catch
+        ex.printStackTrace();
+        return false;
+    }
+}
 }

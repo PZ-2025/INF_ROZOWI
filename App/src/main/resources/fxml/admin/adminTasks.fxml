@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="pl.rozowi.app.controllers.AdminTasksController"
+            style="-fx-background-color: #1E1E2F;">
+    <HBox layoutX="20" layoutY="20" spacing="10">
+        <Label text="Zadania" style="-fx-font-size: 20px; -fx-text-fill: white;"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <TextField fx:id="searchField" promptText="Szukaj zadania..." style="-fx-pref-width: 200px;"/>
+        <Button fx:id="searchButton" text="🔍"
+                style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+        <Button text="Dodaj zadanie" onAction="#onAddTask"
+                style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+        <Button text="Edytuj zadanie" onAction="#onEditTask"
+                style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+        <Button text="Usuń zadanie" onAction="#onDeleteTask"
+                style="-fx-background-color: #FF5555; -fx-text-fill: white;"/>
+    </HBox>
+
+    <TableView fx:id="tasksTable" layoutX="20" layoutY="60"
+               style="-fx-pref-width: 700; -fx-pref-height: 500;">
+        <columns>
+            <TableColumn fx:id="colId" text="ID" style="-fx-pref-width: 40;"/>
+            <TableColumn fx:id="colTitle" text="Tytuł" style="-fx-pref-width: 150;"/>
+            <TableColumn fx:id="colDescription" text="Opis" style="-fx-pref-width: 200;"/>
+            <TableColumn fx:id="colStatus" text="Status" style="-fx-pref-width: 100;"/>
+            <TableColumn fx:id="colPriority" text="Priorytet" style="-fx-pref-width: 80;"/>
+            <TableColumn fx:id="colStartDate" text="Data rozpoczęcia" style="-fx-pref-width: 120;"/>
+            <TableColumn fx:id="colEndDate" text="Termin" style="-fx-pref-width: 120;"/>
+            <TableColumn fx:id="colProjectId" text="Projekt" style="-fx-pref-width: 80;"/>
+            <TableColumn fx:id="colTeamId" text="Zespół" style="-fx-pref-width: 80;"/>
+            <TableColumn fx:id="colAssignedTo" text="Przypisane do" style="-fx-pref-width: 150;"/>
+        </columns>
+    </TableView>
+</AnchorPane>
