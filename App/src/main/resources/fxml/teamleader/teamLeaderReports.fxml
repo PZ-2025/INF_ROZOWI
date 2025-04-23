@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="15" xmlns="http://javafx.com/javafx/11.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="pl.rozowi.app.controllers.ReportsController">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20" />
+    </padding>
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Raporty systemowe" style="-fx-font-size: 20px; -fx-font-weight: bold;" />
+        <Region HBox.hgrow="ALWAYS" />
+        <Button fx:id="generateButton" text="Generuj nowy raport"
+                style="-fx-background-color: #4CAF50; -fx-text-fill: white;" />
+        <Button fx:id="refreshButton" text="Odśwież"
+                style="-fx-background-color: #2196F3; -fx-text-fill: white;" />
+        <Button fx:id="viewReportButton" text="Wyświetl raport"
+                style="-fx-background-color: #FFC107; -fx-text-fill: white;" />
+    </HBox>
+
+    <TableView fx:id="reportsTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colId" text="ID" prefWidth="50" />
+            <TableColumn fx:id="colName" text="Nazwa raportu" prefWidth="200" />
+            <TableColumn fx:id="colType" text="Typ" prefWidth="150" />
+            <TableColumn fx:id="colDate" text="Data utworzenia" prefWidth="150" />
+            <TableColumn fx:id="colCreatedBy" text="Utworzone przez" prefWidth="100" />
+        </columns>
+    </TableView>
+
+    <Label text="Wybierz raport z listy i kliknij 'Wyświetl raport' aby otworzyć plik PDF." />
+
+</VBox>
