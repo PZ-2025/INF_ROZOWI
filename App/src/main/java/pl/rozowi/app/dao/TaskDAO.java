@@ -297,40 +297,4 @@ public class TaskDAO {
         return false;
     }
 
-    public List<Task> getAllTasks() {
-    List<Task> tasks = new ArrayList<>();
-    String sql = """
-            SELECT t.id, t.project_id, t.team_id, t.title, t.description,
-                   t.status, t.priority, t.start_date, t.end_date,
-                   u.email AS assigned_email, tm.team_name
-            FROM tasks t
-            LEFT JOIN task_assignments ta ON t.id = ta.task_id
-            LEFT JOIN users u ON ta.user_id = u.id
-            LEFT JOIN teams tm ON t.team_id = tm.id
-            ORDER BY t.id
-            """;
-    try (Connection conn = DatabaseManager.getConnection();
-         PreparedStatement stmt = conn.prepareStatement(sql);
-         ResultSet rs = stmt.executeQuery()) {
-        while (rs.next()) {
-            Task task = new Task();
-            task.setId(rs.getInt("id"));
-            task.setProjectId(rs.getInt("project_id"));
-            task.setTeamId(rs.getInt("team_id"));
-            task.setTitle(rs.getString("title"));
-            task.setDescription(rs.getString("description"));
-            task.setStatus(rs.getString("status"));
-            task.setPriority(rs.getString("priority"));
-            task.setStartDate(rs.getString("start_date"));
-            task.setEndDate(rs.getString("end_date"));
-            task.setAssignedEmail(rs.getString("assigned_email"));
-            task.setTeamName(rs.getString("team_name"));
-            tasks.add(task);
-        }
-    } catch (SQLException ex) {
-        ex.printStackTrace();
-    }
-    return tasks;
-}
-
 }
