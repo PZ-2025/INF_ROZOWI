@@ -1,23 +1,17 @@
 package pl.rozowi.app.controllers;
 
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
 import pl.rozowi.app.MainApplication;
-import pl.rozowi.app.dao.NotificationDAO;
-import pl.rozowi.app.models.Notification;
-import pl.rozowi.app.models.NotificationItem;
 import pl.rozowi.app.models.User;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.List;
 
 public class AdminDashboardController {
 
@@ -28,37 +22,59 @@ public class AdminDashboardController {
     @FXML
     private AnchorPane mainPane;
 
-    @FXML
-    private TableView<NotificationItem> notificationsTable;
-    @FXML
-    private TableColumn<NotificationItem, String> colName;
-    @FXML
-    private TableColumn<NotificationItem, String> colDescription;
-    @FXML
-    private TableColumn<NotificationItem, String> colDate;
-
-    @FXML
-    private TextField searchField;
-    @FXML
-    private Button searchButton;
-    private ObservableList<NotificationItem> allNotifications = FXCollections.observableArrayList();
+    private User currentUser;
 
     @FXML
     private void initialize() {
         try {
-            goToEmployees();
+            // Domyślnie pokazujemy zarządzanie użytkownikami
+            goToUsers();
         } catch (IOException e) {
             e.printStackTrace();
+            showError("Błąd podczas ładowania widoku");
         }
     }
 
-    public void setAdminName(String adminName) {
-        welcomeLabel.setText("Witaj, " + adminName);
+    public void setUser(User user) {
+        this.currentUser = user;
+        welcomeLabel.setText("Witaj, " + user.getName());
+
+        // Jeśli użytkownik ma ustawiony domyślny widok, przełączamy na niego
+        if (user.getDefaultView() != null && !user.getDefaultView().isEmpty()) {
+            try {
+                switch (user.getDefaultView()) {
+                    case "Użytkownicy":
+                        goToUsers();
+                        break;
+                    case "Zespoły":
+                        goToTeams();
+                        break;
+                    case "Projekty":
+                        goToProjects();
+                        break;
+                    case "Zadania":
+                        goToTasks();
+                        break;
+                    case "Raporty":
+                        goToReports();
+                        break;
+                    case "Ustawienia":
+                        goToSettings();
+                        break;
+                    default:
+                        goToUsers();
+                        break;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                showError("Błąd podczas ładowania domyślnego widoku");
+            }
+        }
     }
 
     @FXML
-    private void goToEmployees() throws IOException {
-        loadView("/fxml/admin/adminEmployees.fxml");
+    private void goToUsers() throws IOException {
+        loadView("/fxml/admin/adminUsers.fxml");
     }
 
     @FXML
@@ -67,13 +83,38 @@ public class AdminDashboardController {
     }
 
     @FXML
+    private void goToProjects() throws IOException {
+        loadView("/fxml/admin/adminProjects.fxml");
+    }
+
+    @FXML
+    private void goToTasks() throws IOException {
+        loadView("/fxml/admin/adminTasks.fxml");
+    }
+
+    @FXML
+    private void goToRoles() throws IOException {
+        loadView("/fxml/admin/adminRoles.fxml");
+    }
+
+    @FXML
     private void goToReports() throws IOException {
         loadView("/fxml/admin/adminReports.fxml");
     }
 
     @FXML
+    private void goToLogs() throws IOException {
+        loadView("/fxml/admin/adminLogs.fxml");
+    }
+
+    @FXML
     private void goToSettings() throws IOException {
         loadView("/fxml/user/settings.fxml");
+    }
+
+    @FXML
+    private void goToSystem() throws IOException {
+        loadView("/fxml/admin/adminSystem.fxml");
     }
 
     @FXML
@@ -85,101 +126,34 @@ public class AdminDashboardController {
         FXMLLoader loader = new FXMLLoader(MainApplication.class.getResource(fxmlPath));
         Parent view = loader.load();
 
+        // Sprawdzamy, czy kontroler implementuje interfejs wymagający informacji o użytkowniku
+        Object controller = loader.getController();
+        if (controller instanceof SettingsController) {
+            ((SettingsController) controller).setUser(currentUser);
+        }
+
+        // Wyczyszczenie panelu i dodanie nowego widoku
         mainPane.getChildren().clear();
         mainPane.getChildren().add(view);
 
+        // Dopasowanie widoku do panelu
         AnchorPane.setTopAnchor(view, 0.0);
         AnchorPane.setBottomAnchor(view, 0.0);
         AnchorPane.setLeftAnchor(view, 0.0);
         AnchorPane.setRightAnchor(view, 0.0);
+
+        // Dostosowanie rozmiaru okna
+        Platform.runLater(() -> {
+            Stage stage = (Stage) mainPane.getScene().getWindow();
+            stage.sizeToScene();
+        });
     }
 
-//    private void loadNotifications(User user) {
-//        NotificationDAO notificationDAO = new NotificationDAO();
-//        List<Notification> notifications = notificationDAO.getNotificationsForUser(user.getId());
-//
-//        if (notifications.isEmpty()) {
-//            showNoNotificationsMessage();
-//            return;
-//        }
-//
-//        ObservableList<NotificationItem> items = FXCollections.observableArrayList();
-//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//
-//        for (Notification n : notifications) {
-//            String dateStr = (n.getDate() != null) ? sdf.format(n.getDate()) : "Brak daty";
-//            String notificationName = n.getNotificationType() != null ? n.getNotificationType() : "Powiadomienie";
-//
-//            NotificationItem item = new NotificationItem(
-//                    notificationName,
-//                    n.getDescription() != null ? n.getDescription() : "Brak opisu",
-//                    dateStr
-//            );
-//            items.add(item);
-//        }
-//
-//        Platform.runLater(() -> {
-//            allNotifications.clear();
-//            allNotifications.addAll(items);
-//            notificationsTable.refresh();
-//        });
-//    }
-//
-//    private void showNoNotificationsMessage() {
-//        Platform.runLater(() -> {
-//            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-//            alert.setTitle("Powiadomienia");
-//            alert.setHeaderText(null);
-//            alert.setContentText("Brak nowych powiadomień.");
-//            alert.showAndWait();
-//        });
-//    }
-//
-//    private void filterNotifications(String filter) {
-//        if (filter == null || filter.isEmpty()) {
-//            notificationsTable.setItems(allNotifications);
-//            return;
-//        }
-//
-//        ObservableList<NotificationItem> filtered = allNotifications.filtered(item ->
-//                item.getName().toLowerCase().contains(filter.toLowerCase()) ||
-//                        item.getDescription().toLowerCase().contains(filter.toLowerCase()) ||
-//                        item.getDate().toLowerCase().contains(filter.toLowerCase())
-//        );
-//
-//        notificationsTable.setItems(filtered);
-//    }
-
-    public void setUser(User user) throws IOException {
-        welcomeLabel.setText("Witaj, " + user.getName());
-        System.out.println("Domyślny widok: " + user.getDefaultView());
-
-        if (user.getDefaultView() != null && !user.getDefaultView().isEmpty()) {
-            notificationsTable.setVisible(false);
-            searchField.setVisible(false);
-            searchButton.setVisible(false);
-
-            switch (user.getDefaultView()) {
-                case "Pracownicy":
-                    goToEmployees();
-                    break;
-                case "Zespoły":
-                    goToTeams();
-                    break;
-                case "Raporty":
-                    goToReports();
-                    break;
-                case "Ustawienia":
-                    goToSettings();
-                    break;
-                default:
-                    goToEmployees();
-            }
-        } else {
-            notificationsTable.setVisible(true);
-            searchField.setVisible(true);
-            searchButton.setVisible(true);
-//            loadNotifications(user);
-        }
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Błąd");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

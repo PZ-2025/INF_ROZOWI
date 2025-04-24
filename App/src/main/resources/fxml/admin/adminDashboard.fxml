@@ -27,29 +27,39 @@
             </ImageView>
 
             <!-- Etykieta powitalna -->
-            <Label fx:id="welcomeLabel" text="Witaj, Administratorze"
+            <Label fx:id="welcomeLabel" text="Panel Administratora"
                    style="-fx-font-size: 18px; -fx-text-fill: white; -fx-padding: 10px 0; -fx-alignment: center;"/>
 
-            <!-- Przyciski główne -->
-            <Button text="Pracownicy" onAction="#goToEmployees"
-                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-pref-width: 220px;"/>
+            <!-- Główna sekcja przycisków -->
+            <Button text="Użytkownicy" onAction="#goToUsers"
+                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
             <Button text="Zespoły" onAction="#goToTeams"
-                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-pref-width: 220px;"/>
+                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
+            <Button text="Projekty" onAction="#goToProjects"
+                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
+            <Button text="Zadania" onAction="#goToTasks"
+                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
+            <Button text="Role i uprawnienia" onAction="#goToRoles"
+                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
             <Button text="Raporty" onAction="#goToReports"
-                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-pref-width: 220px;"/>
+                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
+            <Button text="Logi systemowe" onAction="#goToLogs"
+                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
+            <Button text="Konfiguracja systemu" onAction="#goToSystem"
+                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
 
-            <!-- Region, aby przyciski Ustawienia i Wyloguj były na dole -->
-            <Region fx:id="spacer" VBox.vgrow="ALWAYS"/>
+            <!-- Rozciągający się spacer -->
+            <Region VBox.vgrow="ALWAYS"/>
 
             <!-- Przyciski na dole sidebaru -->
             <Button text="Ustawienia" onAction="#goToSettings"
-                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-pref-width: 220px;"/>
+                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
             <Button text="Wyloguj" onAction="#logout"
-                    style="-fx-background-color: red; -fx-text-fill: white; -fx-pref-width: 220px;"/>
+                    style="-fx-background-color: red; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
         </VBox>
     </left>
 
-    <!-- Prawa sekcja: wyświetlana zawartość (np. widok pracowników) -->
+    <!-- Prawa sekcja: wyświetlana zawartość -->
     <center>
         <AnchorPane fx:id="mainPane" style="-fx-background-color: #1E1E2F; -fx-padding: 20px;"/>
     </center>

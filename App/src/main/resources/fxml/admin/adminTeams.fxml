@@ -6,7 +6,7 @@
 
 <?import javafx.scene.layout.Region?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="pl.rozowi.app.controllers.TeamsController"
+            fx:controller="pl.rozowi.app.controllers.AdminTeamsController"
             style="-fx-background-color: #1E1E2F;">
     <HBox layoutX="20" layoutY="20" spacing="10">
         <Label text="Zespoły" style="-fx-font-size: 20px; -fx-text-fill: white;"/>
