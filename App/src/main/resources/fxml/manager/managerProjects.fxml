@@ -12,6 +12,7 @@
     <HBox spacing="10">
         <Button text="Nowy projekt" onAction="#onAddProject"/>
         <Button text="Edytuj wybrany" onAction="#onEditProject"/>
+        <Button text="Usuń wybrany" onAction="#onDeleteProject"/>
         <Pane HBox.hgrow="ALWAYS"/>
     </HBox>
 
@@ -42,6 +43,7 @@
                     <PropertyValueFactory property="endDate"/>
                 </cellValueFactory>
             </TableColumn>
+            <!-- Status column removed as requested -->
         </columns>
     </TableView>
 

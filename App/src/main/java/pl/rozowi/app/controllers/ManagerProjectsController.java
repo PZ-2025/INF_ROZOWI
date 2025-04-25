@@ -6,7 +6,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import pl.rozowi.app.dao.ProjectDAO;
+import pl.rozowi.app.dao.TaskDAO;
 import pl.rozowi.app.models.Project;
+import pl.rozowi.app.models.Task;
 import pl.rozowi.app.util.Session;
 
 import java.sql.SQLException;
@@ -28,8 +30,10 @@ public class ManagerProjectsController {
     private TableColumn<Project, LocalDate> colStart;
     @FXML
     private TableColumn<Project, LocalDate> colEnd;
+    // Status column removed as requested
 
     private final ProjectDAO projectDAO = new ProjectDAO();
+    private final TaskDAO taskDAO = new TaskDAO();
     private final ObservableList<Project> data = FXCollections.observableArrayList();
 
     @FXML
@@ -39,10 +43,13 @@ public class ManagerProjectsController {
         colDesc.setCellValueFactory(c -> c.getValue().descriptionProperty());
         colStart.setCellValueFactory(c -> c.getValue().startDateProperty());
         colEnd.setCellValueFactory(c -> c.getValue().endDateProperty());
+        // Status column removed as requested
+
         loadAll();
     }
 
     private void loadAll() {
+        data.clear();
         List<Project> projects = projectDAO.getProjectsForManager(Session.currentUserId);
         data.setAll(projects);
         projectsTable.setItems(data);
@@ -76,6 +83,73 @@ public class ManagerProjectsController {
         });
     }
 
+    @FXML
+    private void onDeleteProject() {
+        Project selectedProject = projectsTable.getSelectionModel().getSelectedItem();
+        if (selectedProject == null) {
+            showWarning("Wybierz projekt do usunięcia");
+            return;
+        }
+
+        // Load tasks to show count in the confirmation dialog
+        List<Task> tasks = taskDAO.getTasksByProjectId(selectedProject.getId());
+        int taskCount = tasks.size();
+
+        // Create a confirmation dialog with warning about tasks
+        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmDialog.setTitle("Potwierdzenie usunięcia");
+        confirmDialog.setHeaderText("Czy na pewno chcesz usunąć projekt?");
+
+        String contentText = "Projekt: " + selectedProject.getName();
+        if (taskCount > 0) {
+            contentText += "\n\nUWAGA: To spowoduje również usunięcie " + taskCount + " zadań, powiązanych zespołów i aktywności!";
+        }
+        confirmDialog.setContentText(contentText);
+
+        // Add custom buttons
+        ButtonType deleteButtonType = new ButtonType("Usuń", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType("Anuluj", ButtonBar.ButtonData.CANCEL_CLOSE);
+        confirmDialog.getButtonTypes().setAll(deleteButtonType, cancelButtonType);
+
+        Optional<ButtonType> result = confirmDialog.showAndWait();
+        if (result.isPresent() && result.get() == deleteButtonType) {
+            // Use the new delete method from ProjectDAO
+            boolean deleted = projectDAO.deleteProject(selectedProject.getId());
+
+            if (deleted) {
+                // Remove from the local list
+                data.remove(selectedProject);
+                showInfo("Projekt został usunięty wraz ze wszystkimi powiązanymi elementami");
+            } else {
+                showError("Błąd", "Nie udało się usunąć projektu");
+            }
+        }
+    }
+
+    private void showInfo(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Informacja");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showWarning(String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Ostrzeżenie");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showError(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
     private static class ProjectFormDialog extends Dialog<Project> {
         private final TextField nameField = new TextField();
         private final TextArea descArea = new TextArea();
@@ -104,7 +178,23 @@ public class ManagerProjectsController {
                 descArea.setText(p.getDescription());
                 dpStart.setValue(p.getStartDate());
                 dpEnd.setValue(p.getEndDate());
+            } else {
+                // Default start and end dates for a new project
+                dpStart.setValue(LocalDate.now());
+                dpEnd.setValue(LocalDate.now().plusMonths(1));
             }
+
+            // Validation
+            Button okButton = (Button) getDialogPane().lookupButton(ButtonType.OK);
+            okButton.setDisable(true);
+
+            // Listeners to enable/disable OK button based on validation
+            nameField.textProperty().addListener((obs, oldVal, newVal) -> validateForm(okButton));
+            dpStart.valueProperty().addListener((obs, oldVal, newVal) -> validateForm(okButton));
+            dpEnd.valueProperty().addListener((obs, oldVal, newVal) -> validateForm(okButton));
+
+            // Initial validation
+            validateForm(okButton);
 
             setResultConverter(btn -> {
                 if (btn == ButtonType.OK) {
@@ -117,6 +207,15 @@ public class ManagerProjectsController {
                 }
                 return null;
             });
+        }
+
+        private void validateForm(Button okButton) {
+            boolean nameValid = !nameField.getText().trim().isEmpty();
+            boolean datesValid = dpStart.getValue() != null &&
+                                dpEnd.getValue() != null &&
+                                !dpEnd.getValue().isBefore(dpStart.getValue());
+
+            okButton.setDisable(!(nameValid && datesValid));
         }
     }
 }

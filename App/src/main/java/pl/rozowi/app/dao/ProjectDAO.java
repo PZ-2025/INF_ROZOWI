@@ -92,4 +92,197 @@ public class ProjectDAO {
         return list;
     }
 
+    /**
+     * Deletes a project and all its related entities (tasks, teams, etc.)
+     *
+     * @param projectId The ID of the project to delete
+     * @return true if the project was successfully deleted
+     */
+    public boolean deleteProject(int projectId) {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            conn.setAutoCommit(false);
+
+            try {
+                // W pierwszej kolejności pobierzmy listę zadań z tego projektu
+                List<Integer> taskIds = new ArrayList<>();
+                try (PreparedStatement stmt = conn.prepareStatement("SELECT id FROM tasks WHERE project_id = ?")) {
+                    stmt.setInt(1, projectId);
+                    ResultSet rs = stmt.executeQuery();
+                    while (rs.next()) {
+                        taskIds.add(rs.getInt("id"));
+                    }
+                }
+
+                // Pobierzmy również listę zespołów z tego projektu
+                List<Integer> teamIds = new ArrayList<>();
+                try (PreparedStatement stmt = conn.prepareStatement("SELECT id FROM teams WHERE project_id = ?")) {
+                    stmt.setInt(1, projectId);
+                    ResultSet rs = stmt.executeQuery();
+                    while (rs.next()) {
+                        teamIds.add(rs.getInt("id"));
+                    }
+                }
+
+                // Teraz usuwajmy powiązane dane
+
+                // 1. Sprawdzamy, czy tabela task_assignments istnieje
+                boolean taskAssignmentsExists = false;
+                try (PreparedStatement stmt = conn.prepareStatement(
+                        "SHOW TABLES LIKE 'task_assignments'")) {
+                    ResultSet rs = stmt.executeQuery();
+                    taskAssignmentsExists = rs.next();
+                }
+
+                // Usuwanie przypisań zadań
+                if (taskAssignmentsExists && !taskIds.isEmpty()) {
+                    // Przygotowanie zapytania z odpowiednią liczbą znaków zapytania
+                    StringBuilder questionMarks = new StringBuilder();
+                    for (int i = 0; i < taskIds.size(); i++) {
+                        if (i > 0) {
+                            questionMarks.append(",");
+                        }
+                        questionMarks.append("?");
+                    }
+
+                    try (PreparedStatement stmt = conn.prepareStatement(
+                            "DELETE FROM task_assignments WHERE task_id IN (" + questionMarks.toString() + ")")) {
+                        for (int i = 0; i < taskIds.size(); i++) {
+                            stmt.setInt(i + 1, taskIds.get(i));
+                        }
+                        stmt.executeUpdate();
+                    }
+                }
+
+                // 2. Usuwanie aktywności zadań - najpierw sprawdzamy, która tabela istnieje
+                boolean taskActivityExists = false;
+                boolean taskActivitiesExists = false;
+
+                try (PreparedStatement stmt = conn.prepareStatement(
+                        "SHOW TABLES LIKE 'task_activity'")) {
+                    ResultSet rs = stmt.executeQuery();
+                    taskActivityExists = rs.next();
+                }
+
+                try (PreparedStatement stmt = conn.prepareStatement(
+                        "SHOW TABLES LIKE 'task_activities'")) {
+                    ResultSet rs = stmt.executeQuery();
+                    taskActivitiesExists = rs.next();
+                }
+
+                if (!taskIds.isEmpty()) {
+                    StringBuilder questionMarks = new StringBuilder();
+                    for (int i = 0; i < taskIds.size(); i++) {
+                        if (i > 0) {
+                            questionMarks.append(",");
+                        }
+                        questionMarks.append("?");
+                    }
+
+                    if (taskActivityExists) {
+                        try (PreparedStatement stmt = conn.prepareStatement(
+                                "DELETE FROM task_activity WHERE task_id IN (" + questionMarks.toString() + ")")) {
+                            for (int i = 0; i < taskIds.size(); i++) {
+                                stmt.setInt(i + 1, taskIds.get(i));
+                            }
+                            stmt.executeUpdate();
+                        }
+                    }
+
+                    if (taskActivitiesExists) {
+                        try (PreparedStatement stmt = conn.prepareStatement(
+                                "DELETE FROM task_activities WHERE task_id IN (" + questionMarks.toString() + ")")) {
+                            for (int i = 0; i < taskIds.size(); i++) {
+                                stmt.setInt(i + 1, taskIds.get(i));
+                            }
+                            stmt.executeUpdate();
+                        }
+                    }
+                }
+
+                // 3. Usuwanie powiadomień związanych z zadaniami
+                // Musimy sprawdzić, czy kolumna task_id istnieje w tabeli notifications
+                boolean notificationHasTaskId = false;
+                try (PreparedStatement stmt = conn.prepareStatement(
+                        "SHOW COLUMNS FROM notifications LIKE 'task_id'")) {
+                    ResultSet rs = stmt.executeQuery();
+                    notificationHasTaskId = rs.next(); // Jeśli istnieje, zwróci true
+                }
+
+                if (notificationHasTaskId && !taskIds.isEmpty()) {
+                    StringBuilder questionMarks = new StringBuilder();
+                    for (int i = 0; i < taskIds.size(); i++) {
+                        if (i > 0) {
+                            questionMarks.append(",");
+                        }
+                        questionMarks.append("?");
+                    }
+
+                    try (PreparedStatement stmt = conn.prepareStatement(
+                            "DELETE FROM notifications WHERE task_id IN (" + questionMarks.toString() + ")")) {
+                        for (int i = 0; i < taskIds.size(); i++) {
+                            stmt.setInt(i + 1, taskIds.get(i));
+                        }
+                        stmt.executeUpdate();
+                    }
+                }
+
+                // 4. Usuwanie wszystkich zadań z tego projektu
+                try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM tasks WHERE project_id = ?")) {
+                    stmt.setInt(1, projectId);
+                    stmt.executeUpdate();
+                }
+
+                // 5. Sprawdźmy, czy tabela team_members istnieje
+                boolean teamMembersExists = false;
+                try (PreparedStatement stmt = conn.prepareStatement(
+                        "SHOW TABLES LIKE 'team_members'")) {
+                    ResultSet rs = stmt.executeQuery();
+                    teamMembersExists = rs.next();
+                }
+
+                // Usuwanie członków zespołów powiązanych z projektem
+                if (teamMembersExists && !teamIds.isEmpty()) {
+                    StringBuilder questionMarks = new StringBuilder();
+                    for (int i = 0; i < teamIds.size(); i++) {
+                        if (i > 0) {
+                            questionMarks.append(",");
+                        }
+                        questionMarks.append("?");
+                    }
+
+                    try (PreparedStatement stmt = conn.prepareStatement(
+                            "DELETE FROM team_members WHERE team_id IN (" + questionMarks.toString() + ")")) {
+                        for (int i = 0; i < teamIds.size(); i++) {
+                            stmt.setInt(i + 1, teamIds.get(i));
+                        }
+                        stmt.executeUpdate();
+                    }
+                }
+
+                // 6. Usuwanie zespołów z projektu
+                try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM teams WHERE project_id = ?")) {
+                    stmt.setInt(1, projectId);
+                    stmt.executeUpdate();
+                }
+
+                // 7. Na końcu usuwamy sam projekt
+                try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM projects WHERE id = ?")) {
+                    stmt.setInt(1, projectId);
+                    int affectedRows = stmt.executeUpdate();
+
+                    conn.commit();
+                    return affectedRows > 0;
+                }
+            } catch (SQLException e) {
+                conn.rollback();
+                e.printStackTrace();
+                return false;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

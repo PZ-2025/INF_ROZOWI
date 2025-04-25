@@ -38,8 +38,7 @@ public class AdminProjectsController {
     private TableColumn<Project, LocalDate> colEndDate;
     @FXML
     private TableColumn<Project, String> colManager;
-    @FXML
-    private TableColumn<Project, String> colStatus;
+    // Status column removed as requested
 
     @FXML
     private TextField searchField;
@@ -108,23 +107,7 @@ public class AdminProjectsController {
             }
         });
 
-        colStatus.setCellValueFactory(data -> {
-            LocalDate startDate = data.getValue().getStartDate();
-            LocalDate endDate = data.getValue().getEndDate();
-            LocalDate now = LocalDate.now();
-
-            if (startDate == null || endDate == null) {
-                return new SimpleStringProperty("Nieznany");
-            }
-
-            if (now.isBefore(startDate)) {
-                return new SimpleStringProperty("Planowany");
-            } else if (now.isAfter(endDate)) {
-                return new SimpleStringProperty("Zakończony");
-            } else {
-                return new SimpleStringProperty("W trakcie");
-            }
-        });
+        // Status column removed as requested
 
         // Konfiguracja kolumn tabeli zespołów
         colTeamId.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getId()));
@@ -273,19 +256,41 @@ public class AdminProjectsController {
             return;
         }
 
+        // Load tasks to show count in the confirmation dialog
+        List<Task> tasks = taskDAO.getTasksByProjectId(selectedProject.getId());
+        int taskCount = tasks.size();
+
+        // Create a confirmation dialog with warning about tasks
         Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
         confirmDialog.setTitle("Potwierdzenie usunięcia");
         confirmDialog.setHeaderText("Czy na pewno chcesz usunąć projekt?");
-        confirmDialog.setContentText("Projekt: " + selectedProject.getName());
+
+        String contentText = "Projekt: " + selectedProject.getName();
+        if (taskCount > 0) {
+            contentText += "\n\nUWAGA: To spowoduje również usunięcie " + taskCount + " zadań, powiązanych zespołów i aktywności!";
+        }
+        confirmDialog.setContentText(contentText);
+
+        // Add custom buttons
+        ButtonType deleteButtonType = new ButtonType("Usuń", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType("Anuluj", ButtonBar.ButtonData.CANCEL_CLOSE);
+        confirmDialog.getButtonTypes().setAll(deleteButtonType, cancelButtonType);
 
         Optional<ButtonType> result = confirmDialog.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            // Tutaj zamiast usuwać, po prostu usuń z listy
-            allProjects.remove(selectedProject);
-            projectTeams.clear();
-            projectTasks.clear();
+        if (result.isPresent() && result.get() == deleteButtonType) {
+            // Use the new delete method from ProjectDAO
+            boolean deleted = projectDAO.deleteProject(selectedProject.getId());
 
-            showInfo("Projekt został usunięty z listy");
+            if (deleted) {
+                // Remove from the local list
+                allProjects.remove(selectedProject);
+                projectTeams.clear();
+                projectTasks.clear();
+
+                showInfo("Projekt został usunięty wraz ze wszystkimi powiązanymi elementami");
+            } else {
+                showError("Błąd", "Nie udało się usunąć projektu");
+            }
         }
     }
 

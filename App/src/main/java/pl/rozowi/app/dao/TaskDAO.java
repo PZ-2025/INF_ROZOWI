@@ -189,21 +189,49 @@ public class TaskDAO {
         }
     }
 
+    /**
+     * Assigns a task to a specific user.
+     * This method first removes any existing assignments for the task,
+     * then creates a new assignment to the specified user.
+     *
+     * @param taskId ID of the task to assign
+     * @param userId ID of the user to assign the task to
+     * @return true if assignment was successful, false otherwise
+     */
     public boolean assignTask(int taskId, int userId) {
-        // usuwamy poprzednie assignment i wstawiamy nowe
+        // Use a transaction to ensure data integrity
         try (Connection conn = DatabaseManager.getConnection()) {
             conn.setAutoCommit(false);
-            try (PreparedStatement del = conn.prepareStatement(
-                    "DELETE FROM task_assignments WHERE task_id = ?");
-                 PreparedStatement ins = conn.prepareStatement(
-                         "INSERT INTO task_assignments (task_id, user_id) VALUES (?, ?)")) {
-                del.setInt(1, taskId);
-                del.executeUpdate();
-                ins.setInt(1, taskId);
-                ins.setInt(2, userId);
-                ins.executeUpdate();
+            try {
+                // First delete any existing assignments for this task
+                try (PreparedStatement delStmt = conn.prepareStatement(
+                        "DELETE FROM task_assignments WHERE task_id = ?")) {
+                    delStmt.setInt(1, taskId);
+                    delStmt.executeUpdate();
+                }
+
+                // Then insert the new assignment
+                try (PreparedStatement insStmt = conn.prepareStatement(
+                        "INSERT INTO task_assignments (task_id, user_id) VALUES (?, ?)")) {
+                    insStmt.setInt(1, taskId);
+                    insStmt.setInt(2, userId);
+                    insStmt.executeUpdate();
+                }
+
+                // Skip updating the tasks table directly since the column might not exist
+                // The assignment relationship is now stored solely in the task_assignments table
+
+                // If we got here, commit the transaction
                 conn.commit();
                 return true;
+            } catch (SQLException ex) {
+                // If anything goes wrong, roll back
+                conn.rollback();
+                ex.printStackTrace();
+                return false;
+            } finally {
+                // Restore auto-commit state
+                conn.setAutoCommit(true);
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -296,5 +324,7 @@ public class TaskDAO {
         }
         return false;
     }
+
+
 
 }
