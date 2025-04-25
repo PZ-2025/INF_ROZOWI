@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="pl.rozowi.app.controllers.TeamLeaderTasksController"
+            prefWidth="800" prefHeight="600">
+
+    <children>
+        <VBox spacing="5" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0"
+              AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0">
+            <HBox spacing="10">
+                <Button text="Nowe zadanie" onAction="#handleAddTask"/>
+                <Button text="Odśwież listę" onAction="#loadTasks"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="Filtr:"/>
+                <TextField fx:id="filterField" promptText="szukaj..."/>
+            </HBox>
+
+            <TableView fx:id="tasksTable" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colId" text="ID" prefWidth="40"/>
+                    <TableColumn fx:id="colTitle" text="Tytuł" prefWidth="150"/>
+                    <TableColumn fx:id="colStatus" text="Status" prefWidth="80"/>
+                    <TableColumn fx:id="colPriority" text="Priorytet" prefWidth="80"/>
+                    <TableColumn fx:id="colEnd" text="Deadline" prefWidth="100"/>
+                    <TableColumn fx:id="colTeam" text="Zespół" prefWidth="100"/>
+                    <TableColumn fx:id="colAssignedTo" text="Przypisane" prefWidth="120"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </children>
+</AnchorPane>
