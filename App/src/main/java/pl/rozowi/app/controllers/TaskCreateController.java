@@ -4,15 +4,22 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+<<<<<<< HEAD
 import pl.rozowi.app.MainApplication;
+=======
+>>>>>>> origin/main
 import pl.rozowi.app.dao.*;
 import pl.rozowi.app.models.*;
 import pl.rozowi.app.util.Session;
 
+<<<<<<< HEAD
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+=======
+import java.time.format.DateTimeFormatter;
+>>>>>>> origin/main
 import java.util.List;
 
 public class TaskCreateController {
@@ -34,12 +41,18 @@ public class TaskCreateController {
     private ComboBox<User> comboAssignee;
 
     private final TaskDAO taskDAO = new TaskDAO();
+<<<<<<< HEAD
     private final TeamMemberDAO teamMemberDAO = new TeamMemberDAO();
+=======
+    private final TaskAssignmentDAO assignmentDAO = new TaskAssignmentDAO();
+    private final TeamMemberDAO memberDAO = new TeamMemberDAO();
+>>>>>>> origin/main
     private final ProjectDAO projectDAO = new ProjectDAO();
     private final TeamDAO teamDAO = new TeamDAO();
 
     @FXML
     private void initialize() {
+<<<<<<< HEAD
         // Set up priority dropdown
         comboPriority.getItems().setAll("LOW", "MEDIUM", "HIGH");
         comboPriority.setValue("MEDIUM");
@@ -190,6 +203,16 @@ public class TaskCreateController {
             @Override
             public String toString(Project p) {
                 return p == null ? "" : p.getId() + " – " + p.getName();
+=======
+        comboPriority.getItems().setAll("LOW", "MEDIUM", "HIGH");
+
+        List<Project> projects = projectDAO.getAllProjects();
+        comboProject.getItems().setAll(projects);
+        comboProject.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(Project p) {
+                return p == null ? "" : p.getId() + " – " + p.getProjectName();
+>>>>>>> origin/main
             }
 
             @Override
@@ -198,7 +221,13 @@ public class TaskCreateController {
             }
         });
 
+<<<<<<< HEAD
         // Team converter
+=======
+        int userId = Session.currentUserId;
+        List<Team> teams = teamDAO.getTeamsForUser(userId);
+        comboTeam.getItems().setAll(teams);
+>>>>>>> origin/main
         comboTeam.setConverter(new StringConverter<>() {
             @Override
             public String toString(Team t) {
@@ -211,11 +240,26 @@ public class TaskCreateController {
             }
         });
 
+<<<<<<< HEAD
         // User converter
         comboAssignee.setConverter(new StringConverter<>() {
             @Override
             public String toString(User u) {
                 return u == null ? "" : u.getId() + " – " + u.getName() + " " + u.getLastName() + " (" + u.getEmail() + ")";
+=======
+        comboTeam.getSelectionModel().selectedItemProperty().addListener((obs, oldT, newT) -> {
+            if (newT != null) {
+                comboAssignee.getItems().setAll(memberDAO.getTeamMembers(newT.getId()));
+            } else {
+                comboAssignee.getItems().clear();
+            }
+        });
+
+        comboAssignee.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(User u) {
+                return u == null ? "" : u.getId() + " – " + u.getEmail();
+>>>>>>> origin/main
             }
 
             @Override
@@ -235,12 +279,19 @@ public class TaskCreateController {
         User user = comboAssignee.getValue();
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+<<<<<<< HEAD
         // Validate form fields
+=======
+>>>>>>> origin/main
         if (proj == null || team == null || title.isEmpty() || desc.isEmpty()
                 || pri == null || user == null
                 || dpStartDate == null || dpStartDate.getValue() == null
                 || dpEndDate == null || dpEndDate.getValue() == null) {
+<<<<<<< HEAD
             showWarning("Please fill in all fields!");
+=======
+            new Alert(Alert.AlertType.WARNING, "Uzupełnij wszystkie pola!").showAndWait();
+>>>>>>> origin/main
             return;
         }
 
@@ -253,6 +304,7 @@ public class TaskCreateController {
         t.setPriority(pri);
         t.setStartDate(dpStartDate.getValue().format(fmt));
         t.setEndDate(dpEndDate.getValue().format(fmt));
+<<<<<<< HEAD
         t.setTeamName(team.getTeamName());
 
         // Don't set assigned fields on the task object as they might not exist in DB schema
@@ -296,10 +348,28 @@ public class TaskCreateController {
 
         showInfo("Task Created", "Task has been created successfully!");
         closeWindow();
+=======
+
+        // zapis zadania
+        if (!taskDAO.insertTask(t)) {
+            new Alert(Alert.AlertType.ERROR, "Nie udało się zapisać zadania!").showAndWait();
+            return;
+        }
+
+        // przypisanie użytkownika
+        TaskAssignment ta = new TaskAssignment();
+        ta.setTaskId(t.getId());
+        ta.setUserId(user.getId());
+        assignmentDAO.insertTaskAssignment(ta);
+
+        new Alert(Alert.AlertType.INFORMATION, "Zadanie utworzone i przypisane!").showAndWait();
+        ((Stage) txtTitle.getScene().getWindow()).close();
+>>>>>>> origin/main
     }
 
     @FXML
     private void handleClose() {
+<<<<<<< HEAD
         closeWindow();
     }
 
@@ -331,3 +401,8 @@ public class TaskCreateController {
         alert.showAndWait();
     }
 }
+=======
+        ((Stage) txtTitle.getScene().getWindow()).close();
+    }
+}
+>>>>>>> origin/main

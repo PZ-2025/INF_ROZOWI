@@ -38,7 +38,12 @@ public class AdminProjectsController {
     private TableColumn<Project, LocalDate> colEndDate;
     @FXML
     private TableColumn<Project, String> colManager;
+<<<<<<< HEAD
     // Status column removed as requested
+=======
+    @FXML
+    private TableColumn<Project, String> colStatus;
+>>>>>>> origin/main
 
     @FXML
     private TextField searchField;
@@ -107,7 +112,27 @@ public class AdminProjectsController {
             }
         });
 
+<<<<<<< HEAD
         // Status column removed as requested
+=======
+        colStatus.setCellValueFactory(data -> {
+            LocalDate startDate = data.getValue().getStartDate();
+            LocalDate endDate = data.getValue().getEndDate();
+            LocalDate now = LocalDate.now();
+
+            if (startDate == null || endDate == null) {
+                return new SimpleStringProperty("Nieznany");
+            }
+
+            if (now.isBefore(startDate)) {
+                return new SimpleStringProperty("Planowany");
+            } else if (now.isAfter(endDate)) {
+                return new SimpleStringProperty("Zakończony");
+            } else {
+                return new SimpleStringProperty("W trakcie");
+            }
+        });
+>>>>>>> origin/main
 
         // Konfiguracja kolumn tabeli zespołów
         colTeamId.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getId()));
@@ -256,6 +281,7 @@ public class AdminProjectsController {
             return;
         }
 
+<<<<<<< HEAD
         // Load tasks to show count in the confirmation dialog
         List<Task> tasks = taskDAO.getTasksByProjectId(selectedProject.getId());
         int taskCount = tasks.size();
@@ -291,6 +317,21 @@ public class AdminProjectsController {
             } else {
                 showError("Błąd", "Nie udało się usunąć projektu");
             }
+=======
+        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmDialog.setTitle("Potwierdzenie usunięcia");
+        confirmDialog.setHeaderText("Czy na pewno chcesz usunąć projekt?");
+        confirmDialog.setContentText("Projekt: " + selectedProject.getName());
+
+        Optional<ButtonType> result = confirmDialog.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            // Tutaj zamiast usuwać, po prostu usuń z listy
+            allProjects.remove(selectedProject);
+            projectTeams.clear();
+            projectTasks.clear();
+
+            showInfo("Projekt został usunięty z listy");
+>>>>>>> origin/main
         }
     }
 
