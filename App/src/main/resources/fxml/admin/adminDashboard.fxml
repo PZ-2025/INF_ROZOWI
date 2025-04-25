@@ -13,21 +13,25 @@
             fx:controller="pl.rozowi.app.controllers.AdminDashboardController"
             prefWidth="1000" prefHeight="600"
             style="-fx-background-color: #1E1E2F;">
-    <!-- Sidebar -->
+
+    <!-- Lewa sekcja: Sidebar -->
     <left>
         <VBox spacing="15" style="-fx-background-color: #252540; -fx-padding: 20px; -fx-pref-width: 250px;"
               alignment="TOP_CENTER">
+
             <!-- Logo wyśrodkowane -->
             <ImageView fx:id="logoImageView" fitHeight="100" fitWidth="100">
                 <image>
                     <Image url="@../../images/logo.png"/>
                 </image>
             </ImageView>
+
             <!-- Etykieta powitalna -->
-            <Label fx:id="welcomeLabel" text="Witaj, Administratorze"
+            <Label fx:id="welcomeLabel" text="Panel Administratora"
                    style="-fx-font-size: 18px; -fx-text-fill: white; -fx-padding: 10px 0; -fx-alignment: center;"/>
-            <!-- Główne przyciski nawigacyjne -->
-            <Button text="Pracownicy" onAction="#goToEmployees"
+
+            <!-- Główna sekcja przycisków -->
+            <Button text="Użytkownicy" onAction="#goToUsers"
                     style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
             <Button text="Zespoły" onAction="#goToTeams"
                     style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
@@ -37,18 +41,23 @@
                     style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
             <Button text="Raporty" onAction="#goToReports"
                     style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
-            <Button text="Konfiguracja" onAction="#goToSystemConfig"
+            <Button text="Logi systemowe" onAction="#goToLogs"
                     style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
+            <Button text="Konfiguracja systemu" onAction="#goToSystem"
+                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
+
             <!-- Rozciągający się spacer -->
             <Region VBox.vgrow="ALWAYS"/>
-            <!-- Przyciski u dołu -->
+
+            <!-- Przyciski na dole sidebaru -->
             <Button text="Ustawienia" onAction="#goToSettings"
                     style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
             <Button text="Wyloguj" onAction="#logout"
                     style="-fx-background-color: red; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
         </VBox>
     </left>
-    <!-- Centralna sekcja – tutaj ładowany jest dynamiczny widok -->
+
+    <!-- Prawa sekcja: wyświetlana zawartość -->
     <center>
         <AnchorPane fx:id="mainPane" style="-fx-background-color: #1E1E2F; -fx-padding: 20px;"/>
     </center>

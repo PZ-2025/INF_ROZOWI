@@ -1,32 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 
-<AnchorPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="pl.rozowi.app.controllers.AdminProjectsController"
-            style="-fx-background-color: #1E1E2F;">
-    <HBox layoutX="20" layoutY="20" spacing="10">
-        <Label text="Projekty" style="-fx-font-size: 20px; -fx-text-fill: white;"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <Button text="Dodaj projekt" onAction="#onAddProject"
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pl.rozowi.app.controllers.AdminProjectsController"
+      spacing="15" style="-fx-padding: 10px; -fx-background-color: #1E1E2F;">
+
+    <HBox alignment="CENTER_LEFT" spacing="15">
+        <Label text="Zarządzanie Projektami"
+               style="-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        <Pane HBox.hgrow="ALWAYS" />
+        <TextField fx:id="searchField" promptText="Szukaj projektu..." prefWidth="250"/>
+        <Button fx:id="searchButton" text="🔍" onAction="#handleSearch"
                 style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
-        <Button text="Edytuj projekt" onAction="#onEditProject"
-                style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
-        <Button text="Usuń projekt" onAction="#onDeleteProject"
-                style="-fx-background-color: #FF5555; -fx-text-fill: white;"/>
     </HBox>
 
-    <TableView fx:id="projectsTable" layoutX="20" layoutY="60"
-               style="-fx-pref-width: 700; -fx-pref-height: 500;">
+    <HBox spacing="10">
+        <Button text="Dodaj projekt" onAction="#handleAddProject"
+                style="-fx-background-color: #28a745; -fx-text-fill: white;"/>
+        <Button text="Edytuj" onAction="#handleEditProject"
+                style="-fx-background-color: #ffc107; -fx-text-fill: black;"/>
+        <Button text="Usuń" onAction="#handleDeleteProject"
+                style="-fx-background-color: #dc3545; -fx-text-fill: white;"/>
+        <Button text="Przypisz kierownika" onAction="#handleAssignManager"
+                style="-fx-background-color: #17a2b8; -fx-text-fill: white;"/>
+        <Button text="Odśwież" onAction="#handleRefresh"
+                style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+    </HBox>
+
+    <!-- Tabela projektów -->
+    <TableView fx:id="projectsTable" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn fx:id="colId" text="ID" style="-fx-pref-width: 50;"/>
-            <TableColumn fx:id="colName" text="Nazwa" style="-fx-pref-width: 150;"/>
-            <TableColumn fx:id="colDesc" text="Opis" style="-fx-pref-width: 200;"/>
-            <TableColumn fx:id="colStart" text="Data rozpoczęcia" style="-fx-pref-width: 120;"/>
-            <TableColumn fx:id="colEnd" text="Data zakończenia" style="-fx-pref-width: 120;"/>
-            <TableColumn fx:id="colManager" text="Manager" style="-fx-pref-width: 100;"/>
-            <TableColumn fx:id="colTeam" text="Zespół" style="-fx-pref-width: 100;"/>
+            <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
+            <TableColumn fx:id="colName" text="Nazwa" prefWidth="200"/>
+            <TableColumn fx:id="colDescription" text="Opis" prefWidth="250"/>
+            <TableColumn fx:id="colStartDate" text="Data rozpoczęcia" prefWidth="120"/>
+            <TableColumn fx:id="colEndDate" text="Data zakończenia" prefWidth="120"/>
+            <TableColumn fx:id="colManager" text="Kierownik" prefWidth="150"/>
+            <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
         </columns>
     </TableView>
-</AnchorPane>
+
+    <!-- Panel szczegółów projektu -->
+    <TitledPane text="Zespoły przypisane do projektu" expanded="false">
+        <VBox spacing="10">
+            <TableView fx:id="teamsTable" prefHeight="200">
+                <columns>
+                    <TableColumn fx:id="colTeamId" text="ID" prefWidth="50"/>
+                    <TableColumn fx:id="colTeamName" text="Nazwa zespołu" prefWidth="200"/>
+                    <TableColumn fx:id="colTeamLeader" text="Leader" prefWidth="150"/>
+                    <TableColumn fx:id="colMembersCount" text="Liczba członków" prefWidth="120"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </TitledPane>
+
+    <TitledPane text="Zadania w projekcie" expanded="false">
+        <VBox spacing="10">
+            <TableView fx:id="tasksTable" prefHeight="200">
+                <columns>
+                    <TableColumn fx:id="colTaskId" text="ID" prefWidth="50"/>
+                    <TableColumn fx:id="colTaskTitle" text="Tytuł" prefWidth="200"/>
+                    <TableColumn fx:id="colTaskStatus" text="Status" prefWidth="100"/>
+                    <TableColumn fx:id="colTaskPriority" text="Priorytet" prefWidth="100"/>
+                    <TableColumn fx:id="colTaskDeadline" text="Termin" prefWidth="120"/>
+                    <TableColumn fx:id="colTaskAssignee" text="Przypisane do" prefWidth="150"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </TitledPane>
+</VBox>

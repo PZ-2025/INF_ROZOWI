@@ -1,288 +1,359 @@
 package pl.rozowi.app.controllers;
 
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
+import pl.rozowi.app.dao.ProjectDAO;
+import pl.rozowi.app.dao.TaskDAO;
 import pl.rozowi.app.dao.TeamDAO;
 import pl.rozowi.app.dao.UserDAO;
+import pl.rozowi.app.dao.TeamMemberDAO;
+import pl.rozowi.app.models.Project;
+import pl.rozowi.app.models.Task;
 import pl.rozowi.app.models.Team;
 import pl.rozowi.app.models.User;
 
+
+
+
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class AdminTeamsController {
 
     @FXML
     private TableView<Team> teamsTable;
     @FXML
-    private TableColumn<Team, Integer> colId;
+    private TableColumn<Team, Number> colId;
     @FXML
     private TableColumn<Team, String> colName;
+    @FXML
+    private TableColumn<Team, String> colProjectName;
+    @FXML
+    private TableColumn<Team, Number> colMembersCount;
+
+    @FXML
+    private TextField searchField;
 
     @FXML
     private TableView<User> membersTable;
     @FXML
-    private TableColumn<User, Integer> colMemberId;
-    @FXML
-    private TableColumn<User, String> colMemberName;
+    private TableColumn<User, Number> colMemberId;
     @FXML
     private TableColumn<User, String> colMemberEmail;
+
     @FXML
-    private TableColumn<User, Boolean> colIsLeader;
+    private TableView<Task> tasksTable;
+    @FXML
+    private TableColumn<Task, Number> colTaskId;
+    @FXML
+    private TableColumn<Task, String> colTaskTitle;
+    @FXML
+    private TableColumn<Task, String> colTaskStatus;
+    @FXML
+    private TableColumn<Task, String> colTaskPriority;
+    @FXML
+    private TableColumn<Task, String> colTaskAssignee;
 
     private final TeamDAO teamDAO = new TeamDAO();
+    private final ProjectDAO projectDAO = new ProjectDAO();
+    private final TaskDAO taskDAO = new TaskDAO();
     private final UserDAO userDAO = new UserDAO();
-    private ObservableList<Team> teamData = FXCollections.observableArrayList();
-    private ObservableList<User> memberData = FXCollections.observableArrayList();
+    private final TeamMemberDAO teamMemberDAO = new TeamMemberDAO();
+
+
+    private final ObservableList<Team> teamData = FXCollections.observableArrayList();
+    private final ObservableList<User> memberData = FXCollections.observableArrayList();
+    private final ObservableList<Task> taskData = FXCollections.observableArrayList();
 
     @FXML
-    public void initialize() {
-        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colName.setCellValueFactory(new PropertyValueFactory<>("teamName"));
-
-        colMemberId.setCellValueFactory(new PropertyValueFactory<>("id"));
-        colMemberName.setCellValueFactory(cellData ->
-            new javafx.beans.property.SimpleStringProperty(cellData.getValue().getName() + " " + cellData.getValue().getLastName()));
-        colMemberEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
-
-        // Słuchacz wyboru zespołu w tabeli
-        teamsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
-            if (newSelection != null) {
-                loadTeamMembers(newSelection.getId());
-            } else {
-                memberData.clear();
+    public void initialize() throws SQLException {
+        // Konfiguracja kolumn tabeli zespołów
+        colId.setCellValueFactory(c -> c.getValue().idProperty());
+        colName.setCellValueFactory(c -> c.getValue().teamNameProperty());
+        colProjectName.setCellValueFactory(c -> {
+            int projectId = c.getValue().getProjectId();
+            try {
+                List<Project> projects = projectDAO.getAllProjects();
+                for (Project p : projects) {
+                    if (p.getId() == projectId) {
+                        return new SimpleStringProperty(p.getName());
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return new SimpleStringProperty("Brak projektu");
+        });
+        colMembersCount.setCellValueFactory(c -> {
+            int teamId = c.getValue().getId();
+            try {
+                List<User> members = teamDAO.getTeamMembers(teamId);
+                return new SimpleIntegerProperty(members.size());
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new SimpleIntegerProperty(0);
             }
         });
 
-        loadAllTeams();
-    }
+        teamsTable.setItems(teamData);
 
-    private void loadAllTeams() {
-        try {
-            List<Team> teams = teamDAO.getAllTeams();
-            teamData.setAll(teams);
-            teamsTable.setItems(teamData);
-        } catch (SQLException e) {
-            showError("Błąd ładowania zespołów", e.getMessage());
-        }
-    }
-
-    private void loadTeamMembers(int teamId) {
-        List<User> members = teamDAO.getTeamMembers(teamId);
-        memberData.setAll(members);
+        // Konfiguracja kolumn tabeli członków
+        colMemberId.setCellValueFactory(c -> new SimpleIntegerProperty(c.getValue().getId()));
+        colMemberEmail.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEmail()));
         membersTable.setItems(memberData);
-    }
 
-    @FXML
-    private void onAddTeam() {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Nowy zespół");
-        dialog.setHeaderText("Utwórz nowy zespół");
-        dialog.setContentText("Nazwa zespołu:");
+        // Konfiguracja kolumn tabeli zadań
+        colTaskId.setCellValueFactory(c -> c.getValue().idProperty());
+        colTaskTitle.setCellValueFactory(c -> c.getValue().titleProperty());
+        colTaskStatus.setCellValueFactory(c -> c.getValue().statusProperty());
+        colTaskPriority.setCellValueFactory(c -> c.getValue().priorityProperty());
+        colTaskAssignee.setCellValueFactory(c -> c.getValue().assignedEmailProperty());
+        tasksTable.setItems(taskData);
 
-        Optional<String> result = dialog.showAndWait();
-        result.ifPresent(name -> {
-            if (!name.trim().isEmpty()) {
-                Team team = new Team();
-                team.setTeamName(name);
-                try {
-                    teamDAO.insertTeam(team);
-                    loadAllTeams();
-                } catch (Exception e) {
-                    showError("Błąd dodawania zespołu", e.getMessage());
-                }
+        // Obsługa wyboru zespołu - aktualizacja tabel szczegółowych
+        teamsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldT, newT) -> {
+            try {
+                onTeamSelected(newT);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        });
+
+        loadAll();
+
+        // Konfiguracja wyszukiwania
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> {
+            String search = newVal.toLowerCase().trim();
+            if (search.isEmpty()) {
+                teamsTable.setItems(teamData);
             } else {
-                showWarning("Błąd", "Nazwa zespołu nie może być pusta");
+                ObservableList<Team> filtered = FXCollections.observableArrayList();
+                for (Team team : teamData) {
+                    if (String.valueOf(team.getId()).contains(search) ||
+                        team.getTeamName().toLowerCase().contains(search)) {
+                        filtered.add(team);
+                    }
+                }
+                teamsTable.setItems(filtered);
             }
         });
     }
 
-    @FXML
-    private void onEditTeam() {
-        Team selectedTeam = teamsTable.getSelectionModel().getSelectedItem();
-        if (selectedTeam == null) {
-            showWarning("Wybierz zespół", "Musisz wybrać zespół do edycji");
-            return;
+    private void loadAll() throws SQLException {
+        List<Team> allTeams = teamDAO.getAllTeams();
+        teamData.setAll(allTeams);
+    }
+
+    private void onTeamSelected(Team team) throws SQLException {
+        if (team == null) {
+            memberData.clear();
+            taskData.clear();
+        } else {
+            memberData.setAll(teamDAO.getTeamMembers(team.getId()));
+            taskData.setAll(taskDAO.getTasksByTeamId(team.getId()));
         }
+    }
 
-        TextInputDialog dialog = new TextInputDialog(selectedTeam.getTeamName());
-        dialog.setTitle("Edycja zespołu");
-        dialog.setHeaderText("Zmień nazwę zespołu");
-        dialog.setContentText("Nazwa zespołu:");
+    @FXML
+    private void onAddTeam() throws SQLException {
+        Dialog<Team> dlg = new Dialog<>();
+        dlg.setTitle("Nowy zespół");
+        dlg.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
-        Optional<String> result = dialog.showAndWait();
-        result.ifPresent(name -> {
-            if (!name.trim().isEmpty()) {
-                selectedTeam.setTeamName(name);
-                try {
-                    teamDAO.updateTeam(selectedTeam);
-                    loadAllTeams();
-                } catch (SQLException e) {
-                    showError("Błąd aktualizacji zespołu", e.getMessage());
-                }
-            } else {
-                showWarning("Błąd", "Nazwa zespołu nie może być pusta");
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+
+        TextField nameField = new TextField();
+        ComboBox<Project> cbProject = new ComboBox<>(FXCollections.observableArrayList(projectDAO.getAllProjects()));
+        cbProject.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(Project p) {
+                return p == null ? "" : p.getId() + " – " + p.getName();
+            }
+
+            @Override
+            public Project fromString(String s) {
+                return null;
             }
         });
-    }
 
-    @FXML
-    private void onDeleteTeam() {
-        Team selectedTeam = teamsTable.getSelectionModel().getSelectedItem();
-        if (selectedTeam == null) {
-            showWarning("Wybierz zespół", "Musisz wybrać zespół do usunięcia");
-            return;
-        }
+        grid.add(new Label("Nazwa zespołu:"), 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(new Label("Projekt:"), 0, 1);
+        grid.add(cbProject, 1, 1);
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Potwierdzenie usunięcia");
-        alert.setHeaderText("Czy na pewno chcesz usunąć zespół: " + selectedTeam.getTeamName() + "?");
-        alert.setContentText("Ta operacja jest nieodwracalna.");
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            // Tu należy zaimplementować usuwanie zespołu
-            // Brakuje tej funkcji w klasie TeamDAO
-            // teamDAO.deleteTeam(selectedTeam.getId());
-            // loadAllTeams();
-        }
-    }
-
-    @FXML
-    private void onAddMember() {
-        Team selectedTeam = teamsTable.getSelectionModel().getSelectedItem();
-        if (selectedTeam == null) {
-            showWarning("Wybierz zespół", "Musisz wybrać zespół, do którego dodasz członka");
-            return;
-        }
-
-        try {
-            // Pobierz wszystkich użytkowników, którzy nie są jeszcze w tym zespole
-            List<User> allUsers = userDAO.getAllUsers();
-            List<User> teamMembers = teamDAO.getTeamMembers(selectedTeam.getId());
-
-            allUsers.removeIf(user -> teamMembers.stream().anyMatch(member -> member.getId() == user.getId()));
-
-            if (allUsers.isEmpty()) {
-                showWarning("Brak użytkowników", "Wszyscy użytkownicy są już przypisani do tego zespołu");
-                return;
-            }
-
-            // Tworzenie okna dialogowego wyboru użytkownika
-            Dialog<User> dialog = new Dialog<>();
-            dialog.setTitle("Dodaj członka zespołu");
-            dialog.setHeaderText("Wybierz użytkownika do dodania do zespołu " + selectedTeam.getTeamName());
-
-            // Dodanie przycisków OK i Anuluj
-            ButtonType buttonTypeOk = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
-            ButtonType buttonTypeCancel = new ButtonType("Anuluj", ButtonBar.ButtonData.CANCEL_CLOSE);
-            dialog.getDialogPane().getButtonTypes().addAll(buttonTypeOk, buttonTypeCancel);
-
-            // Tworzenie ComboBox z użytkownikami
-            ComboBox<User> userComboBox = new ComboBox<>();
-            userComboBox.setItems(FXCollections.observableArrayList(allUsers));
-            userComboBox.setValue(allUsers.get(0));
-            userComboBox.setConverter(new StringConverter<User>() {
-                @Override
-                public String toString(User user) {
-                    return user != null ? user.getName() + " " + user.getLastName() + " (" + user.getEmail() + ")" : "";
-                }
-
-                @Override
-                public User fromString(String string) {
+        dlg.getDialogPane().setContent(grid);
+        dlg.setResultConverter(btn -> {
+            if (btn == ButtonType.OK) {
+                String name = nameField.getText().trim();
+                Project proj = cbProject.getValue();
+                if (name.isEmpty() || proj == null) {
+                    new Alert(Alert.AlertType.WARNING, "Wypełnij nazwę i wybierz projekt!").showAndWait();
                     return null;
                 }
-            });
+                Team t = new Team();
+                t.setTeamName(name);
+                t.setProjectId(proj.getId());
+                return t;
+            }
+            return null;
+        });
 
-            // Dodanie ComboBox do dialogu
-            javafx.scene.layout.VBox vbox = new javafx.scene.layout.VBox(10);
-            vbox.getChildren().addAll(new Label("Użytkownik:"), userComboBox);
-            vbox.setPadding(new javafx.geometry.Insets(20, 20, 20, 20));
-            dialog.getDialogPane().setContent(vbox);
-
-            // Ustawienie wyniku
-            dialog.setResultConverter(dialogButton -> {
-                if (dialogButton == buttonTypeOk) {
-                    return userComboBox.getValue();
-                }
-                return null;
-            });
-
-            Optional<User> result = dialog.showAndWait();
-            result.ifPresent(user -> {
-                // Dodaj użytkownika do zespołu
-                try {
-                    boolean isLeader = false;  // Domyślnie nie jest liderem
-                    teamDAO.insertTeamMember(selectedTeam.getId(), user.getId(), isLeader);
-                    loadTeamMembers(selectedTeam.getId());
-                } catch (SQLException e) {
-                    showError("Błąd dodawania członka", e.getMessage());
-                }
-            });
-        } catch (SQLException e) {
-            showError("Błąd pobierania użytkowników", e.getMessage());
-        }
+        Optional<Team> res = dlg.showAndWait();
+        res.ifPresent(t -> {
+            try {
+                teamDAO.insertTeam(t);
+                loadAll();
+            } catch (SQLException ex) {
+                new Alert(Alert.AlertType.ERROR, "Błąd tworzenia zespołu:\n" + ex.getMessage()).showAndWait();
+            }
+        });
     }
 
     @FXML
-    private void onRemoveMember() {
-        Team selectedTeam = teamsTable.getSelectionModel().getSelectedItem();
-        User selectedMember = membersTable.getSelectionModel().getSelectedItem();
+    private void onEditTeam() throws SQLException {
+        Team sel = teamsTable.getSelectionModel().getSelectedItem();
+        if (sel == null) return;
 
-        if (selectedTeam == null || selectedMember == null) {
-            showWarning("Wybierz zespół i członka", "Musisz wybrać zespół i członka do usunięcia");
-            return;
-        }
+        List<User> members = teamDAO.getTeamMembers(sel.getId());
+        ObservableList<User> memberItems = FXCollections.observableArrayList(members);
+        Dialog<ButtonType> dlg = new Dialog<>();
+        dlg.setTitle("Edytuj zespół");
+        dlg.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Potwierdzenie usunięcia");
-        alert.setHeaderText("Czy na pewno chcesz usunąć użytkownika: " + selectedMember.getName() + " " +
-                            selectedMember.getLastName() + " z zespołu " + selectedTeam.getTeamName() + "?");
-        alert.setContentText("Ta operacja jest nieodwracalna.");
+        TextField nameField = new TextField(sel.getTeamName());
+        ListView<User> listView = new ListView<>(memberItems);
+        listView.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        listView.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(User u, boolean empty) {
+                super.updateItem(u, empty);
+                setText(empty || u == null ? null : u.getId() + " – " + u.getEmail());
+            }
+        });
+        listView.setPrefHeight(150);
 
-        Optional<ButtonType> result = alert.showAndWait();
+        Button btnRemove = new Button("Usuń zaznaczonego");
+        btnRemove.setOnAction(evt -> {
+            User u = listView.getSelectionModel().getSelectedItem();
+            if (u != null) {
+                teamDAO.deleteTeamMember(sel.getId(), u.getId());
+                listView.getItems().remove(u);
+            }
+        });
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.add(new Label("Nazwa zespołu:"), 0, 0);
+        grid.add(nameField, 1, 0);
+        grid.add(new Label("Członkowie:"), 0, 1);
+        grid.add(listView, 1, 1);
+        grid.add(btnRemove, 1, 2);
+
+        dlg.getDialogPane().setContent(grid);
+        Optional<ButtonType> result = dlg.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
+            sel.setTeamName(nameField.getText().trim());
             try {
-                teamDAO.deleteTeamMember(selectedTeam.getId(), selectedMember.getId());
-                loadTeamMembers(selectedTeam.getId());
-            } catch (Exception e) {
-                showError("Błąd usuwania członka", e.getMessage());
+                teamDAO.updateTeam(sel);
+                loadAll();
+            } catch (SQLException ex) {
+                new Alert(Alert.AlertType.ERROR, "Błąd aktualizacji zespołu:\n" + ex.getMessage())
+                        .showAndWait();
             }
         }
     }
 
     @FXML
-    private void onToggleLeader() {
-        Team selectedTeam = teamsTable.getSelectionModel().getSelectedItem();
-        User selectedMember = membersTable.getSelectionModel().getSelectedItem();
+    private void onAssignMembers() throws SQLException {
+        Team selected = teamsTable.getSelectionModel().getSelectedItem();
+        if (selected == null) return;
 
-        if (selectedTeam == null || selectedMember == null) {
-            showWarning("Wybierz zespół i członka", "Musisz wybrać zespół i członka, aby zmienić status lidera");
-            return;
+        List<User> all = userDAO.getAllUsers();
+        List<User> members = teamDAO.getTeamMembers(selected.getId());
+        Dialog<List<User>> dlg = new Dialog<>();
+        dlg.setTitle("Przypisz członków do zespołu");
+        ListView<User> listView = new ListView<>(FXCollections.observableArrayList(all));
+        listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        for (User u : members) listView.getSelectionModel().select(u);
+        listView.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(User u, boolean empty) {
+                super.updateItem(u, empty);
+                setText(empty || u == null ? null : u.getId() + " – " + u.getEmail());
+            }
+        });
+
+        dlg.getDialogPane().setContent(listView);
+        dlg.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        dlg.setResultConverter(btn -> btn == ButtonType.OK
+                ? listView.getSelectionModel().getSelectedItems()
+                : null);
+
+        Optional<List<User>> res = dlg.showAndWait();
+        res.ifPresent(chosen -> {
+            // Najpierw pobierz aktualny stan członkostwa dla każdego użytkownika
+            Map<Integer, Integer> userTeamMap = new HashMap<>();
+            for (User u : all) {
+                int currentTeamId = teamMemberDAO.getTeamIdForUser(u.getId());
+                userTeamMap.put(u.getId(), currentTeamId);
+            }
+
+            // Usuń wszystkich poprzednich członków tego zespołu
+            for (User u : members) {
+                teamMemberDAO.deleteTeamMember(selected.getId(), u.getId());
+            }
+
+            // Dodaj nowych członków do zespołu
+            for (User u : chosen) {
+                try {
+                    teamMemberDAO.insertTeamMember(selected.getId(), u.getId(), false);
+                } catch (SQLException ex) {
+                    new Alert(Alert.AlertType.ERROR, "Błąd przypisania użytkownika: " + ex.getMessage()).showAndWait();
+                }
+            }
+
+            memberData.setAll(teamDAO.getTeamMembers(selected.getId()));
+        });
+    }
+
+    @FXML
+    private void handleSearch() {
+        String searchText = searchField.getText().toLowerCase().trim();
+        if (searchText.isEmpty()) {
+            teamsTable.setItems(teamData);
+        } else {
+            ObservableList<Team> filtered = FXCollections.observableArrayList();
+            for (Team team : teamData) {
+                if (String.valueOf(team.getId()).contains(searchText) ||
+                    team.getTeamName().toLowerCase().contains(searchText)) {
+                    filtered.add(team);
+                }
+            }
+            teamsTable.setItems(filtered);
         }
-
-        // Ta funkcja wymaga implementacji w TeamDAO
-        // Najpierw usunąć istniejącego członka, a potem dodać go ponownie z przeciwnym statusem lidera
     }
 
-    private void showWarning(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    private void showError(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.showAndWait();
+    @FXML
+    private void handleRefresh() {
+        try {
+            loadAll();
+            Team selectedTeam = teamsTable.getSelectionModel().getSelectedItem();
+            if (selectedTeam != null) {
+                onTeamSelected(selectedTeam);
+            }
+        } catch (SQLException e) {
+            new Alert(Alert.AlertType.ERROR, "Błąd odświeżania danych: " + e.getMessage()).showAndWait();
+        }
     }
 }
