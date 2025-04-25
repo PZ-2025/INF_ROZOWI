@@ -48,12 +48,27 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- Mockito -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>3.12.4</version>
+            <scope>test</scope>
+        </dependency>
         <!-- MariaDB Java Client -->
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
             <version>3.0.8</version>
         </dependency>
+        <!-- Dodaj w sekcji <dependencies> -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.2.224</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
     <build>
         <plugins>
@@ -67,6 +82,19 @@
                     <target>21</target>
                 </configuration>
             </plugin>
+
+            <!-- SUREFIRE: Testy z flagami JVM -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M9</version>
+                <configuration>
+                    <argLine>
+                        --add-opens java.base/java.lang=ALL-UNNAMED --enable-native-access=ALL-UNNAMED
+                    </argLine>
+                </configuration>
+            </plugin>
+
             <!-- JavaFX Maven Plugin -->
             <plugin>
                 <groupId>org.openjfx</groupId>
@@ -88,6 +116,7 @@
                     </execution>
                 </executions>
             </plugin>
+
             <!-- Jar Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -101,6 +130,7 @@
                     </archive>
                 </configuration>
             </plugin>
+
             <!-- Exec Plugin -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

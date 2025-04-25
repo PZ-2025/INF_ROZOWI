@@ -1,12 +1,15 @@
 package pl.rozowi.app.controllers;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
 import pl.rozowi.app.MainApplication;
+import pl.rozowi.app.models.User;
 
 import java.io.IOException;
 
@@ -19,24 +22,59 @@ public class AdminDashboardController {
     @FXML
     private AnchorPane mainPane;
 
+    private User currentUser;
+
     @FXML
     private void initialize() {
-        // Opcjonalnie możesz wczytać domyślny widok (np. Pracownicy) od razu po starcie:
         try {
-            goToEmployees();
+            // Domyślnie pokazujemy zarządzanie użytkownikami
+            goToUsers();
         } catch (IOException e) {
             e.printStackTrace();
+            showError("Błąd podczas ładowania widoku");
         }
     }
 
-    // Jeśli chcesz ustawić nazwę administratora dynamicznie
-    public void setAdminName(String adminName) {
-        welcomeLabel.setText("Witaj, " + adminName);
+    public void setUser(User user) {
+        this.currentUser = user;
+        welcomeLabel.setText("Witaj, " + user.getName());
+
+        // Jeśli użytkownik ma ustawiony domyślny widok, przełączamy na niego
+        if (user.getDefaultView() != null && !user.getDefaultView().isEmpty()) {
+            try {
+                switch (user.getDefaultView()) {
+                    case "Użytkownicy":
+                        goToUsers();
+                        break;
+                    case "Zespoły":
+                        goToTeams();
+                        break;
+                    case "Projekty":
+                        goToProjects();
+                        break;
+                    case "Zadania":
+                        goToTasks();
+                        break;
+                    case "Raporty":
+                        goToReports();
+                        break;
+                    case "Ustawienia":
+                        goToSettings();
+                        break;
+                    default:
+                        goToUsers();
+                        break;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                showError("Błąd podczas ładowania domyślnego widoku");
+            }
+        }
     }
 
     @FXML
-    private void goToEmployees() throws IOException {
-        loadView("/fxml/admin/adminEmployees.fxml");
+    private void goToUsers() throws IOException {
+        loadView("/fxml/admin/adminUsers.fxml");
     }
 
     @FXML
@@ -45,14 +83,33 @@ public class AdminDashboardController {
     }
 
     @FXML
+    private void goToProjects() throws IOException {
+        loadView("/fxml/admin/adminProjects.fxml");
+    }
+
+    @FXML
+    private void goToTasks() throws IOException {
+        loadView("/fxml/admin/adminTasks.fxml");
+    }
+
+    @FXML
     private void goToReports() throws IOException {
         loadView("/fxml/admin/adminReports.fxml");
     }
 
     @FXML
+    private void goToLogs() throws IOException {
+        loadView("/fxml/admin/adminLogs.fxml");
+    }
+
+    @FXML
     private void goToSettings() throws IOException {
-        // Możesz wczytać np. /fxml/settings.fxml
         loadView("/fxml/user/settings.fxml");
+    }
+
+    @FXML
+    private void goToSystem() throws IOException {
+        loadView("/fxml/admin/adminSystem.fxml");
     }
 
     @FXML
@@ -64,13 +121,34 @@ public class AdminDashboardController {
         FXMLLoader loader = new FXMLLoader(MainApplication.class.getResource(fxmlPath));
         Parent view = loader.load();
 
+        // Sprawdzamy, czy kontroler implementuje interfejs wymagający informacji o użytkowniku
+        Object controller = loader.getController();
+        if (controller instanceof SettingsController) {
+            ((SettingsController) controller).setUser(currentUser);
+        }
+
+        // Wyczyszczenie panelu i dodanie nowego widoku
         mainPane.getChildren().clear();
         mainPane.getChildren().add(view);
 
-        // Kotwiczenie w AnchorPane, by wypełnić cały obszar
+        // Dopasowanie widoku do panelu
         AnchorPane.setTopAnchor(view, 0.0);
         AnchorPane.setBottomAnchor(view, 0.0);
         AnchorPane.setLeftAnchor(view, 0.0);
         AnchorPane.setRightAnchor(view, 0.0);
+
+        // Dostosowanie rozmiaru okna
+        Platform.runLater(() -> {
+            Stage stage = (Stage) mainPane.getScene().getWindow();
+            stage.sizeToScene();
+        });
+    }
+
+    private void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Błąd");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

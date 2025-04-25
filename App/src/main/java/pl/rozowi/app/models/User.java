@@ -11,6 +11,7 @@ public class User {
     private String passwordHint;
     private String theme;
     private String defaultView;
+    private String teamName;
 
     public String getTheme() {
         return theme;
@@ -82,6 +83,14 @@ public class User {
 
     public void setGroupId(int groupId) {
         this.groupId = groupId;
+    }
+
+    public String getTeamName() {
+        return teamName;
+    }
+
+    public void setTeamName(String teamName) {
+        this.teamName = teamName;
     }
 
     public String getPasswordHint() {

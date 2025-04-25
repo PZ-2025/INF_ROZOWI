@@ -15,12 +15,13 @@
         <Button fx:id="searchButton" text="🔍" style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
     </HBox>
     <TableView fx:id="employeesTable" layoutX="20" layoutY="60"
-               style="-fx-pref-width: 600; -fx-pref-height: 400;">
+               style="-fx-pref-width: 700; -fx-pref-height: 500;">
         <columns>
             <TableColumn fx:id="colId" text="ID" style="-fx-pref-width: 50;"/>
             <TableColumn fx:id="colName" text="Imię" style="-fx-pref-width: 150;"/>
             <TableColumn fx:id="colLastName" text="Nazwisko" style="-fx-pref-width: 150;"/>
             <TableColumn fx:id="colEmail" text="Email" style="-fx-pref-width: 200;"/>
+            <TableColumn fx:id="colTeam" text="Zespół" style="-fx-pref-width: 150;"/>
         </columns>
     </TableView>
 </AnchorPane>

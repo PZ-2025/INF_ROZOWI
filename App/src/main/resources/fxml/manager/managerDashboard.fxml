@@ -28,11 +28,15 @@
             <Label fx:id="welcomeLabel" text="Panel Kierownika"
                    style="-fx-font-size: 18px; -fx-text-fill: white; -fx-padding: 10px 0; -fx-alignment: center;"/>
             <!-- Główne przyciski nawigacyjne -->
-            <Button text="Zadania" onAction="#goToTasks"
+            <Button text="Pracownicy" onAction="#goToEmployees"
+                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-pref-width: 220px;"/>
+            <Button text="Projekty" onAction="#goToProjects"
+                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-pref-width: 220px;"/>
+            <Button text="Monitor" onAction="#goToTasks"
+                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-pref-width: 220px;"/>
+            <Button text="Zespoły" onAction="#goToTeams"
                     style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-pref-width: 220px;"/>
             <Button text="Raporty" onAction="#goToReports"
-                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-pref-width: 220px;"/>
-            <Button text="Pracownicy" onAction="#goToEmployees"
                     style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-pref-width: 220px;"/>
             <!-- Rozciągający się spacer -->
             <Region VBox.vgrow="ALWAYS"/>

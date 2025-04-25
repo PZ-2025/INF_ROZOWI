@@ -1,12 +1,15 @@
 package pl.rozowi.app.controllers;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Stage;
 import pl.rozowi.app.MainApplication;
+import pl.rozowi.app.models.User;
 
 import java.io.IOException;
 
@@ -19,47 +22,65 @@ public class TeamLeaderDashboardController {
     @FXML
     private AnchorPane mainPane;
 
-    @FXML
-    private void initialize() {
-        // Na starcie ładujemy widok "Moje Zadania" dla team leadera
-        try {
-            goToMyTasks();
-        } catch (IOException e) {
-            e.printStackTrace();
+
+    public void setUser(User user) throws IOException {
+        welcomeLabel.setText("Witaj, " + user.getName());
+
+        String def = user.getDefaultView();
+        if (def != null) {
+            switch (def) {
+                case "Moje zadania":
+                    goToMyTasks();
+                    break;
+                case "Zadania":
+                    goToTasks();
+                    break;
+                case "Ustawienia":
+                    goToSettings();
+                    break;
+                case "Powiadomienia":
+                    goToNotifications();
+                    break;
+                default:
+                    goToMyTasks();
+                    break;
+            }
+            return;
         }
+        goToMyTasks();
     }
 
-    public void setTeamLeaderName(String name) {
-        welcomeLabel.setText("Witaj, " + name);
+    @FXML
+    private void initialize() {
+    }
+
+    @FXML
+    private void goToNotifications() throws IOException {
+        loadView("/fxml/notifications.fxml");
     }
 
     @FXML
     private void goToMyTasks() throws IOException {
-        // Ładujemy widok "Moje Zadania"
         loadView("/fxml/teamleader/teamLeaderMyTasks.fxml");
     }
 
     @FXML
     private void goToTasks() throws IOException {
-        // Ładujemy widok "Zadania"
         loadView("/fxml/teamleader/teamLeaderTasks.fxml");
     }
 
     @FXML
     private void goToReports() throws IOException {
-        // Ładujemy widok "Raporty"
         loadView("/fxml/teamleader/teamLeaderReports.fxml");
     }
 
     @FXML
     private void goToEmployees() throws IOException {
-        // Ładujemy widok "Pracownicy"
         loadView("/fxml/teamleader/teamLeaderEmployees.fxml");
     }
 
     @FXML
     private void goToSettings() throws IOException {
-        // Używamy widoku ustawień z panelu użytkownika
         loadView("/fxml/user/settings.fxml");
     }
 
@@ -68,15 +89,25 @@ public class TeamLeaderDashboardController {
         MainApplication.switchScene("/fxml/login.fxml", "TaskApp - Logowanie");
     }
 
+
     private void loadView(String fxmlPath) throws IOException {
         FXMLLoader loader = new FXMLLoader(MainApplication.class.getResource(fxmlPath));
         Parent view = loader.load();
-        mainPane.getChildren().clear();
-        mainPane.getChildren().add(view);
-        // Ustawienie, aby widok wypełniał cały obszar mainPane
+
+        var ctrl = loader.getController();
+        if (ctrl instanceof SettingsController) {
+            ((SettingsController) ctrl).setUser(MainApplication.getCurrentUser());
+        }
+
+        mainPane.getChildren().setAll(view);
         AnchorPane.setTopAnchor(view, 0.0);
         AnchorPane.setBottomAnchor(view, 0.0);
         AnchorPane.setLeftAnchor(view, 0.0);
         AnchorPane.setRightAnchor(view, 0.0);
+
+        Platform.runLater(() -> {
+            Stage stage = (Stage) mainPane.getScene().getWindow();
+            stage.sizeToScene();
+        });
     }
 }

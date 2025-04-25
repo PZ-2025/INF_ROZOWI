@@ -83,7 +83,7 @@ public class RegisterController {
         newUser.setLastName(lastNameField.getText());
         newUser.setEmail(emailField.getText());
         newUser.setPassword(hashPassword(passwordField.getText()));
-        newUser.setRoleId(3);       // domyślna rola: użytkownik (role id 3)
+        newUser.setRoleId(4);       // domyślna rola: użytkownik (role id 4)
         newUser.setGroupId(1);      // domyślne przypisanie nowego użytkownika do teamu 1
         newUser.setPasswordHint("");
 

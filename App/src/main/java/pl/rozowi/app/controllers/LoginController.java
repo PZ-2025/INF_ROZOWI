@@ -1,20 +1,22 @@
 package pl.rozowi.app.controllers;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import javafx.stage.Stage;
 import pl.rozowi.app.MainApplication;
 import pl.rozowi.app.dao.TeamMemberDAO;
 import pl.rozowi.app.dao.UserDAO;
 import pl.rozowi.app.models.User;
+import pl.rozowi.app.services.LoginService;
 import pl.rozowi.app.util.Session;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 public class LoginController {
 
@@ -23,8 +25,11 @@ public class LoginController {
     @FXML
     private PasswordField passwordField;
 
-    private UserDAO userDAO = new UserDAO();
-    private TeamMemberDAO teamMemberDAO = new TeamMemberDAO();
+    private LoginService loginService;
+
+    public LoginController() {
+        this.loginService = new LoginService(new UserDAO(), new TeamMemberDAO());
+    }
 
     public void initialize() {
         usernameField.setOnKeyPressed(event -> {
@@ -44,68 +49,67 @@ public class LoginController {
         String email = usernameField.getText();
         String pass = passwordField.getText();
 
-        // Hashowanie hasła
-        String hashedPassword = hashPassword(pass);
-
-        User user = userDAO.getUserByEmail(email);
-        if (user != null && user.getPassword().equals(hashedPassword)) {
-            MainApplication.setCurrentUser(user);
-            Session.currentUserId = user.getId();
-            int teamId = teamMemberDAO.getTeamIdForUser(user.getId());
-            Session.currentUserTeam = String.valueOf(teamId);
-
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Logowanie udane");
-            alert.setHeaderText(null);
-            alert.setContentText("Logowanie udane!");
-            alert.getDialogPane().setStyle("-fx-background-color: green;");
-            alert.showAndWait();
-
-            try {
-                switch (user.getRoleId()) {
-                    case 1: // Admin
-                        MainApplication.switchScene("/fxml/admin/adminDashboard.fxml", "TaskApp - Admin");
-                        break;
-                    case 2: // Manager
-                        MainApplication.switchScene("/fxml/manager/managerDashboard.fxml", "TaskApp - Manager");
-                        break;
-                    case 3: // Team Leader
-                        MainApplication.switchScene("/fxml/teamleader/teamLeaderDashboard.fxml", "TaskApp - Team Leader");
-                        break;
-                    case 4: // User (Employee)
-                        MainApplication.switchScene("/fxml/user/userDashboard.fxml", "TaskApp - User");
-                        break;
-                    default:
-                        MainApplication.switchScene("/fxml/user/userDashboard.fxml", "TaskApp - Dashboard");
-                        break;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Błąd logowania");
-            alert.setHeaderText(null);
-            alert.setContentText("Błędne dane logowania!");
-            alert.getDialogPane().setStyle("-fx-background-color: red;");
-            alert.showAndWait();
+        User user = loginService.authenticate(email, pass);
+        if (user == null) {
+            Alert err = new Alert(Alert.AlertType.ERROR, "Błędne dane logowania!");
+            err.setHeaderText(null);
+            err.showAndWait();
+            return;
         }
-    }
 
-    private String hashPassword(String password) {
+        // zapisujemy zalogowanego
+        MainApplication.setCurrentUser(user);
+        Session.currentUserId = user.getId();
+        Session.currentUserTeam = String.valueOf(loginService.findTeamIdForUser(user.getId()));
+
+        Alert ok = new Alert(Alert.AlertType.INFORMATION, "Logowanie udane!");
+        ok.setHeaderText(null);
+        ok.showAndWait();
+
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
+            Stage stage = (Stage) usernameField.getScene().getWindow();
+            switch (user.getRoleId()) {
+                case 2 -> {  // Manager-Kierownik
+                    FXMLLoader loader = new FXMLLoader(
+                            getClass().getResource("/fxml/manager/managerDashboard.fxml"));
+                    Parent root = loader.load();
+                    ManagerDashboardController ctrl =
+                            loader.getController();
+                    ctrl.setUser(user);
+                    stage.setScene(new Scene(root));
+                    stage.setTitle("TaskApp - Kierownik");
+                    stage.show();
+                }
+                case 3 -> {  // Team Leader
+                    FXMLLoader loader = new FXMLLoader(
+                            getClass().getResource("/fxml/teamleader/teamLeaderDashboard.fxml"));
+                    Parent root = loader.load();
+                    TeamLeaderDashboardController ctrl =
+                            loader.getController();
+                    ctrl.setUser(user);
+                    stage.setScene(new Scene(root));
+                    stage.setTitle("TaskApp - Team Leader");
+                    stage.show();
+                }
+                case 4 -> {  // User
+                    FXMLLoader loader = new FXMLLoader(
+                            getClass().getResource("/fxml/user/userDashboard.fxml"));
+                    Parent root = loader.load();
+                    UserDashboardController ctrl =
+                            loader.getController();
+                    ctrl.setUser(user);
+                    stage.setScene(new Scene(root));
+                    stage.setTitle("TaskApp - User");
+                    stage.show();
+                }
+                case 1 -> MainApplication.switchScene(
+                        "/fxml/admin/adminDashboard.fxml", "TaskApp - Admin");
+
+                default -> MainApplication.switchScene(
+                        "/fxml/user/userDashboard.fxml", "TaskApp - Dashboard");
             }
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
+        } catch (IOException e) {
             e.printStackTrace();
-            return null;
         }
     }
 
@@ -125,7 +129,9 @@ public class LoginController {
             alert.showAndWait();
             return;
         }
-        User user = userDAO.getUserByEmail(email);
+
+        User user = loginService.findUserByEmail(email);
+
         if (user == null) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Błąd");

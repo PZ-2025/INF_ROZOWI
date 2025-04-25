@@ -1,46 +1,27 @@
 package pl.rozowi.app.models;
 
-import javafx.beans.property.*;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.StringProperty;
+import javafx.beans.property.SimpleStringProperty;
 
 public class Task {
     private final IntegerProperty id = new SimpleIntegerProperty();
     private final IntegerProperty projectId = new SimpleIntegerProperty();
     private final IntegerProperty teamId = new SimpleIntegerProperty();
-    private final IntegerProperty assignedTo = new SimpleIntegerProperty();  // Dodane pole assignedTo
+    private final IntegerProperty assignedTo = new SimpleIntegerProperty();
+
     private final StringProperty title = new SimpleStringProperty();
     private final StringProperty description = new SimpleStringProperty();
     private final StringProperty status = new SimpleStringProperty();
-    private final StringProperty priority = new SimpleStringProperty(); // LOW, MEDIUM, HIGH
+    private final StringProperty priority = new SimpleStringProperty();
     private final StringProperty startDate = new SimpleStringProperty();
     private final StringProperty endDate = new SimpleStringProperty();
+
     private final StringProperty teamName = new SimpleStringProperty();
+    private final StringProperty assignedEmail = new SimpleStringProperty();
 
-    // Getter i setter dla assignedTo
-    public int getAssignedTo() {
-        return assignedTo.get();
-    }
-
-    public void setAssignedTo(int assignedTo) {
-        this.assignedTo.set(assignedTo);
-    }
-
-    // Getter dla assignedToProperty
-    public IntegerProperty assignedToProperty() {
-        return assignedTo;
-    }
-
-    public String getTeamName() {
-        return teamName.get();
-    }
-
-    public void setTeamName(String teamName) {
-        this.teamName.set(teamName);
-    }
-
-    public StringProperty teamProperty() {
-        return teamName;
-    }
-
+    // --- id ---
     public int getId() {
         return id.get();
     }
@@ -49,6 +30,11 @@ public class Task {
         this.id.set(id);
     }
 
+    public IntegerProperty idProperty() {
+        return id;
+    }
+
+    // --- projectId ---
     public int getProjectId() {
         return projectId.get();
     }
@@ -57,6 +43,11 @@ public class Task {
         this.projectId.set(projectId);
     }
 
+    public IntegerProperty projectIdProperty() {
+        return projectId;
+    }
+
+    // --- teamId ---
     public int getTeamId() {
         return teamId.get();
     }
@@ -65,6 +56,24 @@ public class Task {
         this.teamId.set(teamId);
     }
 
+    public IntegerProperty teamIdProperty() {
+        return teamId;
+    }
+
+    // --- assignedTo ---
+    public int getAssignedTo() {
+        return assignedTo.get();
+    }
+
+    public void setAssignedTo(int assignedTo) {
+        this.assignedTo.set(assignedTo);
+    }
+
+    public IntegerProperty assignedToProperty() {
+        return assignedTo;
+    }
+
+    // --- title ---
     public String getTitle() {
         return title.get();
     }
@@ -73,6 +82,11 @@ public class Task {
         this.title.set(title);
     }
 
+    public StringProperty titleProperty() {
+        return title;
+    }
+
+    // --- description ---
     public String getDescription() {
         return description.get();
     }
@@ -81,6 +95,11 @@ public class Task {
         this.description.set(description);
     }
 
+    public StringProperty descriptionProperty() {
+        return description;
+    }
+
+    // --- status ---
     public String getStatus() {
         return status.get();
     }
@@ -89,6 +108,11 @@ public class Task {
         this.status.set(status);
     }
 
+    public StringProperty statusProperty() {
+        return status;
+    }
+
+    // --- priority ---
     public String getPriority() {
         return priority.get();
     }
@@ -97,6 +121,11 @@ public class Task {
         this.priority.set(priority);
     }
 
+    public StringProperty priorityProperty() {
+        return priority;
+    }
+
+    // --- startDate ---
     public String getStartDate() {
         return startDate.get();
     }
@@ -105,6 +134,11 @@ public class Task {
         this.startDate.set(startDate);
     }
 
+    public StringProperty startDateProperty() {
+        return startDate;
+    }
+
+    // --- endDate ---
     public String getEndDate() {
         return endDate.get();
     }
@@ -113,39 +147,38 @@ public class Task {
         this.endDate.set(endDate);
     }
 
-    public IntegerProperty idProperty() {
-        return id;
-    }
-
-    public IntegerProperty projectIdProperty() {
-        return projectId;
-    }
-
-    public IntegerProperty teamIdProperty() {
-        return teamId;
-    }
-
-    public StringProperty titleProperty() {
-        return title;
-    }
-
-    public StringProperty descriptionProperty() {
-        return description;
-    }
-
-    public StringProperty statusProperty() {
-        return status;
-    }
-
-    public StringProperty priorityProperty() {
-        return priority;
-    }
-
-    public StringProperty startDateProperty() {
-        return startDate;
-    }
-
     public StringProperty endDateProperty() {
         return endDate;
+    }
+
+    // --- teamName ---
+    public String getTeamName() {
+        return teamName.get();
+    }
+
+    public void setTeamName(String teamName) {
+        this.teamName.set(teamName);
+    }
+
+    public StringProperty teamNameProperty() {
+        return teamName;
+    }
+
+    // --- assignedEmail ---
+    public String getAssignedEmail() {
+        return assignedEmail.get();
+    }
+
+    public void setAssignedEmail(String assignedEmail) {
+        this.assignedEmail.set(assignedEmail);
+    }
+
+    public StringProperty assignedEmailProperty() {
+        return assignedEmail;
+    }
+
+    @Override
+    public String toString() {
+        return getId() + " – " + getTitle();
     }
 }

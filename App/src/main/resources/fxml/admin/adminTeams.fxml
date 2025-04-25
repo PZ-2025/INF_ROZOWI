@@ -1,26 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<?import javafx.scene.layout.Region?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="pl.rozowi.app.controllers.TeamsController"
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="pl.rozowi.app.controllers.AdminTeamsController"
             style="-fx-background-color: #1E1E2F;">
-    <HBox layoutX="20" layoutY="20" spacing="10">
-        <Label text="Zespoły" style="-fx-font-size: 20px; -fx-text-fill: white;"/>
-        <Region fx:id="spacer" HBox.hgrow="ALWAYS"/>
-        <TextField fx:id="searchField" promptText="Szukaj zespołu..." style="-fx-pref-width: 200px;"/>
-        <Button fx:id="searchButton" text="🔍" style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
-    </HBox>
 
-    <TableView fx:id="teamsTable" layoutX="20" layoutY="60"
-               style="-fx-pref-width: 600; -fx-pref-height: 400;">
-        <columns>
-            <TableColumn fx:id="colTeamId" text="ID" style="-fx-pref-width: 50;"/>
-            <TableColumn fx:id="colTeamName" text="Nazwa Zespołu" style="-fx-pref-width: 250;"/>
-            <TableColumn fx:id="colMembersCount" text="Liczba członków" style="-fx-pref-width: 150;"/>
-        </columns>
-    </TableView>
-</AnchorPane>
+    <top>
+        <VBox spacing="10" style="-fx-padding: 10">
+            <HBox spacing="10">
+                <Button text="Nowy zespół" onAction="#onAddTeam" style="-fx-background-color: #28a745; -fx-text-fill: white;"/>
+                <Button text="Edytuj zespół" onAction="#onEditTeam" style="-fx-background-color: #ffc107; -fx-text-fill: black;"/>
+                <Button text="Przypisz członków" onAction="#onAssignMembers" style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+                <Button text="Odśwież" onAction="#handleRefresh" style="-fx-background-color: #6c757d; -fx-text-fill: white;"/>
+                <Pane HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="searchField" promptText="Szukaj zespołu..." style="-fx-pref-width: 200px;"/>
+                <Button text="🔍" onAction="#handleSearch" style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <left>
+        <TableView fx:id="teamsTable" prefWidth="350">
+            <columns>
+                <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
+                <TableColumn fx:id="colName" text="Nazwa zespołu" prefWidth="150"/>
+                <TableColumn fx:id="colProjectName" text="Projekt" prefWidth="120"/>
+                <TableColumn fx:id="colMembersCount" text="Liczba członków" prefWidth="120"/>
+            </columns>
+        </TableView>
+    </left>
+
+    <center>
+        <VBox spacing="10" style="-fx-padding:10">
+            <Label text="Członkowie zespołu:" style="-fx-text-fill: white;"/>
+            <TableView fx:id="membersTable" prefHeight="150">
+                <columns>
+                    <TableColumn fx:id="colMemberId" text="ID" prefWidth="60"/>
+                    <TableColumn fx:id="colMemberEmail" text="Email" prefWidth="300"/>
+                </columns>
+            </TableView>
+
+            <Label text="Zadania zespołu:" style="-fx-text-fill: white;"/>
+            <TableView fx:id="tasksTable" prefHeight="200">
+                <columns>
+                    <TableColumn fx:id="colTaskId" text="ID" prefWidth="50"/>
+                    <TableColumn fx:id="colTaskTitle" text="Tytuł" prefWidth="200"/>
+                    <TableColumn fx:id="colTaskStatus" text="Status" prefWidth="100"/>
+                    <TableColumn fx:id="colTaskPriority" text="Priorytet" prefWidth="100"/>
+                    <TableColumn fx:id="colTaskAssignee" text="Wykonawca" prefWidth="180"/>
+                </columns>
+            </TableView>
+        </VBox>
+    </center>
+
+</BorderPane>

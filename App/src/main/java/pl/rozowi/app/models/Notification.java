@@ -8,7 +8,7 @@ public class Notification {
     private Integer taskId;
     private String notificationType;
     private String description;
-    private Timestamp date;
+    private Timestamp createdAt;
     private boolean isRead;
 
     public int getId() {
@@ -51,19 +51,19 @@ public class Notification {
         this.description = description;
     }
 
-    public Timestamp getDate() {
-        return date;
+    public Timestamp getCreatedAt() {
+        return createdAt;
     }
 
-    public void setDate(Timestamp date) {
-        this.date = date;
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
     }
 
     public boolean isRead() {
         return isRead;
     }
 
-    public void setRead(boolean isRead) {
-        this.isRead = isRead;
+    public void setRead(boolean read) {
+        isRead = read;
     }
 }

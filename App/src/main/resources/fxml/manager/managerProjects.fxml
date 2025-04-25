@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+
+<VBox spacing="10"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pl.rozowi.app.controllers.ManagerProjectsController"
+      style="-fx-padding:10">
+
+    <HBox spacing="10">
+        <Button text="Nowy projekt" onAction="#onAddProject"/>
+        <Button text="Edytuj wybrany" onAction="#onEditProject"/>
+        <Button text="Usuń wybrany" onAction="#onDeleteProject"/>
+        <Pane HBox.hgrow="ALWAYS"/>
+    </HBox>
+
+    <TableView fx:id="projectsTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colId" text="ID" prefWidth="50">
+                <cellValueFactory>
+                    <PropertyValueFactory property="id"/>
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="colName" text="Nazwa" prefWidth="200">
+                <cellValueFactory>
+                    <PropertyValueFactory property="name"/>
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="colDesc" text="Opis" prefWidth="300">
+                <cellValueFactory>
+                    <PropertyValueFactory property="description"/>
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="colStart" text="Data startu" prefWidth="120">
+                <cellValueFactory>
+                    <PropertyValueFactory property="startDate"/>
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="colEnd" text="Data końca" prefWidth="120">
+                <cellValueFactory>
+                    <PropertyValueFactory property="endDate"/>
+                </cellValueFactory>
+            </TableColumn>
+            <!-- Status column removed as requested -->
+        </columns>
+    </TableView>
+
+</VBox>
