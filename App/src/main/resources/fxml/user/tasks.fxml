@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="pl.rozowi.app.controllers.TasksController"
+      alignment="CENTER" spacing="15" style="-fx-padding: 20px; -fx-background-color: #1E1E2F;">
+    <Label text="Zadania" style="-fx-font-size: 24px; -fx-text-fill: white;"/>
+    <TableView fx:id="tasksTable">
+        <columns>
+            <TableColumn fx:id="taskIdColumn" text="ID" />
+            <TableColumn fx:id="taskNameColumn" text="Nazwa" />
+            <TableColumn fx:id="taskDescriptionColumn" text="Opis" />
+            <TableColumn fx:id="taskStatusColumn" text="Status" />
+            <TableColumn fx:id="taskStartDateColumn" text="Data początkowa" />
+            <TableColumn fx:id="taskDeadlineColumn" text="Termin" />
+        </columns>
+    </TableView>
+    <HBox spacing="10">
+        <TextField fx:id="filterField" promptText="Filtruj zadania..." style="-fx-pref-width: 300px;"/>
+        <Button text="Filtruj" onAction="#handleFilter"/>
+        <Button text="Dodaj zadanie" onAction="#handleAddTask"/>
+    </HBox>
+</VBox>
