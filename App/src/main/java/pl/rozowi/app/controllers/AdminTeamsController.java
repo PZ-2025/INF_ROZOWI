@@ -13,15 +13,17 @@ import pl.rozowi.app.dao.ProjectDAO;
 import pl.rozowi.app.dao.TaskDAO;
 import pl.rozowi.app.dao.TeamDAO;
 import pl.rozowi.app.dao.UserDAO;
+import pl.rozowi.app.dao.TeamMemberDAO;
 import pl.rozowi.app.models.Project;
 import pl.rozowi.app.models.Task;
 import pl.rozowi.app.models.Team;
 import pl.rozowi.app.models.User;
 
+
+
+
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class AdminTeamsController {
@@ -64,6 +66,8 @@ public class AdminTeamsController {
     private final ProjectDAO projectDAO = new ProjectDAO();
     private final TaskDAO taskDAO = new TaskDAO();
     private final UserDAO userDAO = new UserDAO();
+    private final TeamMemberDAO teamMemberDAO = new TeamMemberDAO();
+
 
     private final ObservableList<Team> teamData = FXCollections.observableArrayList();
     private final ObservableList<User> memberData = FXCollections.observableArrayList();
@@ -298,18 +302,27 @@ public class AdminTeamsController {
 
         Optional<List<User>> res = dlg.showAndWait();
         res.ifPresent(chosen -> {
-            // Usuń wszystkich poprzednich członków
-            for (User u : members) {
-                teamDAO.deleteTeamMember(selected.getId(), u.getId());
+            // Najpierw pobierz aktualny stan członkostwa dla każdego użytkownika
+            Map<Integer, Integer> userTeamMap = new HashMap<>();
+            for (User u : all) {
+                int currentTeamId = teamMemberDAO.getTeamIdForUser(u.getId());
+                userTeamMap.put(u.getId(), currentTeamId);
             }
-            // Dodaj nowych członków
+
+            // Usuń wszystkich poprzednich członków tego zespołu
+            for (User u : members) {
+                teamMemberDAO.deleteTeamMember(selected.getId(), u.getId());
+            }
+
+            // Dodaj nowych członków do zespołu
             for (User u : chosen) {
                 try {
-                    teamDAO.insertTeamMember(selected.getId(), u.getId(), false);
+                    teamMemberDAO.insertTeamMember(selected.getId(), u.getId(), false);
                 } catch (SQLException ex) {
                     new Alert(Alert.AlertType.ERROR, "Błąd przypisania użytkownika: " + ex.getMessage()).showAndWait();
                 }
             }
+
             memberData.setAll(teamDAO.getTeamMembers(selected.getId()));
         });
     }

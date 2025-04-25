@@ -33,6 +33,8 @@
                 style="-fx-background-color: #17a2b8; -fx-text-fill: white;"/>
         <Button text="Zmień rolę" onAction="#handleChangeRole"
                 style="-fx-background-color: #6c757d; -fx-text-fill: white;"/>
+        <Button text="Zmień grupę" onAction="#handleChangeGroup"
+                style="-fx-background-color: #6610f2; -fx-text-fill: white;"/>
         <Button text="Odśwież" onAction="#handleRefresh"
                 style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
     </HBox>
@@ -45,6 +47,7 @@
             <TableColumn fx:id="colLastName" text="Nazwisko" prefWidth="120"/>
             <TableColumn fx:id="colEmail" text="Email" prefWidth="200"/>
             <TableColumn fx:id="colRole" text="Rola" prefWidth="120"/>
+            <TableColumn fx:id="colGroup" text="Grupa" prefWidth="120"/>
             <TableColumn fx:id="colTeam" text="Zespół" prefWidth="120"/>
         </columns>
     </TableView>
@@ -70,14 +73,17 @@
                 <Label text="Rola:" GridPane.rowIndex="3" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
                 <Label fx:id="detailRole" text="-" GridPane.rowIndex="3" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
 
-                <Label text="Zespół:" GridPane.rowIndex="4" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
-                <Label fx:id="detailTeam" text="-" GridPane.rowIndex="4" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
+                <Label text="Grupa:" GridPane.rowIndex="4" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
+                <Label fx:id="detailGroup" text="-" GridPane.rowIndex="4" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
 
-                <Label text="Data utworzenia:" GridPane.rowIndex="5" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
-                <Label fx:id="detailCreatedAt" text="-" GridPane.rowIndex="5" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
+                <Label text="Zespół:" GridPane.rowIndex="5" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
+                <Label fx:id="detailTeam" text="-" GridPane.rowIndex="5" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
 
-                <Label text="Ostatnia zmiana hasła:" GridPane.rowIndex="6" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
-                <Label fx:id="detailLastPasswordChange" text="-" GridPane.rowIndex="6" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
+                <Label text="Data utworzenia:" GridPane.rowIndex="6" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
+                <Label fx:id="detailCreatedAt" text="-" GridPane.rowIndex="6" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
+
+                <Label text="Ostatnia zmiana hasła:" GridPane.rowIndex="7" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
+                <Label fx:id="detailLastPasswordChange" text="-" GridPane.rowIndex="7" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
             </GridPane>
         </VBox>
     </TitledPane>
