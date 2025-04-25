@@ -70,14 +70,14 @@ public class AdminProjectsController {
     @FXML
     private TableColumn<Task, String> colTaskAssignee;
 
-    private ProjectDAO projectDAO = new ProjectDAO();
-    private TeamDAO teamDAO = new TeamDAO();
-    private TaskDAO taskDAO = new TaskDAO();
-    private UserDAO userDAO = new UserDAO();
+    private final ProjectDAO projectDAO = new ProjectDAO();
+    private final TeamDAO teamDAO = new TeamDAO();
+    private final TaskDAO taskDAO = new TaskDAO();
+    private final UserDAO userDAO = new UserDAO();
 
-    private ObservableList<Project> allProjects = FXCollections.observableArrayList();
-    private ObservableList<Team> projectTeams = FXCollections.observableArrayList();
-    private ObservableList<Task> projectTasks = FXCollections.observableArrayList();
+    private final ObservableList<Project> allProjects = FXCollections.observableArrayList();
+    private final ObservableList<Team> projectTeams = FXCollections.observableArrayList();
+    private final ObservableList<Task> projectTasks = FXCollections.observableArrayList();
 
     @FXML
     private void initialize() {
@@ -89,16 +89,25 @@ public class AdminProjectsController {
         colEndDate.setCellValueFactory(data -> data.getValue().endDateProperty());
         colManager.setCellValueFactory(data -> {
             int managerId = data.getValue().getManagerId();
-            String managerName = "Brak";
+            if (managerId <= 0) {
+                return new SimpleStringProperty("Brak przypisania");
+            }
+
             try {
-                // Tutaj powinno być pobieranie nazwy kierownika z bazy
-                // User manager = userDAO.getUserById(managerId);
-                // managerName = manager.getName() + " " + manager.getLastName();
+                // Pobierz imię i nazwisko kierownika projektu
+                List<User> managers = userDAO.getAllManagers();
+                for (User manager : managers) {
+                    if (manager.getId() == managerId) {
+                        return new SimpleStringProperty(manager.getName() + " " + manager.getLastName());
+                    }
+                }
+                return new SimpleStringProperty("ID: " + managerId);
             } catch (Exception e) {
                 e.printStackTrace();
+                return new SimpleStringProperty("Błąd");
             }
-            return new SimpleStringProperty(managerName);
         });
+
         colStatus.setCellValueFactory(data -> {
             LocalDate startDate = data.getValue().getStartDate();
             LocalDate endDate = data.getValue().getEndDate();
@@ -120,11 +129,24 @@ public class AdminProjectsController {
         // Konfiguracja kolumn tabeli zespołów
         colTeamId.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getId()));
         colTeamName.setCellValueFactory(data -> data.getValue().teamNameProperty());
-        colTeamLeader.setCellValueFactory(data -> new SimpleStringProperty("Nieznany")); // To wymaga implementacji
-        colMembersCount.setCellValueFactory(data -> new SimpleObjectProperty<>(0)); // To wymaga implementacji
+        colTeamLeader.setCellValueFactory(data -> {
+            // Tutaj logika do pobrania team leadera
+            return new SimpleStringProperty("Nie określono");
+        });
+        colMembersCount.setCellValueFactory(data -> {
+            // Pobierz liczbę członków zespołu
+            int teamId = data.getValue().getId();
+            try {
+                List<User> members = teamDAO.getTeamMembers(teamId);
+                return new SimpleObjectProperty<>(members.size());
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new SimpleObjectProperty<>(0);
+            }
+        });
 
         // Konfiguracja kolumn tabeli zadań
-        colId.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getId()));
+        colTaskId.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getId()));
         colTaskTitle.setCellValueFactory(data -> data.getValue().titleProperty());
         colTaskStatus.setCellValueFactory(data -> data.getValue().statusProperty());
         colTaskPriority.setCellValueFactory(data -> data.getValue().priorityProperty());
@@ -158,14 +180,16 @@ public class AdminProjectsController {
 
     private void loadProjectTeams(int projectId) {
         try {
-            // Tutaj powinno być pobieranie zespołów przypisanych do projektu
-            // List<Team> teams = teamDAO.getTeamsByProjectId(projectId);
-            // projectTeams.setAll(teams);
+            // W prawdziwej implementacji tutaj pobieramy zespoły dla projektu
+            List<Team> teams = teamDAO.getAllTeams();
+            // Filtrowanie zespołów tylko do tych, które są przypisane do projektu
+            List<Team> projectTeamsFiltered = teams.stream()
+                .filter(team -> team.getProjectId() == projectId)
+                .toList();
 
-            // Tymczasowe rozwiązanie
-            projectTeams.clear();
+            projectTeams.setAll(projectTeamsFiltered);
             teamsTable.setItems(projectTeams);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             showError("Błąd podczas wczytywania zespołów", e.getMessage());
         }
     }
@@ -256,15 +280,12 @@ public class AdminProjectsController {
 
         Optional<ButtonType> result = confirmDialog.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            // Tutaj powinna być implementacja usuwania projektu
-            // boolean success = projectDAO.deleteProject(selectedProject.getId());
-
-            // Tymczasowe symulowane usunięcie
+            // Tutaj zamiast usuwać, po prostu usuń z listy
             allProjects.remove(selectedProject);
             projectTeams.clear();
             projectTasks.clear();
 
-            showInfo("Projekt został usunięty");
+            showInfo("Projekt został usunięty z listy");
         }
     }
 
@@ -297,7 +318,7 @@ public class AdminProjectsController {
             managerComboBox.setConverter(new javafx.util.StringConverter<User>() {
                 @Override
                 public String toString(User user) {
-                    return user != null ? user.getName() + " " + user.getLastName() : "";
+                    return user != null ? user.getName() + " " + user.getLastName() + " (" + user.getEmail() + ")" : "";
                 }
 
                 @Override
@@ -360,215 +381,6 @@ public class AdminProjectsController {
         }
     }
 
-    @FXML
-    private void handleAddTeam() {
-        Project selectedProject = projectsTable.getSelectionModel().getSelectedItem();
-        if (selectedProject == null) {
-            showWarning("Wybierz projekt, do którego chcesz dodać zespół");
-            return;
-        }
-
-        try {
-            List<Team> availableTeams;
-            try {
-                availableTeams = teamDAO.getAllTeams();
-                // Filtruj zespoły, które nie są już przypisane do projektu
-                for (Team team : projectTeams) {
-                    availableTeams.removeIf(t -> t.getId() == team.getId());
-                }
-            } catch (SQLException e) {
-                showError("Błąd SQL", e.getMessage());
-                return;
-            }
-
-            if (availableTeams.isEmpty()) {
-                showWarning("Brak dostępnych zespołów do przypisania");
-                return;
-            }
-
-            Dialog<Team> dialog = new Dialog<>();
-            dialog.setTitle("Dodaj zespół do projektu");
-            dialog.setHeaderText("Wybierz zespół dla projektu: " + selectedProject.getName());
-
-            ButtonType addButtonType = new ButtonType("Dodaj", ButtonBar.ButtonData.OK_DONE);
-            dialog.getDialogPane().getButtonTypes().addAll(addButtonType, ButtonType.CANCEL);
-
-            ComboBox<Team> teamComboBox = new ComboBox<>();
-            teamComboBox.setItems(FXCollections.observableArrayList(availableTeams));
-
-            // Konwerter dla wyświetlania nazw zespołów
-            teamComboBox.setConverter(new javafx.util.StringConverter<Team>() {
-                @Override
-                public String toString(Team team) {
-                    return team != null ? team.getTeamName() : "";
-                }
-
-                @Override
-                public Team fromString(String string) {
-                    return null;
-                }
-            });
-
-            GridPane grid = new GridPane();
-            grid.setHgap(10);
-            grid.setVgap(10);
-            grid.add(new Label("Zespół:"), 0, 0);
-            grid.add(teamComboBox, 1, 0);
-
-            dialog.getDialogPane().setContent(grid);
-
-            dialog.setResultConverter(dialogButton -> {
-                if (dialogButton == addButtonType) {
-                    return teamComboBox.getValue();
-                }
-                return null;
-            });
-
-            Optional<Team> teamResult = dialog.showAndWait();
-            teamResult.ifPresent(team -> {
-                // Przypisz projekt do zespołu
-                team.setProjectId(selectedProject.getId());
-                try {
-                    boolean success = teamDAO.updateTeam(team);
-                    if (success) {
-                        loadProjectTeams(selectedProject.getId());
-                        showInfo("Zespół został dodany do projektu");
-                    } else {
-                        showError("Błąd", "Nie udało się dodać zespołu do projektu");
-                    }
-                } catch (SQLException e) {
-                    showError("Błąd SQL", e.getMessage());
-                }
-            });
-
-        } catch (Exception e) {
-            showError("Błąd", e.getMessage());
-        }
-    }
-
-    @FXML
-    private void handleRemoveTeam() {
-        Project selectedProject = projectsTable.getSelectionModel().getSelectedItem();
-        Team selectedTeam = teamsTable.getSelectionModel().getSelectedItem();
-
-        if (selectedProject == null) {
-            showWarning("Wybierz projekt");
-            return;
-        }
-
-        if (selectedTeam == null) {
-            showWarning("Wybierz zespół do usunięcia z projektu");
-            return;
-        }
-
-        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmDialog.setTitle("Potwierdzenie usunięcia");
-        confirmDialog.setHeaderText("Czy na pewno chcesz usunąć zespół z projektu?");
-        confirmDialog.setContentText("Zespół: " + selectedTeam.getTeamName());
-
-        Optional<ButtonType> result = confirmDialog.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            // Usuń przypisanie zespołu do projektu
-            selectedTeam.setProjectId(0);  // 0 oznacza brak przypisanego projektu
-            try {
-                boolean success = teamDAO.updateTeam(selectedTeam);
-                if (success) {
-                    loadProjectTeams(selectedProject.getId());
-                    showInfo("Zespół został usunięty z projektu");
-                } else {
-                    showError("Błąd", "Nie udało się usunąć zespołu z projektu");
-                }
-            } catch (SQLException e) {
-                showError("Błąd SQL", e.getMessage());
-            }
-        }
-    }
-
-    @FXML
-    private void handleAddTask() {
-        Project selectedProject = projectsTable.getSelectionModel().getSelectedItem();
-        if (selectedProject == null) {
-            showWarning("Wybierz projekt, do którego chcesz dodać zadanie");
-            return;
-        }
-
-        Dialog<Task> dialog = createTaskDialog(null, selectedProject.getId());
-        Optional<Task> result = dialog.showAndWait();
-
-        result.ifPresent(task -> {
-            boolean success = taskDAO.insertTask(task);
-            if (success) {
-                loadProjectTasks(selectedProject.getId());
-                showInfo("Dodano nowe zadanie do projektu");
-            } else {
-                showError("Błąd", "Nie udało się dodać zadania");
-            }
-        });
-    }
-
-    @FXML
-    private void handleEditTask() {
-        Project selectedProject = projectsTable.getSelectionModel().getSelectedItem();
-        Task selectedTask = tasksTable.getSelectionModel().getSelectedItem();
-
-        if (selectedProject == null) {
-            showWarning("Wybierz projekt");
-            return;
-        }
-
-        if (selectedTask == null) {
-            showWarning("Wybierz zadanie do edycji");
-            return;
-        }
-
-        Dialog<Task> dialog = createTaskDialog(selectedTask, selectedProject.getId());
-        Optional<Task> result = dialog.showAndWait();
-
-        result.ifPresent(task -> {
-            // W rzeczywistej implementacji trzeba by zaktualizować zadanie w bazie
-            // Tutaj uproszczona symulacja
-            boolean success = taskDAO.updateTask(task);
-            if (success) {
-                loadProjectTasks(selectedProject.getId());
-                showInfo("Zaktualizowano zadanie");
-            } else {
-                showError("Błąd", "Nie udało się zaktualizować zadania");
-            }
-        });
-    }
-
-    @FXML
-    private void handleRemoveTask() {
-        Project selectedProject = projectsTable.getSelectionModel().getSelectedItem();
-        Task selectedTask = tasksTable.getSelectionModel().getSelectedItem();
-
-        if (selectedProject == null) {
-            showWarning("Wybierz projekt");
-            return;
-        }
-
-        if (selectedTask == null) {
-            showWarning("Wybierz zadanie do usunięcia");
-            return;
-        }
-
-        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmDialog.setTitle("Potwierdzenie usunięcia");
-        confirmDialog.setHeaderText("Czy na pewno chcesz usunąć zadanie?");
-        confirmDialog.setContentText("Zadanie: " + selectedTask.getTitle());
-
-        Optional<ButtonType> result = confirmDialog.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            // Tutaj powinna być implementacja usuwania zadania
-            // boolean success = taskDAO.deleteTask(selectedTask.getId());
-
-            // Tymczasowe symulowane usunięcie
-            projectTasks.remove(selectedTask);
-
-            showInfo("Zadanie zostało usunięte");
-        }
-    }
-
     private Dialog<Project> createProjectDialog(Project project) {
         Dialog<Project> dialog = new Dialog<>();
         dialog.setTitle(project == null ? "Dodaj nowy projekt" : "Edytuj projekt");
@@ -591,12 +403,45 @@ public class AdminProjectsController {
         DatePicker startDatePicker = new DatePicker();
         DatePicker endDatePicker = new DatePicker();
 
+        // Jeśli edytujemy projekt, to dodajemy możliwość wyboru kierownika
+        ComboBox<User> managerComboBox = new ComboBox<>();
+        try {
+            List<User> managers = userDAO.getAllManagers();
+            managerComboBox.setItems(FXCollections.observableArrayList(managers));
+
+            // Konwerter dla wyświetlania nazw kierowników
+            managerComboBox.setConverter(new javafx.util.StringConverter<User>() {
+                @Override
+                public String toString(User user) {
+                    return user != null ? user.getName() + " " + user.getLastName() + " (" + user.getEmail() + ")" : "";
+                }
+
+                @Override
+                public User fromString(String string) {
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // Jeśli edytujemy istniejący projekt, ustawiamy wartości
         if (project != null) {
             nameField.setText(project.getName());
             descriptionArea.setText(project.getDescription());
             startDatePicker.setValue(project.getStartDate());
             endDatePicker.setValue(project.getEndDate());
+
+            // Wybierz obecnego kierownika, jeśli istnieje
+            int currentManagerId = project.getManagerId();
+            if (currentManagerId > 0) {
+                for (User manager : managerComboBox.getItems()) {
+                    if (manager.getId() == currentManagerId) {
+                        managerComboBox.setValue(manager);
+                        break;
+                    }
+                }
+            }
         }
 
         grid.add(new Label("Nazwa:"), 0, 0);
@@ -607,6 +452,8 @@ public class AdminProjectsController {
         grid.add(startDatePicker, 1, 2);
         grid.add(new Label("Data zakończenia:"), 0, 3);
         grid.add(endDatePicker, 1, 3);
+        grid.add(new Label("Kierownik:"), 0, 4);
+        grid.add(managerComboBox, 1, 4);
 
         dialog.getDialogPane().setContent(grid);
 
@@ -637,180 +484,12 @@ public class AdminProjectsController {
                 result.setStartDate(startDatePicker.getValue());
                 result.setEndDate(endDatePicker.getValue());
 
-                // Przypisz kierownika projektu, jeśli to nowy projekt
-                if (project == null) {
-                    // Domyślnie brak przypisanego kierownika
-                    result.setManagerId(0);
-                }
-
-                return result;
-            }
-            return null;
-        });
-
-        return dialog;
-    }
-
-    private Dialog<Task> createTaskDialog(Task task, int projectId) {
-        Dialog<Task> dialog = new Dialog<>();
-        dialog.setTitle(task == null ? "Dodaj nowe zadanie" : "Edytuj zadanie");
-        dialog.setHeaderText(task == null ? "Wprowadź dane nowego zadania" : "Edytuj dane zadania");
-
-        ButtonType saveButtonType = new ButtonType("Zapisz", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
-
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-
-        TextField titleField = new TextField();
-        titleField.setPromptText("Tytuł zadania");
-
-        TextArea descriptionArea = new TextArea();
-        descriptionArea.setPromptText("Opis zadania");
-        descriptionArea.setPrefRowCount(3);
-
-        ComboBox<String> statusComboBox = new ComboBox<>();
-        statusComboBox.getItems().addAll("Nowe", "W toku", "Zakończone");
-        statusComboBox.setValue("Nowe");
-
-        ComboBox<String> priorityComboBox = new ComboBox<>();
-        priorityComboBox.getItems().addAll("LOW", "MEDIUM", "HIGH");
-        priorityComboBox.setValue("MEDIUM");
-
-        DatePicker startDatePicker = new DatePicker();
-        DatePicker endDatePicker = new DatePicker();
-
-        // Pobranie zespołów dla projektu
-        ObservableList<Team> teams = FXCollections.observableArrayList();
-        try {
-            // W rzeczywistej implementacji pobieraj zespoły z bazy
-            // teams.addAll(teamDAO.getTeamsByProjectId(projectId));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        ComboBox<Team> teamComboBox = new ComboBox<>(teams);
-        teamComboBox.setConverter(new javafx.util.StringConverter<Team>() {
-            @Override
-            public String toString(Team team) {
-                return team != null ? team.getTeamName() : "";
-            }
-
-            @Override
-            public Team fromString(String string) {
-                return null;
-            }
-        });
-
-        // Pobranie użytkowników do przypisania - w rzeczywistej implementacji to powinni być członkowie zespołu
-        ObservableList<User> users = FXCollections.observableArrayList();
-        try {
-            // TODO: Pobierz użytkowników z bazy
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        ComboBox<User> assigneeComboBox = new ComboBox<>(users);
-        assigneeComboBox.setConverter(new javafx.util.StringConverter<User>() {
-            @Override
-            public String toString(User user) {
-                return user != null ? user.getName() + " " + user.getLastName() : "";
-            }
-
-            @Override
-            public User fromString(String string) {
-                return null;
-            }
-        });
-
-        // Jeśli edytujemy istniejące zadanie, ustawiamy wartości
-        if (task != null) {
-            titleField.setText(task.getTitle());
-            descriptionArea.setText(task.getDescription());
-            statusComboBox.setValue(task.getStatus());
-            priorityComboBox.setValue(task.getPriority());
-
-            // Daty i inne pola wymagają konwersji
-            if (task.getStartDate() != null) {
-                startDatePicker.setValue(LocalDate.parse(task.getStartDate()));
-            }
-
-            if (task.getEndDate() != null) {
-                endDatePicker.setValue(LocalDate.parse(task.getEndDate()));
-            }
-
-            // TODO: Ustaw zespół i przypisanego użytkownika, jeśli są znane
-        }
-
-        grid.add(new Label("Tytuł:"), 0, 0);
-        grid.add(titleField, 1, 0);
-        grid.add(new Label("Opis:"), 0, 1);
-        grid.add(descriptionArea, 1, 1);
-        grid.add(new Label("Status:"), 0, 2);
-        grid.add(statusComboBox, 1, 2);
-        grid.add(new Label("Priorytet:"), 0, 3);
-        grid.add(priorityComboBox, 1, 3);
-        grid.add(new Label("Data rozpoczęcia:"), 0, 4);
-        grid.add(startDatePicker, 1, 4);
-        grid.add(new Label("Data zakończenia:"), 0, 5);
-        grid.add(endDatePicker, 1, 5);
-        grid.add(new Label("Zespół:"), 0, 6);
-        grid.add(teamComboBox, 1, 6);
-        grid.add(new Label("Przypisany do:"), 0, 7);
-        grid.add(assigneeComboBox, 1, 7);
-
-        dialog.getDialogPane().setContent(grid);
-
-        // Walidacja danych przed zapisem
-        Button saveButton = (Button) dialog.getDialogPane().lookupButton(saveButtonType);
-        saveButton.setDisable(true);
-
-        // Dodanie listenerów do pól formularza do walidacji
-        titleField.textProperty().addListener((observable, oldValue, newValue) -> {
-            validateTaskForm(saveButton, titleField, startDatePicker, endDatePicker);
-        });
-
-        startDatePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
-            validateTaskForm(saveButton, titleField, startDatePicker, endDatePicker);
-        });
-
-        endDatePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
-            validateTaskForm(saveButton, titleField, startDatePicker, endDatePicker);
-        });
-
-        Platform.runLater(titleField::requestFocus);
-
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == saveButtonType) {
-                Task result = task != null ? task : new Task();
-                result.setTitle(titleField.getText());
-                result.setDescription(descriptionArea.getText());
-                result.setStatus(statusComboBox.getValue());
-                result.setPriority(priorityComboBox.getValue());
-
-                // Konwersja i ustawienie dat
-                if (startDatePicker.getValue() != null) {
-                    result.setStartDate(startDatePicker.getValue().toString());
-                }
-
-                if (endDatePicker.getValue() != null) {
-                    result.setEndDate(endDatePicker.getValue().toString());
-                }
-
-                // Ustawienie projektu i zespołu
-                result.setProjectId(projectId);
-
-                Team selectedTeam = teamComboBox.getValue();
-                if (selectedTeam != null) {
-                    result.setTeamId(selectedTeam.getId());
-                }
-
-                // Ustawienie przypisanego użytkownika (w rzeczywistej implementacji)
-                User selectedUser = assigneeComboBox.getValue();
-                if (selectedUser != null) {
-                    result.setAssignedTo(selectedUser.getId());
-                    result.setAssignedEmail(selectedUser.getEmail());
+                // Ustaw kierownika projektu
+                User selectedManager = managerComboBox.getValue();
+                if (selectedManager != null) {
+                    result.setManagerId(selectedManager.getId());
+                } else {
+                    result.setManagerId(0); // Brak przypisanego kierownika
                 }
 
                 return result;
@@ -828,15 +507,6 @@ public class AdminProjectsController {
                              !endDatePicker.getValue().isBefore(startDatePicker.getValue());
 
         saveButton.setDisable(!(nameValid && datesValid));
-    }
-
-    private void validateTaskForm(Button saveButton, TextField titleField, DatePicker startDatePicker, DatePicker endDatePicker) {
-        boolean titleValid = !titleField.getText().trim().isEmpty();
-        boolean datesValid = startDatePicker.getValue() != null &&
-                             endDatePicker.getValue() != null &&
-                             !endDatePicker.getValue().isBefore(startDatePicker.getValue());
-
-        saveButton.setDisable(!(titleValid && datesValid));
     }
 
     private void showInfo(String message) {

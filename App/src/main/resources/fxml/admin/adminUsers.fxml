@@ -46,7 +46,6 @@
             <TableColumn fx:id="colEmail" text="Email" prefWidth="200"/>
             <TableColumn fx:id="colRole" text="Rola" prefWidth="120"/>
             <TableColumn fx:id="colTeam" text="Zespół" prefWidth="120"/>
-            <TableColumn fx:id="colLastLogin" text="Ostatnie logowanie" prefWidth="150"/>
         </columns>
     </TableView>
 

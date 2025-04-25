@@ -93,11 +93,6 @@ public class AdminDashboardController {
     }
 
     @FXML
-    private void goToRoles() throws IOException {
-        loadView("/fxml/admin/adminRoles.fxml");
-    }
-
-    @FXML
     private void goToReports() throws IOException {
         loadView("/fxml/admin/adminReports.fxml");
     }

@@ -10,7 +10,6 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import javafx.util.Callback;
 import pl.rozowi.app.dao.TeamMemberDAO;
 import pl.rozowi.app.dao.RoleDAO;
 import pl.rozowi.app.dao.TeamDAO;
@@ -21,9 +20,6 @@ import pl.rozowi.app.models.User;
 import pl.rozowi.app.services.PasswordChangeService;
 
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,8 +39,6 @@ public class AdminUsersController {
     private TableColumn<User, String> colRole;
     @FXML
     private TableColumn<User, String> colTeam;
-    @FXML
-    private TableColumn<User, Timestamp> colLastLogin;
 
     @FXML
     private TextField searchField;
@@ -64,10 +58,11 @@ public class AdminUsersController {
     @FXML
     private Label detailLastPasswordChange;
 
-    private UserDAO userDAO = new UserDAO();
-    private RoleDAO roleDAO = new RoleDAO();
-    private TeamDAO teamDAO = new TeamDAO();
-    private PasswordChangeService passwordService = new PasswordChangeService();
+    private final UserDAO userDAO = new UserDAO();
+    private final RoleDAO roleDAO = new RoleDAO();
+    private final TeamDAO teamDAO = new TeamDAO();
+    private final TeamMemberDAO teamMemberDAO = new TeamMemberDAO();
+    private final PasswordChangeService passwordService = new PasswordChangeService();
 
     private ObservableList<User> allUsers = FXCollections.observableArrayList();
 
@@ -80,21 +75,40 @@ public class AdminUsersController {
         colEmail.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getEmail()));
         colRole.setCellValueFactory(data -> {
             int roleId = data.getValue().getRoleId();
-            String roleName = "Nieznana";
+            String roleName;
+            switch (roleId) {
+                case 1:
+                    roleName = "Administrator";
+                    break;
+                case 2:
+                    roleName = "Kierownik";
+                    break;
+                case 3:
+                    roleName = "Team Leader";
+                    break;
+                case 4:
+                    roleName = "Pracownik";
+                    break;
+                default:
+                    roleName = "Nieznana";
+                    break;
+            }
+            return new SimpleStringProperty(roleName);
+        });
+
+        colTeam.setCellValueFactory(data -> {
+            int userId = data.getValue().getId();
+            String teamName = "Brak przypisania";
             try {
-                // Tu powinna być implementacja pobierająca nazwę roli
-                switch (roleId) {
-                    case 1 -> roleName = "Administrator";
-                    case 2 -> roleName = "Kierownik";
-                    case 3 -> roleName = "Team Leader";
-                    case 4 -> roleName = "Pracownik";
+                int teamId = teamMemberDAO.getTeamIdForUser(userId);
+                if (teamId > 0) {
+                    teamName = teamDAO.getTeamNameById(teamId);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return new SimpleStringProperty(roleName);
+            return new SimpleStringProperty(teamName);
         });
-        colTeam.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTeamName()));
 
         // Obsługa kliknięcia na wiersz
         usersTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
@@ -124,17 +138,38 @@ public class AdminUsersController {
         detailEmail.setText(user.getEmail());
 
         // Pobierz nazwę roli
-        String roleName = "Nieznana";
+        String roleName;
         switch (user.getRoleId()) {
-            case 1 -> roleName = "Administrator";
-            case 2 -> roleName = "Kierownik";
-            case 3 -> roleName = "Team Leader";
-            case 4 -> roleName = "Pracownik";
+            case 1:
+                roleName = "Administrator";
+                break;
+            case 2:
+                roleName = "Kierownik";
+                break;
+            case 3:
+                roleName = "Team Leader";
+                break;
+            case 4:
+                roleName = "Pracownik";
+                break;
+            default:
+                roleName = "Nieznana";
+                break;
         }
         detailRole.setText(roleName);
 
         // Pobierz nazwę zespołu
-        detailTeam.setText(user.getTeamName() != null ? user.getTeamName() : "Brak przypisania");
+        try {
+            int teamId = teamMemberDAO.getTeamIdForUser(user.getId());
+            String teamName = "Brak przypisania";
+            if (teamId > 0) {
+                teamName = teamDAO.getTeamNameById(teamId);
+            }
+            detailTeam.setText(teamName);
+        } catch (Exception e) {
+            detailTeam.setText("Błąd pobierania zespołu");
+            e.printStackTrace();
+        }
 
         // Data utworzenia i ostatnia zmiana hasła (przykładowe dane)
         detailCreatedAt.setText("2025-04-01");
@@ -223,12 +258,9 @@ public class AdminUsersController {
 
         Optional<ButtonType> result = confirmDialog.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            // Tu powinna być implementacja usuwania użytkownika
-            // boolean success = userDAO.deleteUser(selectedUser.getId());
-
-            // Tymczasowo: symulacja usunięcia
+            // Zamiast usuwać z bazy, usuwamy tylko z listy
             allUsers.remove(selectedUser);
-            showInfo("Użytkownik został usunięty");
+            showInfo("Użytkownik został usunięty z widoku");
         }
     }
 
@@ -278,47 +310,33 @@ public class AdminUsersController {
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
-        ComboBox<Role> roleComboBox = new ComboBox<>();
-        ObservableList<Role> roles = FXCollections.observableArrayList();
-
-        // Dodaj role (zwykle powinny być pobrane z bazy)
-        Role adminRole = new Role();
-        adminRole.setId(1);
-        adminRole.setRoleName("Administrator");
-
-        Role managerRole = new Role();
-        managerRole.setId(2);
-        managerRole.setRoleName("Kierownik");
-
-        Role teamLeaderRole = new Role();
-        teamLeaderRole.setId(3);
-        teamLeaderRole.setRoleName("Team Leader");
-
-        Role employeeRole = new Role();
-        employeeRole.setId(4);
-        employeeRole.setRoleName("Pracownik");
-
-        roles.addAll(adminRole, managerRole, teamLeaderRole, employeeRole);
-        roleComboBox.setItems(roles);
+        ComboBox<String> roleComboBox = new ComboBox<>();
+        roleComboBox.getItems().addAll(
+            "Administrator",
+            "Kierownik",
+            "Team Leader",
+            "Pracownik"
+        );
 
         // Ustaw domyślną wartość na obecną rolę
-        roles.stream()
-             .filter(r -> r.getId() == selectedUser.getRoleId())
-             .findFirst()
-             .ifPresent(roleComboBox::setValue);
-
-        // Konwerter do wyświetlania nazw ról
-        roleComboBox.setConverter(new javafx.util.StringConverter<Role>() {
-            @Override
-            public String toString(Role role) {
-                return role != null ? role.getRoleName() : "";
-            }
-
-            @Override
-            public Role fromString(String string) {
-                return null;
-            }
-        });
+        int currentRoleId = selectedUser.getRoleId();
+        switch(currentRoleId) {
+            case 1:
+                roleComboBox.setValue("Administrator");
+                break;
+            case 2:
+                roleComboBox.setValue("Kierownik");
+                break;
+            case 3:
+                roleComboBox.setValue("Team Leader");
+                break;
+            case 4:
+                roleComboBox.setValue("Pracownik");
+                break;
+            default:
+                roleComboBox.setValue("Pracownik");
+                break;
+        }
 
         VBox content = new VBox(10);
         content.getChildren().add(roleComboBox);
@@ -326,8 +344,26 @@ public class AdminUsersController {
 
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == ButtonType.OK) {
-                Role selectedRole = roleComboBox.getValue();
-                return selectedRole != null ? selectedRole.getId() : null;
+                String selectedRole = roleComboBox.getValue();
+                int roleId;
+                switch(selectedRole) {
+                    case "Administrator":
+                        roleId = 1;
+                        break;
+                    case "Kierownik":
+                        roleId = 2;
+                        break;
+                    case "Team Leader":
+                        roleId = 3;
+                        break;
+                    case "Pracownik":
+                        roleId = 4;
+                        break;
+                    default:
+                        roleId = 4;
+                        break;
+                }
+                return roleId;
             }
             return null;
         });
@@ -373,41 +409,14 @@ public class AdminUsersController {
         TextField emailField = new TextField();
         emailField.setPromptText("Email");
 
-        ComboBox<Role> roleComboBox = new ComboBox<>();
-        ObservableList<Role> roles = FXCollections.observableArrayList();
-
-        // Dodaj role (zwykle powinny być pobrane z bazy)
-        Role adminRole = new Role();
-        adminRole.setId(1);
-        adminRole.setRoleName("Administrator");
-
-        Role managerRole = new Role();
-        managerRole.setId(2);
-        managerRole.setRoleName("Kierownik");
-
-        Role teamLeaderRole = new Role();
-        teamLeaderRole.setId(3);
-        teamLeaderRole.setRoleName("Team Leader");
-
-        Role employeeRole = new Role();
-        employeeRole.setId(4);
-        employeeRole.setRoleName("Pracownik");
-
-        roles.addAll(adminRole, managerRole, teamLeaderRole, employeeRole);
-        roleComboBox.setItems(roles);
-
-        // Konwerter dla ComboBox
-        roleComboBox.setConverter(new javafx.util.StringConverter<Role>() {
-            @Override
-            public String toString(Role role) {
-                return role != null ? role.getRoleName() : "";
-            }
-
-            @Override
-            public Role fromString(String string) {
-                return null;
-            }
-        });
+        ComboBox<String> roleComboBox = new ComboBox<>();
+        roleComboBox.getItems().addAll(
+            "Administrator",
+            "Kierownik",
+            "Team Leader",
+            "Pracownik"
+        );
+        roleComboBox.setValue("Pracownik");
 
         ComboBox<Team> teamComboBox = new ComboBox<>();
         try {
@@ -437,26 +446,39 @@ public class AdminUsersController {
             emailField.setText(user.getEmail());
 
             // Wybierz odpowiednią rolę
-            roles.stream()
-                 .filter(r -> r.getId() == user.getRoleId())
-                 .findFirst()
-                 .ifPresent(roleComboBox::setValue);
+            int roleId = user.getRoleId();
+            switch(roleId) {
+                case 1:
+                    roleComboBox.setValue("Administrator");
+                    break;
+                case 2:
+                    roleComboBox.setValue("Kierownik");
+                    break;
+                case 3:
+                    roleComboBox.setValue("Team Leader");
+                    break;
+                case 4:
+                    roleComboBox.setValue("Pracownik");
+                    break;
+                default:
+                    roleComboBox.setValue("Pracownik");
+                    break;
+            }
 
             // Próba znalezienia i ustawienia zespołu
             try {
-                int teamId = new TeamMemberDAO().getTeamIdForUser(user.getId());
+                int teamId = teamMemberDAO.getTeamIdForUser(user.getId());
                 if (teamId > 0) {
-                    teamComboBox.getItems().stream()
-                        .filter(t -> t.getId() == teamId)
-                        .findFirst()
-                        .ifPresent(teamComboBox::setValue);
+                    for (Team team : teamComboBox.getItems()) {
+                        if (team.getId() == teamId) {
+                            teamComboBox.setValue(team);
+                            break;
+                        }
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        } else {
-            // Domyślne wartości dla nowego użytkownika
-            roleComboBox.setValue(employeeRole);  // Domyślnie pracownik
         }
 
         // Dodanie pól do formularza
@@ -501,15 +523,26 @@ public class AdminUsersController {
                 result.setLastName(lastNameField.getText());
                 result.setEmail(emailField.getText());
 
-                Role selectedRole = roleComboBox.getValue();
-                if (selectedRole != null) {
-                    result.setRoleId(selectedRole.getId());
+                String selectedRole = roleComboBox.getValue();
+                switch(selectedRole) {
+                    case "Administrator":
+                        result.setRoleId(1);
+                        break;
+                    case "Kierownik":
+                        result.setRoleId(2);
+                        break;
+                    case "Team Leader":
+                        result.setRoleId(3);
+                        break;
+                    case "Pracownik":
+                    default:
+                        result.setRoleId(4);
+                        break;
                 }
 
+                // Przypisanie do teamDAO będzie obsługiwane osobno, po zapisie użytkownika
                 Team selectedTeam = teamComboBox.getValue();
                 if (selectedTeam != null) {
-                    // Przypisanie zespołu (powinno być obsługiwane w DAO)
-                    // userTeamDAO.assignUserToTeam(result.getId(), selectedTeam.getId());
                     result.setTeamName(selectedTeam.getTeamName());
                 }
 
