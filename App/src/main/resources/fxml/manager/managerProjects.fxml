@@ -2,6 +2,10 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<<<<<<< HEAD
+=======
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
 
 <VBox spacing="10"
       xmlns:fx="http://javafx.com/fxml"
@@ -17,11 +21,39 @@
 
     <TableView fx:id="projectsTable" VBox.vgrow="ALWAYS">
         <columns>
+<<<<<<< HEAD
             <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
             <TableColumn fx:id="colName" text="Nazwa" prefWidth="200"/>
             <TableColumn fx:id="colDesc" text="Opis" prefWidth="300"/>
             <TableColumn fx:id="colStart" text="Data startu" prefWidth="120"/>
             <TableColumn fx:id="colEnd" text="Data końca" prefWidth="120"/>
+=======
+            <TableColumn fx:id="colId" text="ID" prefWidth="50">
+                <cellValueFactory>
+                    <PropertyValueFactory property="id"/>
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="colName" text="Nazwa" prefWidth="200">
+                <cellValueFactory>
+                    <PropertyValueFactory property="name"/>
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="colDesc" text="Opis" prefWidth="300">
+                <cellValueFactory>
+                    <PropertyValueFactory property="description"/>
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="colStart" text="Data startu" prefWidth="120">
+                <cellValueFactory>
+                    <PropertyValueFactory property="startDate"/>
+                </cellValueFactory>
+            </TableColumn>
+            <TableColumn fx:id="colEnd" text="Data końca" prefWidth="120">
+                <cellValueFactory>
+                    <PropertyValueFactory property="endDate"/>
+                </cellValueFactory>
+            </TableColumn>
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
             <!-- Status column removed as requested -->
         </columns>
     </TableView>

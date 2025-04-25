@@ -7,7 +7,10 @@ import javafx.util.StringConverter;
 import pl.rozowi.app.MainApplication;
 import pl.rozowi.app.dao.*;
 import pl.rozowi.app.models.*;
+<<<<<<< HEAD
 import pl.rozowi.app.services.ActivityService;
+=======
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
 import pl.rozowi.app.util.Session;
 
 import java.sql.SQLException;
@@ -265,7 +268,10 @@ public class TaskCreateController {
         }
 
         // Create task_assignments record manually with direct SQL
+<<<<<<< HEAD
         boolean assignmentSuccess = false;
+=======
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
         try (java.sql.Connection conn = pl.rozowi.app.database.DatabaseManager.getConnection();
              java.sql.PreparedStatement stmt = conn.prepareStatement(
                      "INSERT INTO task_assignments (task_id, user_id) VALUES (?, ?)")) {
@@ -273,8 +279,12 @@ public class TaskCreateController {
             stmt.setInt(2, user.getId());
             int affected = stmt.executeUpdate();
 
+<<<<<<< HEAD
             assignmentSuccess = affected > 0;
             if (!assignmentSuccess) {
+=======
+            if (affected <= 0) {
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
                 showWarning("Task created but user assignment failed!");
             }
         } catch (SQLException e) {
@@ -282,8 +292,25 @@ public class TaskCreateController {
             e.printStackTrace();
         }
 
+<<<<<<< HEAD
         // Log task creation activity
         ActivityService.logTaskCreation(t.getId(), t.getTitle(), user.getId());
+=======
+        // Create task activity to track creation
+        try {
+            TaskActivity activity = new TaskActivity();
+            activity.setTaskId(t.getId());
+            activity.setUserId(Session.currentUserId);
+            activity.setActivityType("CREATE");
+            activity.setDescription("Task created and assigned to " + user.getName() + " " + user.getLastName());
+
+            TaskActivityDAO activityDAO = new TaskActivityDAO();
+            activityDAO.insertTaskActivity(activity);
+        } catch (Exception e) {
+            // Non-critical failure - just log
+            System.err.println("Failed to create task activity record: " + e.getMessage());
+        }
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
 
         showInfo("Task Created", "Task has been created successfully!");
         closeWindow();

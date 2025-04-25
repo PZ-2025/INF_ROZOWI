@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.layout.VBox?>
@@ -42,3 +43,185 @@
     </VBox>
 
 </VBox>
+=======
+<!--<?xml version="1.0" encoding="UTF-8"?>-->
+
+<!--<?import javafx.scene.layout.VBox?>-->
+<!--<?import javafx.scene.layout.HBox?>-->
+<!--<?import javafx.scene.layout.Pane?>-->
+<!--<?import javafx.scene.layout.GridPane?>-->
+<!--<?import javafx.scene.control.*?>-->
+<!--<?import javafx.geometry.Insets?>-->
+
+
+<!--<VBox xmlns:fx="http://javafx.com/fxml"-->
+<!--      fx:controller="pl.rozowi.app.controllers.AdminReportsController"-->
+<!--      spacing="15" style="-fx-padding: 10px; -fx-background-color: #1E1E2F;">-->
+
+<!--    <HBox alignment="CENTER_LEFT" spacing="15">-->
+<!--        <Label text="System Raportowania"-->
+<!--               style="-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;"/>-->
+<!--        <Pane HBox.hgrow="ALWAYS" />-->
+<!--    </HBox>-->
+
+<!--    <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">-->
+<!--        &lt;!&ndash; Zakładka z dostępnymi raportami &ndash;&gt;-->
+<!--        <Tab text="Dostępne raporty">-->
+<!--            <VBox spacing="10">-->
+<!--                <HBox spacing="10">-->
+<!--                    <Button text="Generuj nowy raport" onAction="#handleGenerateReport"-->
+<!--                            style="-fx-background-color: #28a745; -fx-text-fill: white;"/>-->
+<!--                    <Button text="Wyświetl szczegóły" onAction="#handleViewReportDetails"-->
+<!--                            style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>-->
+<!--                    <Button text="Usuń raport" onAction="#handleDeleteReport"-->
+<!--                            style="-fx-background-color: #dc3545; -fx-text-fill: white;"/>-->
+<!--                    <Button text="Odśwież" onAction="#handleRefreshReports"-->
+<!--                            style="-fx-background-color: #6c757d; -fx-text-fill: white;"/>-->
+<!--                </HBox>-->
+
+<!--                <TableView fx:id="reportsTable" VBox.vgrow="ALWAYS">-->
+<!--                    <columns>-->
+<!--                        <TableColumn fx:id="colReportId" text="ID" prefWidth="50"/>-->
+<!--                        <TableColumn fx:id="colReportName" text="Nazwa raportu" prefWidth="250"/>-->
+<!--                        <TableColumn fx:id="colReportType" text="Typ" prefWidth="120"/>-->
+<!--                        <TableColumn fx:id="colCreatedBy" text="Utworzony przez" prefWidth="180"/>-->
+<!--                        <TableColumn fx:id="colCreatedAt" text="Data utworzenia" prefWidth="180"/>-->
+<!--                        <TableColumn fx:id="colExportedFile" text="Plik" prefWidth="150"/>-->
+<!--                    </columns>-->
+<!--                </TableView>-->
+<!--            </VBox>-->
+<!--        </Tab>-->
+
+<!--        &lt;!&ndash; Zakładka z generowaniem raportów &ndash;&gt;-->
+<!--        <Tab text="Generowanie raportów">-->
+<!--            <VBox spacing="20" style="-fx-padding: 20px;">-->
+<!--                <Label text="Wybierz typ raportu do wygenerowania:"-->
+<!--                       style="-fx-font-size: 16px; -fx-text-fill: white;"/>-->
+
+<!--                <GridPane hgap="20" vgap="20">-->
+<!--                    <columnConstraints>-->
+<!--                        <ColumnConstraints percentWidth="50" />-->
+<!--                        <ColumnConstraints percentWidth="50" />-->
+<!--                    </columnConstraints>-->
+
+<!--                    &lt;!&ndash; Raport wydajności zespołów &ndash;&gt;-->
+<!--                    <Button text="Raport wydajności zespołów" onAction="#handleTeamPerformanceReport"-->
+<!--                            prefWidth="300" prefHeight="100"-->
+<!--                            style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 16px;"-->
+<!--                            GridPane.rowIndex="0" GridPane.columnIndex="0"/>-->
+
+<!--                    &lt;!&ndash; Raport obciążenia pracowników &ndash;&gt;-->
+<!--                    <Button text="Raport obciążenia pracowników" onAction="#handleEmployeeWorkloadReport"-->
+<!--                            prefWidth="300" prefHeight="100"-->
+<!--                            style="-fx-background-color: #28a745; -fx-text-fill: white; -fx-font-size: 16px;"-->
+<!--                            GridPane.rowIndex="0" GridPane.columnIndex="1"/>-->
+
+<!--                    &lt;!&ndash; Raport postępu projektów &ndash;&gt;-->
+<!--                    <Button text="Raport postępu projektów" onAction="#handleProjectProgressReport"-->
+<!--                            prefWidth="300" prefHeight="100"-->
+<!--                            style="-fx-background-color: #17a2b8; -fx-text-fill: white; -fx-font-size: 16px;"-->
+<!--                            GridPane.rowIndex="1" GridPane.columnIndex="0"/>-->
+
+<!--                    &lt;!&ndash; Raport aktywności zadań &ndash;&gt;-->
+<!--                    <Button text="Raport aktywności zadań" onAction="#handleTaskActivityReport"-->
+<!--                            prefWidth="300" prefHeight="100"-->
+<!--                            style="-fx-background-color: #ffc107; -fx-text-fill: black; -fx-font-size: 16px;"-->
+<!--                            GridPane.rowIndex="1" GridPane.columnIndex="1"/>-->
+
+<!--                    &lt;!&ndash; Raport użytkowników systemu &ndash;&gt;-->
+<!--                    <Button text="Raport użytkowników systemu" onAction="#handleSystemUsersReport"-->
+<!--                            prefWidth="300" prefHeight="100"-->
+<!--                            style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-size: 16px;"-->
+<!--                            GridPane.rowIndex="2" GridPane.columnIndex="0"/>-->
+
+<!--                    &lt;!&ndash; Niestandardowy raport &ndash;&gt;-->
+<!--                    <Button text="Niestandardowy raport" onAction="#handleCustomReport"-->
+<!--                            prefWidth="300" prefHeight="100"-->
+<!--                            style="-fx-background-color: #dc3545; -fx-text-fill: white; -fx-font-size: 16px;"-->
+<!--                            GridPane.rowIndex="2" GridPane.columnIndex="1"/>-->
+<!--                </GridPane>-->
+<!--            </VBox>-->
+<!--        </Tab>-->
+
+<!--        &lt;!&ndash; Zakładka z ustawieniami raportów &ndash;&gt;-->
+<!--        <Tab text="Ustawienia raportów">-->
+<!--            <VBox spacing="20" style="-fx-padding: 20px;">-->
+<!--                <Label text="Konfiguracja systemu raportowania"-->
+<!--                       style="-fx-font-size: 16px; -fx-text-fill: white;"/>-->
+
+<!--                <TitledPane text="Ogólne ustawienia" expanded="true">-->
+<!--                    <GridPane hgap="10" vgap="10">-->
+<!--                        <Label text="Format eksportu:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>-->
+<!--                        <ComboBox fx:id="exportFormatCombo" GridPane.rowIndex="0" GridPane.columnIndex="1"-->
+<!--                                  promptText="Wybierz format"/>-->
+
+<!--                        <Label text="Katalog zapisywania:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>-->
+<!--                        <HBox spacing="10" GridPane.rowIndex="1" GridPane.columnIndex="1">-->
+<!--                            <TextField fx:id="exportDirField" HBox.hgrow="ALWAYS"/>-->
+<!--                            <Button text="Przeglądaj..." onAction="#handleBrowseExportDir"/>-->
+<!--                        </HBox>-->
+
+<!--                        <Label text="Szablon raportów:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>-->
+<!--                        <ComboBox fx:id="reportTemplateCombo" GridPane.rowIndex="2" GridPane.columnIndex="1"-->
+<!--                                  promptText="Wybierz szablon"/>-->
+<!--                    </GridPane>-->
+<!--                </TitledPane>-->
+
+<!--                <TitledPane text="Harmonogram raportów" expanded="false">-->
+<!--                    <VBox spacing="10">-->
+<!--                        <CheckBox fx:id="enableSchedulingCheck" text="Włącz automatyczne generowanie raportów"/>-->
+
+<!--                        <GridPane hgap="10" vgap="10">-->
+<!--                            <Label text="Częstotliwość:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>-->
+<!--                            <ComboBox fx:id="scheduleFrequencyCombo" GridPane.rowIndex="0" GridPane.columnIndex="1"-->
+<!--                                      promptText="Wybierz częstotliwość"/>-->
+
+<!--                            <Label text="Dzień tygodnia:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>-->
+<!--                            <ComboBox fx:id="scheduleDayCombo" GridPane.rowIndex="1" GridPane.columnIndex="1"-->
+<!--                                      promptText="Wybierz dzień"/>-->
+
+<!--                            <Label text="Godzina:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>-->
+<!--                            <ComboBox fx:id="scheduleHourCombo" GridPane.rowIndex="2" GridPane.columnIndex="1"-->
+<!--                                      promptText="Wybierz godzinę"/>-->
+<!--                        </GridPane>-->
+
+<!--                        <Label text="Raporty do automatycznego generowania:"/>-->
+<!--                        <ListView fx:id="scheduledReportsList" prefHeight="150"/>-->
+
+<!--                        <HBox spacing="10">-->
+<!--                            <Button text="Dodaj raport" onAction="#handleAddScheduledReport"/>-->
+<!--                            <Button text="Usuń z harmonogramu" onAction="#handleRemoveScheduledReport"/>-->
+<!--                        </HBox>-->
+<!--                    </VBox>-->
+<!--                </TitledPane>-->
+
+<!--                <HBox spacing="10" alignment="CENTER_RIGHT">-->
+<!--                    <Button text="Zapisz ustawienia" onAction="#handleSaveReportSettings"-->
+<!--                            style="-fx-background-color: #28a745; -fx-text-fill: white;"/>-->
+<!--                </HBox>-->
+<!--            </VBox>-->
+<!--        </Tab>-->
+
+<!--        &lt;!&ndash; Zakładka z podglądem raportu &ndash;&gt;-->
+<!--        <Tab text="Podgląd raportu">-->
+<!--            <VBox spacing="10">-->
+<!--                <HBox spacing="10" alignment="CENTER_LEFT">-->
+<!--                    <Label fx:id="previewTitleLabel" text="Podgląd raportu"-->
+<!--                           style="-fx-font-size: 18px; -fx-text-fill: white;"/>-->
+<!--                    <Pane HBox.hgrow="ALWAYS"/>-->
+<!--                    <Button text="Eksportuj do PDF" onAction="#handleExportToPdf"-->
+<!--                            style="-fx-background-color: #dc3545; -fx-text-fill: white;"/>-->
+<!--                    <Button text="Eksportuj do Excel" onAction="#handleExportToExcel"-->
+<!--                            style="-fx-background-color: #28a745; -fx-text-fill: white;"/>-->
+<!--                    <Button text="Drukuj" onAction="#handlePrintReport"-->
+<!--                            style="-fx-background-color: #17a2b8; -fx-text-fill: white;"/>-->
+<!--                </HBox>-->
+
+<!--                <TextArea fx:id="reportPreviewArea" VBox.vgrow="ALWAYS"-->
+<!--                          wrapText="true" editable="false"-->
+<!--                          style="-fx-font-family: monospace;"/>-->
+<!--            </VBox>-->
+<!--        </Tab>-->
+<!--    </TabPane>-->
+<!--</VBox>-->
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)

@@ -58,9 +58,12 @@ public class AdminDashboardController {
                     case "Raporty":
                         goToReports();
                         break;
+<<<<<<< HEAD
                     case "Aktywność":
                         goToActivities();
                         break;
+=======
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
                     case "Ustawienia":
                         goToSettings();
                         break;
@@ -101,8 +104,13 @@ public class AdminDashboardController {
     }
 
     @FXML
+<<<<<<< HEAD
     private void goToActivities() throws IOException {
         loadView("/fxml/admin/adminActivities.fxml");
+=======
+    private void goToLogs() throws IOException {
+        loadView("/fxml/admin/adminLogs.fxml");
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
     }
 
     @FXML

@@ -9,7 +9,10 @@ import pl.rozowi.app.dao.TeamMemberDAO;
 import pl.rozowi.app.dao.UserDAO;
 import pl.rozowi.app.models.Task;
 import pl.rozowi.app.models.User;
+<<<<<<< HEAD
 import pl.rozowi.app.util.TaskEditDialog;
+=======
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
 
 import java.sql.SQLException;
 import java.util.List;
@@ -39,8 +42,11 @@ public class TaskDetailsController {
     private Button saveButton;
     @FXML
     private Button cancelButton;
+<<<<<<< HEAD
     @FXML
     private Button editButton; // New button for editing all task details
+=======
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
 
     private Task task;
     private final TaskDAO taskDAO = new TaskDAO();
@@ -75,11 +81,14 @@ public class TaskDetailsController {
         // Status editable for leader, employee, manager, and admin
         statusComboBox.setDisable(!(isLeader || isEmployee || isManager || isAdmin));
 
+<<<<<<< HEAD
         // Only show edit button for admin and manager
         if (editButton != null) {
             editButton.setVisible(isAdmin || isManager);
         }
 
+=======
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
         // Populate and configure assignee dropdown
         if (assigneeComboBox != null) {
             try {
@@ -178,6 +187,7 @@ public class TaskDetailsController {
         }
     }
 
+<<<<<<< HEAD
     /**
      * Handles the new Edit button click to edit all task properties.
      * Opens the comprehensive task editor dialog.
@@ -229,6 +239,8 @@ public class TaskDetailsController {
         }
     }
 
+=======
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
     @FXML
     private void handleCancel() {
         closeWindow();

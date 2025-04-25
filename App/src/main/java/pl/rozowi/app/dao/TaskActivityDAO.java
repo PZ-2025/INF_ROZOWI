@@ -30,13 +30,27 @@ public class TaskActivityDAO {
 
     public List<TaskActivity> getActivitiesByTaskId(int taskId) {
         List<TaskActivity> activities = new ArrayList<>();
+<<<<<<< HEAD
         String sql = "SELECT * FROM task_activities WHERE task_id = ? ORDER BY created_at DESC";
+=======
+        String sql = "SELECT * FROM task_activities WHERE task_id = ?";
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, taskId);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
+<<<<<<< HEAD
                 TaskActivity activity = mapActivityFromResultSet(rs);
+=======
+                TaskActivity activity = new TaskActivity();
+                activity.setId(rs.getInt("id"));
+                activity.setTaskId(rs.getInt("task_id"));
+                activity.setUserId(rs.getInt("user_id"));
+                activity.setActivityType(rs.getString("activity_type"));
+                activity.setDescription(rs.getString("description"));
+                activity.setActivityDate(rs.getTimestamp("created_at"));
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
                 activities.add(activity);
             }
         } catch (SQLException ex) {
@@ -44,6 +58,7 @@ public class TaskActivityDAO {
         }
         return activities;
     }
+<<<<<<< HEAD
 
     /**
      * Get all task activities from the system, ordered by date (newest first)
@@ -139,3 +154,6 @@ public class TaskActivityDAO {
         return activity;
     }
 }
+=======
+}
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)

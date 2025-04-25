@@ -308,6 +308,7 @@ public class TaskDAO {
         return tasks;
     }
 
+<<<<<<< HEAD
     /**
      * Updates a task with all its fields in the database.
      *
@@ -329,6 +330,14 @@ public class TaskDAO {
             stmt.setInt(8, task.getProjectId());
             stmt.setInt(9, task.getId());
 
+=======
+    public boolean updateTask(Task task) {
+        String sql = "UPDATE tasks SET status = ? WHERE id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, task.getStatus());
+            stmt.setInt(2, task.getId());
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
             int affected = stmt.executeUpdate();
             return affected > 0;
         } catch (SQLException ex) {
@@ -336,7 +345,10 @@ public class TaskDAO {
         }
         return false;
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
     /**
      * Gets the ID of the user assigned to a task.
      *
@@ -424,4 +436,8 @@ public class TaskDAO {
             return false;
         }
     }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)

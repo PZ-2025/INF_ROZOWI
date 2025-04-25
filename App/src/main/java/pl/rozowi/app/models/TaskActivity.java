@@ -57,6 +57,7 @@ public class TaskActivity {
     public void setActivityDate(Timestamp activityDate) {
         this.activityDate = activityDate;
     }
+<<<<<<< HEAD
 
     @Override
     public String toString() {
@@ -70,3 +71,6 @@ public class TaskActivity {
                '}';
     }
 }
+=======
+}
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
