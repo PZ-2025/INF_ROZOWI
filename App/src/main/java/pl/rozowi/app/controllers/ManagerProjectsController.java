@@ -6,13 +6,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import pl.rozowi.app.dao.ProjectDAO;
-<<<<<<< HEAD
 import pl.rozowi.app.dao.TaskDAO;
 import pl.rozowi.app.models.Project;
 import pl.rozowi.app.models.Task;
-=======
-import pl.rozowi.app.models.Project;
->>>>>>> origin/main
 import pl.rozowi.app.util.Session;
 
 import java.sql.SQLException;
@@ -34,15 +30,10 @@ public class ManagerProjectsController {
     private TableColumn<Project, LocalDate> colStart;
     @FXML
     private TableColumn<Project, LocalDate> colEnd;
-<<<<<<< HEAD
     // Status column removed as requested
 
     private final ProjectDAO projectDAO = new ProjectDAO();
     private final TaskDAO taskDAO = new TaskDAO();
-=======
-
-    private final ProjectDAO projectDAO = new ProjectDAO();
->>>>>>> origin/main
     private final ObservableList<Project> data = FXCollections.observableArrayList();
 
     @FXML
@@ -52,19 +43,13 @@ public class ManagerProjectsController {
         colDesc.setCellValueFactory(c -> c.getValue().descriptionProperty());
         colStart.setCellValueFactory(c -> c.getValue().startDateProperty());
         colEnd.setCellValueFactory(c -> c.getValue().endDateProperty());
-<<<<<<< HEAD
         // Status column removed as requested
 
-=======
->>>>>>> origin/main
         loadAll();
     }
 
     private void loadAll() {
-<<<<<<< HEAD
         data.clear();
-=======
->>>>>>> origin/main
         List<Project> projects = projectDAO.getProjectsForManager(Session.currentUserId);
         data.setAll(projects);
         projectsTable.setItems(data);
@@ -98,7 +83,6 @@ public class ManagerProjectsController {
         });
     }
 
-<<<<<<< HEAD
     @FXML
     private void onDeleteProject() {
         Project selectedProject = projectsTable.getSelectionModel().getSelectedItem();
@@ -166,8 +150,6 @@ public class ManagerProjectsController {
         alert.showAndWait();
     }
 
-=======
->>>>>>> origin/main
     private static class ProjectFormDialog extends Dialog<Project> {
         private final TextField nameField = new TextField();
         private final TextArea descArea = new TextArea();
@@ -196,7 +178,6 @@ public class ManagerProjectsController {
                 descArea.setText(p.getDescription());
                 dpStart.setValue(p.getStartDate());
                 dpEnd.setValue(p.getEndDate());
-<<<<<<< HEAD
             } else {
                 // Default start and end dates for a new project
                 dpStart.setValue(LocalDate.now());
@@ -215,10 +196,6 @@ public class ManagerProjectsController {
             // Initial validation
             validateForm(okButton);
 
-=======
-            }
-
->>>>>>> origin/main
             setResultConverter(btn -> {
                 if (btn == ButtonType.OK) {
                     Project pr = (p == null ? new Project() : p);
@@ -231,7 +208,6 @@ public class ManagerProjectsController {
                 return null;
             });
         }
-<<<<<<< HEAD
 
         private void validateForm(Button okButton) {
             boolean nameValid = !nameField.getText().trim().isEmpty();
@@ -243,7 +219,3 @@ public class ManagerProjectsController {
         }
     }
 }
-=======
-    }
-}
->>>>>>> origin/main

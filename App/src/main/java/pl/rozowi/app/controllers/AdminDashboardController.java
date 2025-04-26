@@ -58,6 +58,9 @@ public class AdminDashboardController {
                     case "Raporty":
                         goToReports();
                         break;
+                    case "Aktywność":
+                        goToActivities();
+                        break;
                     case "Ustawienia":
                         goToSettings();
                         break;
@@ -98,8 +101,8 @@ public class AdminDashboardController {
     }
 
     @FXML
-    private void goToLogs() throws IOException {
-        loadView("/fxml/admin/adminLogs.fxml");
+    private void goToActivities() throws IOException {
+        loadView("/fxml/admin/adminActivities.fxml");
     }
 
     @FXML

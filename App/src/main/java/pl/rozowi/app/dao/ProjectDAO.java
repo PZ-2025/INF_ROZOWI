@@ -92,7 +92,6 @@ public class ProjectDAO {
         return list;
     }
 
-<<<<<<< HEAD
     /**
      * Deletes a project and all its related entities (tasks, teams, etc.)
      *
@@ -287,6 +286,3 @@ public class ProjectDAO {
         }
     }
 }
-=======
-}
->>>>>>> origin/main

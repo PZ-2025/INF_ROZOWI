@@ -6,17 +6,12 @@ import javafx.stage.Stage;
 import pl.rozowi.app.MainApplication;
 import pl.rozowi.app.dao.TaskDAO;
 import pl.rozowi.app.dao.TeamMemberDAO;
-<<<<<<< HEAD
 import pl.rozowi.app.dao.UserDAO;
 import pl.rozowi.app.models.Task;
 import pl.rozowi.app.models.User;
+import pl.rozowi.app.services.ActivityService;
 
 import java.sql.SQLException;
-=======
-import pl.rozowi.app.models.Task;
-import pl.rozowi.app.models.User;
-
->>>>>>> origin/main
 import java.util.List;
 
 public class TaskDetailsController {
@@ -48,10 +43,7 @@ public class TaskDetailsController {
     private Task task;
     private final TaskDAO taskDAO = new TaskDAO();
     private final TeamMemberDAO teamMemberDAO = new TeamMemberDAO();
-<<<<<<< HEAD
     private final UserDAO userDAO = new UserDAO();
-=======
->>>>>>> origin/main
 
     public void setTask(Task task) {
         this.task = task;
@@ -59,7 +51,6 @@ public class TaskDetailsController {
     }
 
     private void displayTaskDetails() {
-<<<<<<< HEAD
         taskIdLabel.setText(String.valueOf(task.getId()));
         titleLabel.setText(task.getTitle());
         descriptionLabel.setText(task.getDescription());
@@ -135,43 +126,6 @@ public class TaskDetailsController {
 
         // Save button visible for authorized users
         saveButton.setVisible(isLeader || isEmployee || isManager || isAdmin);
-=======
-        taskIdLabel.setText("ID: " + task.getId());
-        titleLabel.setText(task.getTitle());
-        descriptionLabel.setText(task.getDescription());
-        projectIdLabel.setText("Projekt: " + task.getProjectId());
-        teamIdLabel.setText("Zespół: " + task.getTeamId());
-        startDateLabel.setText("Start: " + task.getStartDate());
-        endDateLabel.setText("Koniec: " + task.getEndDate());
-
-        // status
-        statusComboBox.getItems().setAll("Nowe", "W toku", "Zakończone");
-        statusComboBox.setValue(task.getStatus());
-
-        // kto może edytować
-        User current = MainApplication.getCurrentUser();
-        boolean isLeader = current.getRoleId() == 3;
-        boolean isEmployee = current.getRoleId() == 4;
-
-        // status edytowalny dla leadera i pracownika
-        statusComboBox.setDisable(!(isLeader || isEmployee));
-
-        // assignee tylko dla leadera
-        if (assigneeComboBox != null) {
-            if (isLeader) {
-                List<User> members = teamMemberDAO.getTeamMembers(task.getTeamId());
-                assigneeComboBox.getItems().setAll(members);
-                members.stream()
-                        .filter(u -> u.getId() == task.getAssignedTo())
-                        .findFirst()
-                        .ifPresent(assigneeComboBox::setValue);
-            }
-            assigneeComboBox.setDisable(!isLeader);
-        }
-
-        // przycisk Zapisz widoczny dla leadera i pracownika
-        saveButton.setVisible(isLeader || isEmployee);
->>>>>>> origin/main
     }
 
     @FXML
@@ -179,25 +133,21 @@ public class TaskDetailsController {
         User current = MainApplication.getCurrentUser();
         int role = current.getRoleId();
 
-<<<<<<< HEAD
         // Only leader (3), employee (4), manager (2), or admin (1) can save changes
         if (role != 3 && role != 4 && role != 2 && role != 1) {
-=======
-        // tylko leader (3) i pracownik (4) mogą zapisać zmiany
-        if (role != 3 && role != 4) {
->>>>>>> origin/main
             closeWindow();
             return;
         }
 
         boolean okStatus = true, okAssign = true;
 
-<<<<<<< HEAD
         // Save status change
         String newStatus = statusComboBox.getValue();
         if (newStatus != null && !newStatus.equals(task.getStatus())) {
             okStatus = taskDAO.updateTaskStatus(task.getId(), newStatus);
             if (okStatus) {
+                // Log activity for status change
+                ActivityService.logStatusChange(task.getId(), task.getTitle(), task.getStatus(), newStatus);
                 task.setStatus(newStatus);
             }
         }
@@ -207,40 +157,25 @@ public class TaskDetailsController {
             User newAssignee = assigneeComboBox.getValue();
             if (newAssignee != null &&
                 (task.getAssignedTo() != newAssignee.getId() || task.getAssignedTo() == 0)) {
+
+                int oldAssigneeId = task.getAssignedTo();
                 okAssign = taskDAO.assignTask(task.getId(), newAssignee.getId());
+
                 if (okAssign) {
+                    // Log activity for assignment change
+                    ActivityService.logAssignment(task.getId(), task.getTitle(), oldAssigneeId, newAssignee.getId());
+
                     task.setAssignedTo(newAssignee.getId());
                     task.setAssignedEmail(newAssignee.getEmail());
                 }
-=======
-        // zapis statusu
-        String newStatus = statusComboBox.getValue();
-        if (newStatus != null && !newStatus.equals(task.getStatus())) {
-            okStatus = taskDAO.updateTaskStatus(task.getId(), newStatus);
-        }
-
-        // jeśli leader, to też zapis przypisania
-        if (role == 3 && assigneeComboBox != null) {
-            User newAssignee = assigneeComboBox.getValue();
-            if (newAssignee != null && newAssignee.getId() != task.getAssignedTo()) {
-                okAssign = taskDAO.assignTask(task.getId(), newAssignee.getId());
->>>>>>> origin/main
             }
         }
 
         if (okStatus && okAssign) {
-<<<<<<< HEAD
             showInfo("Changes saved successfully");
             closeWindow();
         } else {
             showError("Failed to save changes to the task.");
-=======
-            closeWindow();
-        } else {
-            new Alert(Alert.AlertType.ERROR,
-                    "Nie udało się zapisać zmian w zadaniu.")
-                    .showAndWait();
->>>>>>> origin/main
         }
     }
 
@@ -253,7 +188,6 @@ public class TaskDetailsController {
         Stage stage = (Stage) cancelButton.getScene().getWindow();
         stage.close();
     }
-<<<<<<< HEAD
 
     private void showInfo(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -271,6 +205,3 @@ public class TaskDetailsController {
         alert.showAndWait();
     }
 }
-=======
-}
->>>>>>> origin/main

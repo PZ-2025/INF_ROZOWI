@@ -41,7 +41,7 @@
                     style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
             <Button text="Raporty" onAction="#goToReports"
                     style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
-            <Button text="Logi systemowe" onAction="#goToLogs"
+            <Button text="Aktywność" onAction="#goToActivities"
                     style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
             <Button text="Konfiguracja systemu" onAction="#goToSystem"
                     style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
