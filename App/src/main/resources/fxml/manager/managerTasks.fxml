@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="pl.rozowi.app.controllers.ManagerTasksController">
+
+    <top>
+        <HBox spacing="10" style="-fx-padding:10">
+            <TextField fx:id="filterField"
+                       promptText="Filtruj projekty..."
+                       onKeyReleased="#onFilter"/>
+        </HBox>
+    </top>
+
+    <center>
+        <TableView fx:id="projectsTable">
+            <columns>
+                <TableColumn fx:id="colName" text="Projekt" prefWidth="200"/>
+                <TableColumn fx:id="colDesc" text="Opis" prefWidth="300"/>
+                <TableColumn fx:id="colTotal" text="Zadania" prefWidth="100"/>
+                <TableColumn fx:id="colDone" text="Zakończone" prefWidth="100"/>
+                <TableColumn fx:id="colProg" text="Postęp" prefWidth="150"/>
+            </columns>
+        </TableView>
+    </center>
+
+</BorderPane>
