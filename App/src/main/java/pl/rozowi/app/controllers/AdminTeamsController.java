@@ -1,26 +1,19 @@
 package pl.rozowi.app.controllers;
 
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.StringConverter;
-import pl.rozowi.app.dao.ProjectDAO;
-import pl.rozowi.app.dao.TaskDAO;
-import pl.rozowi.app.dao.TeamDAO;
-import pl.rozowi.app.dao.UserDAO;
-import pl.rozowi.app.dao.TeamMemberDAO;
-import pl.rozowi.app.models.Project;
-import pl.rozowi.app.models.Task;
-import pl.rozowi.app.models.Team;
-import pl.rozowi.app.models.User;
-
-
-
+import pl.rozowi.app.dao.*;
+import pl.rozowi.app.models.*;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -43,11 +36,13 @@ public class AdminTeamsController {
     private TextField searchField;
 
     @FXML
-    private TableView<User> membersTable;
+    private TableView<UserWithRole> membersTable;
     @FXML
-    private TableColumn<User, Number> colMemberId;
+    private TableColumn<UserWithRole, Number> colMemberId;
     @FXML
-    private TableColumn<User, String> colMemberEmail;
+    private TableColumn<UserWithRole, String> colMemberEmail;
+    @FXML
+    private TableColumn<UserWithRole, String> colMemberRole; // Kolumna dla roli
 
     @FXML
     private TableView<Task> tasksTable;
@@ -67,14 +62,135 @@ public class AdminTeamsController {
     private final TaskDAO taskDAO = new TaskDAO();
     private final UserDAO userDAO = new UserDAO();
     private final TeamMemberDAO teamMemberDAO = new TeamMemberDAO();
+    private final RoleDAO roleDAO = new RoleDAO();
 
+    private Map<Integer, String> roleNames = new HashMap<>();
 
     private final ObservableList<Team> teamData = FXCollections.observableArrayList();
-    private final ObservableList<User> memberData = FXCollections.observableArrayList();
+    private final ObservableList<UserWithRole> memberData = FXCollections.observableArrayList();
     private final ObservableList<Task> taskData = FXCollections.observableArrayList();
+
+    // Klasa pomocnicza do reprezentowania użytkownika z jego rolą i statusem lidera
+    public static class UserWithRole {
+        private final User user;
+        private final String roleName;
+        private final boolean isLeader;
+
+        public UserWithRole(User user, String roleName, boolean isLeader) {
+            this.user = user;
+            this.roleName = roleName;
+            this.isLeader = isLeader;
+        }
+
+        public User getUser() {
+            return user;
+        }
+
+        public int getId() {
+            return user.getId();
+        }
+
+        public String getEmail() {
+            return user.getEmail();
+        }
+
+        public String getName() {
+            return user.getName();
+        }
+
+        public String getLastName() {
+            return user.getLastName();
+        }
+
+        public String getFullName() {
+            return getName() + " " + getLastName();
+        }
+
+        public String getRoleName() {
+            return roleName;
+        }
+
+        public boolean isLeader() {
+            return isLeader;
+        }
+    }
+
+    // Klasa dla modelu wiersza w tabeli wyboru członków
+    public static class UserSelectionModel {
+        private final User user;
+        private final SimpleBooleanProperty selected = new SimpleBooleanProperty(false);
+        private final SimpleBooleanProperty leader = new SimpleBooleanProperty(false);
+        private final SimpleStringProperty roleProperty = new SimpleStringProperty();
+        private final SimpleStringProperty nameProperty = new SimpleStringProperty();
+        private final SimpleStringProperty emailProperty = new SimpleStringProperty();
+
+        public UserSelectionModel(User user, String roleName, boolean isSelected, boolean isLeader) {
+            this.user = user;
+            this.selected.set(isSelected);
+            this.leader.set(isLeader);
+            this.roleProperty.set(roleName);
+            this.nameProperty.set(user.getName() + " " + user.getLastName());
+            this.emailProperty.set(user.getEmail());
+        }
+
+        public User getUser() {
+            return user;
+        }
+
+        public boolean isSelected() {
+            return selected.get();
+        }
+
+        public SimpleBooleanProperty selectedProperty() {
+            return selected;
+        }
+
+        public void setSelected(boolean selected) {
+            this.selected.set(selected);
+        }
+
+        public boolean isLeader() {
+            return leader.get();
+        }
+
+        public SimpleBooleanProperty leaderProperty() {
+            return leader;
+        }
+
+        public void setLeader(boolean leader) {
+            this.leader.set(leader);
+        }
+
+        public String getRole() {
+            return roleProperty.get();
+        }
+
+        public SimpleStringProperty roleProperty() {
+            return roleProperty;
+        }
+
+        public String getName() {
+            return nameProperty.get();
+        }
+
+        public SimpleStringProperty nameProperty() {
+            return nameProperty;
+        }
+
+        public String getEmail() {
+            return emailProperty.get();
+        }
+
+        public SimpleStringProperty emailProperty() {
+            return emailProperty;
+        }
+    }
 
     @FXML
     public void initialize() throws SQLException {
+        // Pobierz mapę ról dla wszystkich użytkowników
+        loadRoleNames();
+
         // Konfiguracja kolumn tabeli zespołów
         colId.setCellValueFactory(c -> c.getValue().idProperty());
         colName.setCellValueFactory(c -> c.getValue().teamNameProperty());
@@ -105,9 +221,14 @@ public class AdminTeamsController {
 
         teamsTable.setItems(teamData);
 
-        // Konfiguracja kolumn tabeli członków
+        // Konfiguracja kolumn tabeli członków zespołu
         colMemberId.setCellValueFactory(c -> new SimpleIntegerProperty(c.getValue().getId()));
-        colMemberEmail.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEmail()));
+        colMemberEmail.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue().getFullName() + " (" + c.getValue().getEmail() + ")"
+        ));
+        colMemberRole.setCellValueFactory(c -> new SimpleStringProperty(
+                c.getValue().getRoleName() + (c.getValue().isLeader() ? " (Lider)" : "")
+        ));
         membersTable.setItems(memberData);
 
         // Konfiguracja kolumn tabeli zadań
@@ -118,33 +239,50 @@ public class AdminTeamsController {
         colTaskAssignee.setCellValueFactory(c -> c.getValue().assignedEmailProperty());
         tasksTable.setItems(taskData);
 
-        // Obsługa wyboru zespołu - aktualizacja tabel szczegółowych
-        teamsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldT, newT) -> {
-            try {
-                onTeamSelected(newT);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        });
+        // Obsługa wyboru zespołu
+        teamsTable.getSelectionModel().selectedItemProperty()
+                .addListener((obs, oldT, newT) -> {
+                    try {
+                        onTeamSelected(newT);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+                });
 
         loadAll();
+    }
 
-        // Konfiguracja wyszukiwania
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> {
-            String search = newVal.toLowerCase().trim();
-            if (search.isEmpty()) {
-                teamsTable.setItems(teamData);
-            } else {
-                ObservableList<Team> filtered = FXCollections.observableArrayList();
-                for (Team team : teamData) {
-                    if (String.valueOf(team.getId()).contains(search) ||
-                        team.getTeamName().toLowerCase().contains(search)) {
-                        filtered.add(team);
-                    }
-                }
-                teamsTable.setItems(filtered);
+    // Pobieranie nazw ról z bazy danych
+    private void loadRoleNames() {
+        try {
+            // Najpierw spróbuj pobrać przez UserDAO
+            Map<Integer, String> roles = userDAO.getAllRolesMap();
+            if (!roles.isEmpty()) {
+                roleNames = roles;
+                return;
             }
-        });
+
+            // Jeśli to nie zadziała, użyj RoleDAO
+            List<Role> rolesList = roleDAO.getAllRoles();
+            for (Role role : rolesList) {
+                roleNames.put(role.getId(), role.getRoleName());
+            }
+
+            // Jeśli nadal brak ról, dodaj domyślne wartości
+            if (roleNames.isEmpty()) {
+                roleNames.put(1, "Administrator");
+                roleNames.put(2, "Kierownik");
+                roleNames.put(3, "Team Leader");
+                roleNames.put(4, "Pracownik");
+            }
+        } catch (Exception e) {
+            // W przypadku błędu, dodaj domyślne wartości
+            roleNames.put(1, "Administrator");
+            roleNames.put(2, "Kierownik");
+            roleNames.put(3, "Team Leader");
+            roleNames.put(4, "Pracownik");
+            e.printStackTrace();
+        }
     }
 
     private void loadAll() throws SQLException {
@@ -157,8 +295,26 @@ public class AdminTeamsController {
             memberData.clear();
             taskData.clear();
         } else {
-            memberData.setAll(teamDAO.getTeamMembers(team.getId()));
+            loadTeamMembers(team.getId());
             taskData.setAll(taskDAO.getTasksByTeamId(team.getId()));
+        }
+    }
+
+    // Ładowanie członków zespołu wraz z ich rolami
+    private void loadTeamMembers(int teamId) throws SQLException {
+        memberData.clear();
+        List<User> members = teamDAO.getTeamMembers(teamId);
+
+        for (User member : members) {
+            // Pobierz rolę użytkownika
+            int roleId = member.getRoleId();
+            String roleName = roleNames.getOrDefault(roleId, "Rola " + roleId);
+
+            // Sprawdź, czy użytkownik jest liderem zespołu
+            boolean isLeader = teamMemberDAO.isTeamLeader(teamId, member.getId());
+
+            // Dodaj użytkownika z informacją o roli do listy
+            memberData.add(new UserWithRole(member, roleName, isLeader));
         }
     }
 
@@ -224,8 +380,10 @@ public class AdminTeamsController {
         Team sel = teamsTable.getSelectionModel().getSelectedItem();
         if (sel == null) return;
 
-        List<User> members = teamDAO.getTeamMembers(sel.getId());
+        // Konwertuj UserWithRole z powrotem na User dla kompatybilności z istniejącym kodem
+        List<User> members = memberData.stream().map(UserWithRole::getUser).collect(Collectors.toList());
         ObservableList<User> memberItems = FXCollections.observableArrayList(members);
+
         Dialog<ButtonType> dlg = new Dialog<>();
         dlg.setTitle("Edytuj zespół");
         dlg.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
@@ -237,7 +395,7 @@ public class AdminTeamsController {
             @Override
             protected void updateItem(User u, boolean empty) {
                 super.updateItem(u, empty);
-                setText(empty || u == null ? null : u.getId() + " – " + u.getEmail());
+                setText(empty || u == null ? null : u.getId() + " – " + u.getName() + " " + u.getLastName() + " (" + u.getEmail() + ")");
             }
         });
         listView.setPrefHeight(150);
@@ -277,53 +435,133 @@ public class AdminTeamsController {
     @FXML
     private void onAssignMembers() throws SQLException {
         Team selected = teamsTable.getSelectionModel().getSelectedItem();
-        if (selected == null) return;
+        if (selected == null) {
+            showWarning("Wybierz zespół do przypisania członków");
+            return;
+        }
 
-        List<User> all = userDAO.getAllUsers();
-        List<User> members = teamDAO.getTeamMembers(selected.getId());
-        Dialog<List<User>> dlg = new Dialog<>();
-        dlg.setTitle("Przypisz członków do zespołu");
-        ListView<User> listView = new ListView<>(FXCollections.observableArrayList(all));
-        listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        for (User u : members) listView.getSelectionModel().select(u);
-        listView.setCellFactory(lv -> new ListCell<>() {
-            @Override
-            protected void updateItem(User u, boolean empty) {
-                super.updateItem(u, empty);
-                setText(empty || u == null ? null : u.getId() + " – " + u.getEmail());
+        // Przygotuj listę wszystkich użytkowników
+        List<User> allUsers = userDAO.getAllUsers();
+        List<User> currentMembers = teamDAO.getTeamMembers(selected.getId());
+
+        // Utwórz dialog
+        Dialog<List<UserSelectionModel>> dlg = new Dialog<>();
+        dlg.setTitle("Przypisz członków do zespołu: " + selected.getTeamName());
+        dlg.getDialogPane().setPrefWidth(800);
+        dlg.getDialogPane().setPrefHeight(600);
+
+        // Przyciski
+        ButtonType assignButtonType = new ButtonType("Przypisz", ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType("Anuluj", ButtonBar.ButtonData.CANCEL_CLOSE);
+        dlg.getDialogPane().getButtonTypes().addAll(assignButtonType, cancelButtonType);
+
+        // Przygotuj model danych dla tabeli
+        ObservableList<UserSelectionModel> usersToAssign = FXCollections.observableArrayList();
+        for (User user : allUsers) {
+            boolean isCurrentMember = currentMembers.stream().anyMatch(m -> m.getId() == user.getId());
+            boolean isLeader = isCurrentMember && teamMemberDAO.isTeamLeader(selected.getId(), user.getId());
+            String roleName = roleNames.getOrDefault(user.getRoleId(), "Rola " + user.getRoleId());
+
+            usersToAssign.add(new UserSelectionModel(user, roleName, isCurrentMember, isLeader));
+        }
+
+        // Utwórz tabelę
+        TableView<UserSelectionModel> usersTable = new TableView<>();
+        usersTable.setEditable(true);
+        usersTable.setItems(usersToAssign);
+
+        // Kolumna wyboru
+        TableColumn<UserSelectionModel, Boolean> selectedColumn = new TableColumn<>("Wybierz");
+        selectedColumn.setCellValueFactory(p -> p.getValue().selectedProperty());
+        selectedColumn.setCellFactory(CheckBoxTableCell.forTableColumn(selectedColumn));
+        selectedColumn.setEditable(true);
+
+        // Kolumna lidera
+        TableColumn<UserSelectionModel, Boolean> leaderColumn = new TableColumn<>("Lider");
+        leaderColumn.setCellValueFactory(p -> p.getValue().leaderProperty());
+        leaderColumn.setCellFactory(CheckBoxTableCell.forTableColumn(leaderColumn));
+        leaderColumn.setEditable(true);
+
+        // Kolumna imienia i nazwiska
+        TableColumn<UserSelectionModel, String> nameColumn = new TableColumn<>("Imię i Nazwisko");
+        nameColumn.setCellValueFactory(p -> p.getValue().nameProperty());
+
+        // Kolumna email
+        TableColumn<UserSelectionModel, String> emailColumn = new TableColumn<>("Email");
+        emailColumn.setCellValueFactory(p -> p.getValue().emailProperty());
+
+        // Kolumna roli
+        TableColumn<UserSelectionModel, String> roleColumn = new TableColumn<>("Rola");
+        roleColumn.setCellValueFactory(p -> p.getValue().roleProperty());
+
+        // Dodaj kolumny do tabeli
+        usersTable.getColumns().addAll(selectedColumn, leaderColumn, nameColumn, emailColumn, roleColumn);
+
+        // Ustaw szerokości kolumn
+        selectedColumn.setPrefWidth(70);
+        leaderColumn.setPrefWidth(70);
+        nameColumn.setPrefWidth(200);
+        emailColumn.setPrefWidth(250);
+        roleColumn.setPrefWidth(150);
+
+        // Przyciski Zaznacz wszystkie/Odznacz wszystkie
+        Button selectAllButton = new Button("Zaznacz wszystkie");
+        selectAllButton.setOnAction(e -> {
+            for (UserSelectionModel model : usersToAssign) {
+                model.setSelected(true);
             }
         });
 
-        dlg.getDialogPane().setContent(listView);
-        dlg.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
-        dlg.setResultConverter(btn -> btn == ButtonType.OK
-                ? listView.getSelectionModel().getSelectedItems()
-                : null);
-
-        Optional<List<User>> res = dlg.showAndWait();
-        res.ifPresent(chosen -> {
-            // Najpierw pobierz aktualny stan członkostwa dla każdego użytkownika
-            Map<Integer, Integer> userTeamMap = new HashMap<>();
-            for (User u : all) {
-                int currentTeamId = teamMemberDAO.getTeamIdForUser(u.getId());
-                userTeamMap.put(u.getId(), currentTeamId);
+        Button deselectAllButton = new Button("Odznacz wszystkie");
+        deselectAllButton.setOnAction(e -> {
+            for (UserSelectionModel model : usersToAssign) {
+                model.setSelected(false);
+                model.setLeader(false);
             }
+        });
 
-            // Usuń wszystkich poprzednich członków tego zespołu
-            for (User u : members) {
-                teamMemberDAO.deleteTeamMember(selected.getId(), u.getId());
+        // Układamy kontrolki
+        HBox buttonBar = new HBox(10, selectAllButton, deselectAllButton);
+        Label instructionLabel = new Label("Zaznacz użytkowników, których chcesz dodać do zespołu. Możesz również oznaczyć liderów zespołu.");
+
+        VBox content = new VBox(10, instructionLabel, usersTable, buttonBar);
+        content.setPadding(new javafx.geometry.Insets(10));
+
+        dlg.getDialogPane().setContent(content);
+
+        // Konwerter rezultatu
+        dlg.setResultConverter(dialogButton -> {
+            if (dialogButton == assignButtonType) {
+                return usersToAssign.stream()
+                    .filter(UserSelectionModel::isSelected)
+                    .collect(Collectors.toList());
             }
+            return null;
+        });
 
-            // Dodaj nowych członków do zespołu
-            for (User u : chosen) {
-                try {
-                    teamMemberDAO.insertTeamMember(selected.getId(), u.getId(), false);
-                } catch (SQLException ex) {
-                    new Alert(Alert.AlertType.ERROR, "Błąd przypisania użytkownika: " + ex.getMessage()).showAndWait();
+        // Wyświetl dialog i obsłuż rezultat
+        Optional<List<UserSelectionModel>> result = dlg.showAndWait();
+        result.ifPresent(selectedUsers -> {
+            try {
+                // Najpierw usuń wszystkich obecnych członków
+                for (User member : currentMembers) {
+                    teamDAO.deleteTeamMember(selected.getId(), member.getId());
                 }
-            }
 
-            memberData.setAll(teamDAO.getTeamMembers(selected.getId()));
+                // Dodaj wybranych członków
+                for (UserSelectionModel userModel : selectedUsers) {
+                    User user = userModel.getUser();
+                    boolean isLeader = userModel.isLeader();
+                    teamDAO.insertTeamMember(selected.getId(), user.getId(), isLeader);
+                }
+
+                // Odśwież listę członków
+                loadTeamMembers(selected.getId());
+
+                showInfo("Członkowie zespołu zostali zaktualizowani");
+            } catch (SQLException ex) {
+                showError("Błąd podczas przypisywania członków zespołu", ex.getMessage());
+            }
         });
     }
 
@@ -353,7 +591,31 @@ public class AdminTeamsController {
                 onTeamSelected(selectedTeam);
             }
         } catch (SQLException e) {
-            new Alert(Alert.AlertType.ERROR, "Błąd odświeżania danych: " + e.getMessage()).showAndWait();
+            showError("Błąd odświeżania danych", e.getMessage());
         }
+    }
+
+    private void showInfo(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Informacja");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showWarning(String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Ostrzeżenie");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showError(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

@@ -42,9 +42,24 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- Podstawowa zależność iText PDF (już obecna w projekcie) -->
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>itextpdf</artifactId>
+            <version>5.5.13.3</version>
+        </dependency>
+
+        <!-- Dodatkowa biblioteka dla lepszej obsługi czcionek z polskimi znakami -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itext-pdfa</artifactId>
+            <version>5.5.13.3</version>
+        </dependency>
+
+        <!-- Biblioteka ułatwiająca osadzanie czcionek w PDF -->
+        <dependency>
+            <groupId>com.itextpdf.tool</groupId>
+            <artifactId>xmlworker</artifactId>
             <version>5.5.13.3</version>
         </dependency>
         <dependency>

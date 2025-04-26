@@ -74,7 +74,7 @@
         </columns>
     </TableView>
 
-    <!-- Panel szczegółów zadania -->
+    <!-- Panel szczegółów zadania - poprawiona wersja -->
     <TitledPane text="Szczegóły zadania" expanded="false">
         <VBox spacing="10">
             <GridPane hgap="15" vgap="10">
@@ -85,38 +85,38 @@
                     <ColumnConstraints minWidth="300" />
                 </columnConstraints>
 
-                <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-text-fill: white;"/>
-                <Label fx:id="detailId" text="-" GridPane.rowIndex="0" GridPane.columnIndex="1" style="-fx-text-fill: white;"/>
+                <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
+                <Label fx:id="detailId" text="-" GridPane.rowIndex="0" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
 
-                <Label text="Tytuł:" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-text-fill: white;"/>
-                <Label fx:id="detailTitle" text="-" GridPane.rowIndex="1" GridPane.columnIndex="1" style="-fx-text-fill: white;"/>
+                <Label text="Tytuł:" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
+                <Label fx:id="detailTitle" text="-" GridPane.rowIndex="1" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
 
-                <Label text="Projekt:" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-text-fill: white;"/>
-                <Label fx:id="detailProject" text="-" GridPane.rowIndex="2" GridPane.columnIndex="1" style="-fx-text-fill: white;"/>
+                <Label text="Projekt:" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
+                <Label fx:id="detailProject" text="-" GridPane.rowIndex="2" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
 
-                <Label text="Zespół:" GridPane.rowIndex="3" GridPane.columnIndex="0" style="-fx-text-fill: white;"/>
-                <Label fx:id="detailTeam" text="-" GridPane.rowIndex="3" GridPane.columnIndex="1" style="-fx-text-fill: white;"/>
+                <Label text="Zespół:" GridPane.rowIndex="3" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
+                <Label fx:id="detailTeam" text="-" GridPane.rowIndex="3" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
 
-                <Label text="Status:" GridPane.rowIndex="4" GridPane.columnIndex="0" style="-fx-text-fill: white;"/>
-                <Label fx:id="detailStatus" text="-" GridPane.rowIndex="4" GridPane.columnIndex="1" style="-fx-text-fill: white;"/>
+                <Label text="Status:" GridPane.rowIndex="4" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
+                <Label fx:id="detailStatus" text="-" GridPane.rowIndex="4" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
 
-                <Label text="Priorytet:" GridPane.rowIndex="0" GridPane.columnIndex="2" style="-fx-text-fill: white;"/>
-                <Label fx:id="detailPriority" text="-" GridPane.rowIndex="0" GridPane.columnIndex="3" style="-fx-text-fill: white;"/>
+                <Label text="Priorytet:" GridPane.rowIndex="0" GridPane.columnIndex="2" style="-fx-text-fill: black;"/>
+                <Label fx:id="detailPriority" text="-" GridPane.rowIndex="0" GridPane.columnIndex="3" style="-fx-text-fill: black;"/>
 
-                <Label text="Data rozpoczęcia:" GridPane.rowIndex="1" GridPane.columnIndex="2" style="-fx-text-fill: white;"/>
-                <Label fx:id="detailStartDate" text="-" GridPane.rowIndex="1" GridPane.columnIndex="3" style="-fx-text-fill: white;"/>
+                <Label text="Data rozpoczęcia:" GridPane.rowIndex="1" GridPane.columnIndex="2" style="-fx-text-fill: black;"/>
+                <Label fx:id="detailStartDate" text="-" GridPane.rowIndex="1" GridPane.columnIndex="3" style="-fx-text-fill: black;"/>
 
-                <Label text="Data zakończenia:" GridPane.rowIndex="2" GridPane.columnIndex="2" style="-fx-text-fill: white;"/>
-                <Label fx:id="detailEndDate" text="-" GridPane.rowIndex="2" GridPane.columnIndex="3" style="-fx-text-fill: white;"/>
+                <Label text="Data zakończenia:" GridPane.rowIndex="2" GridPane.columnIndex="2" style="-fx-text-fill: black;"/>
+                <Label fx:id="detailEndDate" text="-" GridPane.rowIndex="2" GridPane.columnIndex="3" style="-fx-text-fill: black;"/>
 
-                <Label text="Przypisane do:" GridPane.rowIndex="3" GridPane.columnIndex="2" style="-fx-text-fill: white;"/>
-                <Label fx:id="detailAssignee" text="-" GridPane.rowIndex="3" GridPane.columnIndex="3" style="-fx-text-fill: white;"/>
+                <Label text="Przypisane do:" GridPane.rowIndex="3" GridPane.columnIndex="2" style="-fx-text-fill: black;"/>
+                <Label fx:id="detailAssignee" text="-" GridPane.rowIndex="3" GridPane.columnIndex="3" style="-fx-text-fill: black;"/>
 
-                <Label text="Ostatnia aktualizacja:" GridPane.rowIndex="4" GridPane.columnIndex="2" style="-fx-text-fill: white;"/>
-                <Label fx:id="detailLastUpdate" text="-" GridPane.rowIndex="4" GridPane.columnIndex="3" style="-fx-text-fill: white;"/>
+                <Label text="Ostatnia aktualizacja:" GridPane.rowIndex="4" GridPane.columnIndex="2" style="-fx-text-fill: black;"/>
+                <Label fx:id="detailLastUpdate" text="-" GridPane.rowIndex="4" GridPane.columnIndex="3" style="-fx-text-fill: black;"/>
             </GridPane>
 
-            <Label text="Opis zadania:" style="-fx-text-fill: white;"/>
+            <Label text="Opis zadania:" style="-fx-text-fill: black;"/>
             <TextArea fx:id="detailDescription" wrapText="true" editable="false" prefRowCount="4"/>
 
             <TitledPane text="Historia aktywności" expanded="false">

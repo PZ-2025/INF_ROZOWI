@@ -79,11 +79,8 @@
                 <Label text="Zespół:" GridPane.rowIndex="5" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
                 <Label fx:id="detailTeam" text="-" GridPane.rowIndex="5" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
 
-                <Label text="Data utworzenia:" GridPane.rowIndex="6" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
-                <Label fx:id="detailCreatedAt" text="-" GridPane.rowIndex="6" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
-
-                <Label text="Ostatnia zmiana hasła:" GridPane.rowIndex="7" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
-                <Label fx:id="detailLastPasswordChange" text="-" GridPane.rowIndex="7" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
+                <Label text="Ostatnia zmiana hasła:" GridPane.rowIndex="6" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
+                <Label fx:id="detailLastPasswordChange" text="-" GridPane.rowIndex="6" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
             </GridPane>
         </VBox>
     </TitledPane>

@@ -51,6 +51,29 @@ public class TeamMemberDAO {
     }
 
     /**
+     * Sprawdza, czy użytkownik jest liderem zespołu
+     *
+     * @param teamId ID zespołu
+     * @param userId ID użytkownika
+     * @return true jeśli użytkownik jest liderem zespołu, false w przeciwnym przypadku
+     */
+    public boolean isTeamLeader(int teamId, int userId) {
+        String sql = "SELECT is_leader FROM team_members WHERE team_id = ? AND user_id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, teamId);
+            stmt.setInt(2, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getBoolean("is_leader");
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
      * Wstawia nowy rekord członka zespołu
      */
     public boolean insertTeamMember(int teamId, int userId, boolean isLeader) throws SQLException {

@@ -5,6 +5,7 @@ module pl.rozowi.app {
 
 
     requires transitive itextpdf;
+    requires java.desktop;
 
     // Pozostałe wymagania modułu
     opens pl.rozowi.app.controllers to javafx.fxml;

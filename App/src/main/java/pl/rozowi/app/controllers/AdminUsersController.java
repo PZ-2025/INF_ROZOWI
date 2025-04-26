@@ -14,12 +14,16 @@ import pl.rozowi.app.dao.TeamMemberDAO;
 import pl.rozowi.app.dao.RoleDAO;
 import pl.rozowi.app.dao.TeamDAO;
 import pl.rozowi.app.dao.UserDAO;
+import pl.rozowi.app.dao.SettingsDAO;
 import pl.rozowi.app.models.Role;
 import pl.rozowi.app.models.Team;
 import pl.rozowi.app.models.User;
+import pl.rozowi.app.models.Settings;
 import pl.rozowi.app.services.PasswordChangeService;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -60,14 +64,13 @@ public class AdminUsersController {
     @FXML
     private Label detailGroup;
     @FXML
-    private Label detailCreatedAt;
-    @FXML
     private Label detailLastPasswordChange;
 
     private final UserDAO userDAO = new UserDAO();
     private final RoleDAO roleDAO = new RoleDAO();
     private final TeamDAO teamDAO = new TeamDAO();
     private final TeamMemberDAO teamMemberDAO = new TeamMemberDAO();
+    private final SettingsDAO settingsDAO = new SettingsDAO();
     private final PasswordChangeService passwordService = new PasswordChangeService();
 
     // Mapy z nazwami ról i grup pobierane z bazy danych
@@ -191,9 +194,19 @@ public class AdminUsersController {
             e.printStackTrace();
         }
 
-        // Data utworzenia i ostatnia zmiana hasła (przykładowe dane)
-        detailCreatedAt.setText("2025-04-01");
-        detailLastPasswordChange.setText("2025-04-15");
+        // Pobierz datę ostatniej zmiany hasła z tabeli settings
+        try {
+            Settings userSettings = settingsDAO.getSettingsByUserId(user.getId());
+            if (userSettings != null && userSettings.getLastPasswordChange() != null) {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                detailLastPasswordChange.setText(dateFormat.format(userSettings.getLastPasswordChange()));
+            } else {
+                detailLastPasswordChange.setText("Brak danych");
+            }
+        } catch (Exception e) {
+            detailLastPasswordChange.setText("Błąd pobierania danych");
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -374,8 +387,17 @@ public class AdminUsersController {
 
             // Aktualizacja w bazie
             boolean success = userDAO.updateUser(fullUserData);
+
+            // Aktualizuj datę ostatniej zmiany hasła
             if (success) {
+                settingsDAO.updateLastPasswordChange(fullUserData.getId());
                 showInfo("Hasło zostało zresetowane do: " + newPassword);
+
+                // Odśwież widok
+                User refreshedUser = userDAO.getUserById(fullUserData.getId());
+                if (refreshedUser != null) {
+                    showUserDetails(refreshedUser);
+                }
             } else {
                 showError("Błąd podczas resetowania hasła");
             }

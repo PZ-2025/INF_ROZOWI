@@ -38,7 +38,8 @@
             <TableView fx:id="membersTable" prefHeight="150">
                 <columns>
                     <TableColumn fx:id="colMemberId" text="ID" prefWidth="60"/>
-                    <TableColumn fx:id="colMemberEmail" text="Email" prefWidth="300"/>
+                    <TableColumn fx:id="colMemberEmail" text="Email" prefWidth="250"/>
+                    <TableColumn fx:id="colMemberRole" text="Rola" prefWidth="150"/>
                 </columns>
             </TableView>
 

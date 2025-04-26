@@ -46,13 +46,16 @@ public class ReportsController {
     private void initialize() {
         reportService = new ReportService();
 
-        // Load report types based on user role
+        // Ustaw styl monospace dla pola tekstowego raportu
+        reportsArea.setStyle("-fx-font-family: 'Consolas', 'Courier New', monospace; -fx-font-size: 12px;");
+
+        // Dodaj typy raportów
         loadReportTypes();
 
-        // Disable the save PDF button until a report is generated
+        // Wyłącz przycisk zapisu PDF dopóki nie zostanie wygenerowany raport
         saveAsPdfButton.setDisable(true);
 
-        // Set up listeners
+        // Nasłuchuj zmiany typu raportu
         reportTypeComboBox.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> {
                     if (newValue != null) {
@@ -66,14 +69,14 @@ public class ReportsController {
         User currentUser = MainApplication.getCurrentUser();
         if (currentUser == null) return;
 
-        // All users can see all report types
+        // Wszystkie typy raportów dostępne dla wszystkich użytkowników
         reportTypeComboBox.setItems(FXCollections.observableArrayList(
                 "Struktura Zespołów",
                 "Użytkownicy Systemu",
                 "Przegląd Projektów"
         ));
 
-        // Select the first item by default
+        // Wybierz pierwszy element jako domyślny
         reportTypeComboBox.getSelectionModel().selectFirst();
         currentReportType = reportTypeComboBox.getValue();
     }
@@ -91,6 +94,12 @@ public class ReportsController {
             boolean isAdmin = (roleId == 1);
             int managerId = currentUser.getId();
 
+            // Wyczyść poprzedni raport
+            reportsArea.clear();
+
+            // Pokaż informację o generowaniu raportu
+            reportsArea.setText("Generowanie raportu...");
+
             switch (currentReportType) {
                 case "Struktura Zespołów":
                     generateTeamsStructureReport();
@@ -106,7 +115,7 @@ public class ReportsController {
                     return;
             }
 
-            // Enable the save PDF button after successful generation
+            // Włącz przycisk zapisu PDF po pomyślnym wygenerowaniu
             saveAsPdfButton.setDisable(false);
 
         } catch (Exception e) {
@@ -130,7 +139,7 @@ public class ReportsController {
             for (Team team : teams) {
                 report.append("=== ZESPÓŁ: ").append(team.getTeamName()).append(" (ID: ").append(team.getId()).append(") ===\n");
 
-                // Get project name
+                // Pobierz nazwę projektu
                 int projectId = team.getProjectId();
                 String projectName = "Brak przypisania";
                 try {
@@ -145,7 +154,7 @@ public class ReportsController {
                 }
                 report.append("Projekt: ").append(projectName).append("\n");
 
-                // Get team members
+                // Pobierz członków zespołu
                 List<User> members = teamDAO.getTeamMembers(team.getId());
                 report.append("Liczba członków: ").append(members.size()).append("\n");
 
@@ -164,7 +173,7 @@ public class ReportsController {
                     }
                 }
 
-                // Get tasks assigned to this team
+                // Pobierz zadania przypisane do tego zespołu
                 List<Task> tasks = taskDAO.getTasksByTeamId(team.getId());
                 report.append("\nZADANIA ZESPOŁU (").append(tasks.size()).append("):\n");
 
@@ -201,10 +210,10 @@ public class ReportsController {
 
         report.append("Liczba użytkowników: ").append(users.size()).append("\n\n");
 
-        // Get role names
+        // Pobierz nazwy ról
         java.util.Map<Integer, String> roleNames = userDAO.getAllRolesMap();
 
-        // Sort users by role
+        // Sortuj użytkowników według roli
         users.sort((u1, u2) -> Integer.compare(u1.getRoleId(), u2.getRoleId()));
 
         int currentRole = -1;
@@ -222,7 +231,7 @@ public class ReportsController {
                   .append(user.getEmail())
                   .append(")\n");
 
-            // Get team assignment
+            // Pobierz przypisanie do zespołu
             int teamId = teamMemberDAO.getTeamIdForUser(user.getId());
             if (teamId > 0) {
                 String teamName = teamDAO.getTeamNameById(teamId);
@@ -240,10 +249,10 @@ public class ReportsController {
         List<Project> projects;
 
         if (isAdmin) {
-            // Admin can see all projects
+            // Administrator widzi wszystkie projekty
             projects = projectDAO.getAllProjects();
         } else {
-            // Manager can only see their projects
+            // Kierownik widzi tylko swoje projekty
             projects = projectDAO.getProjectsForManager(managerId);
         }
 
@@ -265,7 +274,7 @@ public class ReportsController {
                 report.append("Data rozpoczęcia: ").append(project.getStartDate()).append("\n");
                 report.append("Data zakończenia: ").append(project.getEndDate()).append("\n");
 
-                // Get manager
+                // Pobierz kierownika
                 int projectManagerId = project.getManagerId();
                 String managerName = "Brak przypisania";
                 if (projectManagerId > 0) {
@@ -276,7 +285,7 @@ public class ReportsController {
                 }
                 report.append("Kierownik: ").append(managerName).append("\n");
 
-                // Get teams for this project
+                // Pobierz zespoły dla tego projektu
                 List<Team> projectTeams = new java.util.ArrayList<>();
                 for (Team team : teamDAO.getAllTeams()) {
                     if (team.getProjectId() == project.getId()) {
@@ -293,12 +302,12 @@ public class ReportsController {
                     }
                 }
 
-                // Get tasks for this project
+                // Pobierz zadania dla tego projektu
                 List<Task> tasks = taskDAO.getTasksByProjectId(project.getId());
                 report.append("Liczba zadań: ").append(tasks.size()).append("\n");
 
                 if (!tasks.isEmpty()) {
-                    // Count tasks by status
+                    // Zlicz zadania według statusu
                     int newTasks = 0;
                     int inProgressTasks = 0;
                     int completedTasks = 0;
@@ -321,9 +330,9 @@ public class ReportsController {
                     report.append("- W toku: ").append(inProgressTasks).append("\n");
                     report.append("- Zakończone: ").append(completedTasks).append("\n");
 
-                    // Calculate completion percentage
+                    // Oblicz procent ukończenia
                     double completionPercentage = (double) completedTasks / tasks.size() * 100;
-                    report.append("Procent ukończenia: ").append(String.format("%.2f", completionPercentage)).append("%\n");
+                    report.append("- Procent ukończenia: ").append(String.format("%.2f", completionPercentage)).append("%\n");
                 }
 
                 report.append("\n\n");
@@ -341,7 +350,7 @@ public class ReportsController {
             return;
         }
 
-        // Open file chooser for save location
+        // Otwórz okno wyboru lokalizacji zapisu
         DirectoryChooser dirChooser = new DirectoryChooser();
         dirChooser.setTitle("Wybierz folder do zapisu PDF");
         dirChooser.setInitialDirectory(new File(System.getProperty("user.home")));
@@ -351,13 +360,13 @@ public class ReportsController {
 
         if (selectedDir != null) {
             try {
-                // Generate filename based on report type and timestamp
+                // Generuj nazwę pliku na podstawie typu raportu i znacznika czasu
                 String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
                 String sanitizedReportType = currentReportType.replaceAll("\\s+", "_").toLowerCase();
                 String filename = selectedDir.getAbsolutePath() + File.separator +
                                  "raport_" + sanitizedReportType + "_" + timestamp + ".pdf";
 
-                // Generate PDF using the service
+                // Generuj raport PDF przy użyciu ulepszonej usługi
                 switch (currentReportType) {
                     case "Struktura Zespołów":
                         reportService.generateTeamsStructurePdf(filename, currentReportContent);
@@ -375,6 +384,14 @@ public class ReportsController {
 
                 showInfo("Raport zapisany", "Raport PDF został pomyślnie zapisany:\n" + filename);
 
+                // Próba otwarcia pliku w domyślnym programie
+                try {
+                    java.awt.Desktop.getDesktop().open(new File(filename));
+                } catch (Exception e) {
+                    // Jeśli nie udało się otworzyć, po prostu pomijamy tę akcję
+                    System.out.println("Nie można automatycznie otworzyć pliku PDF: " + e.getMessage());
+                }
+
             } catch (IOException e) {
                 showError("Błąd zapisu", "Nie udało się zapisać raportu PDF: " + e.getMessage());
                 e.printStackTrace();
@@ -382,6 +399,9 @@ public class ReportsController {
         }
     }
 
+    /**
+     * Metoda pomocnicza do wyświetlania komunikatów informacyjnych
+     */
     private void showInfo(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
@@ -390,6 +410,9 @@ public class ReportsController {
         alert.showAndWait();
     }
 
+    /**
+     * Metoda pomocnicza do wyświetlania ostrzeżeń
+     */
     private void showWarning(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Ostrzeżenie");
@@ -398,6 +421,9 @@ public class ReportsController {
         alert.showAndWait();
     }
 
+    /**
+     * Metoda pomocnicza do wyświetlania błędów
+     */
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);

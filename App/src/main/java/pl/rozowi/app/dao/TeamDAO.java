@@ -56,10 +56,10 @@ public class TeamDAO {
     public List<User> getTeamMembers(int teamId) {
         List<User> members = new ArrayList<>();
         String sql = """
-                    SELECT u.id, u.name, u.email
-                      FROM users u
-                      JOIN team_members tm ON u.id = tm.user_id
-                     WHERE tm.team_id = ?
+                    SELECT u.id, u.name, u.last_name, u.email, u.role_id, tm.is_leader
+                    FROM users u
+                    JOIN team_members tm ON u.id = tm.user_id
+                    WHERE tm.team_id = ?
                 """;
         try (Connection c = DatabaseManager.getConnection();
              PreparedStatement s = c.prepareStatement(sql)) {
@@ -69,7 +69,9 @@ public class TeamDAO {
                 User u = new User();
                 u.setId(rs.getInt("id"));
                 u.setName(rs.getString("name"));
+                u.setLastName(rs.getString("last_name"));  // Dodane pobieranie nazwiska
                 u.setEmail(rs.getString("email"));
+                u.setRoleId(rs.getInt("role_id"));  // Dodane pobieranie roleId
                 members.add(u);
             }
         } catch (SQLException e) {
