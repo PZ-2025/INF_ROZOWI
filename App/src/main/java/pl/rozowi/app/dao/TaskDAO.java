@@ -308,12 +308,27 @@ public class TaskDAO {
         return tasks;
     }
 
+    /**
+     * Updates a task with all its fields in the database.
+     *
+     * @param task The task to update
+     * @return true if update was successful, false otherwise
+     */
     public boolean updateTask(Task task) {
-        String sql = "UPDATE tasks SET status = ? WHERE id = ?";
+        String sql = "UPDATE tasks SET title = ?, description = ?, status = ?, priority = ?, " +
+                     "start_date = ?, end_date = ?, team_id = ?, project_id = ? WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, task.getStatus());
-            stmt.setInt(2, task.getId());
+            stmt.setString(1, task.getTitle());
+            stmt.setString(2, task.getDescription());
+            stmt.setString(3, task.getStatus());
+            stmt.setString(4, task.getPriority());
+            stmt.setString(5, task.getStartDate());
+            stmt.setString(6, task.getEndDate());
+            stmt.setInt(7, task.getTeamId());
+            stmt.setInt(8, task.getProjectId());
+            stmt.setInt(9, task.getId());
+
             int affected = stmt.executeUpdate();
             return affected > 0;
         } catch (SQLException ex) {
@@ -321,6 +336,7 @@ public class TaskDAO {
         }
         return false;
     }
+
     /**
      * Gets the ID of the user assigned to a task.
      *

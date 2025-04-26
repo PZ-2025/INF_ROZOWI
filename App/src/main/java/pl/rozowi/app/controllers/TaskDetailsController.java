@@ -9,7 +9,7 @@ import pl.rozowi.app.dao.TeamMemberDAO;
 import pl.rozowi.app.dao.UserDAO;
 import pl.rozowi.app.models.Task;
 import pl.rozowi.app.models.User;
-import pl.rozowi.app.services.ActivityService;
+import pl.rozowi.app.util.TaskEditDialog;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -39,6 +39,8 @@ public class TaskDetailsController {
     private Button saveButton;
     @FXML
     private Button cancelButton;
+    @FXML
+    private Button editButton; // New button for editing all task details
 
     private Task task;
     private final TaskDAO taskDAO = new TaskDAO();
@@ -72,6 +74,11 @@ public class TaskDetailsController {
 
         // Status editable for leader, employee, manager, and admin
         statusComboBox.setDisable(!(isLeader || isEmployee || isManager || isAdmin));
+
+        // Only show edit button for admin and manager
+        if (editButton != null) {
+            editButton.setVisible(isAdmin || isManager);
+        }
 
         // Populate and configure assignee dropdown
         if (assigneeComboBox != null) {
@@ -146,8 +153,6 @@ public class TaskDetailsController {
         if (newStatus != null && !newStatus.equals(task.getStatus())) {
             okStatus = taskDAO.updateTaskStatus(task.getId(), newStatus);
             if (okStatus) {
-                // Log activity for status change
-                ActivityService.logStatusChange(task.getId(), task.getTitle(), task.getStatus(), newStatus);
                 task.setStatus(newStatus);
             }
         }
@@ -157,14 +162,8 @@ public class TaskDetailsController {
             User newAssignee = assigneeComboBox.getValue();
             if (newAssignee != null &&
                 (task.getAssignedTo() != newAssignee.getId() || task.getAssignedTo() == 0)) {
-
-                int oldAssigneeId = task.getAssignedTo();
                 okAssign = taskDAO.assignTask(task.getId(), newAssignee.getId());
-
                 if (okAssign) {
-                    // Log activity for assignment change
-                    ActivityService.logAssignment(task.getId(), task.getTitle(), oldAssigneeId, newAssignee.getId());
-
                     task.setAssignedTo(newAssignee.getId());
                     task.setAssignedEmail(newAssignee.getEmail());
                 }
@@ -176,6 +175,57 @@ public class TaskDetailsController {
             closeWindow();
         } else {
             showError("Failed to save changes to the task.");
+        }
+    }
+
+    /**
+     * Handles the new Edit button click to edit all task properties.
+     * Opens the comprehensive task editor dialog.
+     */
+    @FXML
+    private void handleEdit() {
+        // Only admin and manager can use full edit functionality
+        User current = MainApplication.getCurrentUser();
+        if (current.getRoleId() != 1 && current.getRoleId() != 2) {
+            showInfo("You don't have permission to edit all task properties");
+            return;
+        }
+
+        // Use our new TaskEditDialog utility
+        boolean success = TaskEditDialog.showEditDialog(task);
+
+        if (success) {
+            // Refresh the task from the database to show updated values
+            Task updatedTask = null;
+            try {
+                // In a real implementation, we would have a taskDAO.getTaskById method
+                // Here's a workaround assuming we have a project or team ID
+                List<Task> tasks = null;
+                if (task.getProjectId() > 0) {
+                    tasks = taskDAO.getTasksByProjectId(task.getProjectId());
+                } else if (task.getTeamId() > 0) {
+                    tasks = taskDAO.getTasksByTeamId(task.getTeamId());
+                }
+
+                if (tasks != null) {
+                    for (Task t : tasks) {
+                        if (t.getId() == task.getId()) {
+                            updatedTask = t;
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Error refreshing task: " + e.getMessage());
+            }
+
+            if (updatedTask != null) {
+                this.task = updatedTask;
+                displayTaskDetails();
+            }
+
+            // Close this dialog as it now shows stale data
+            closeWindow();
         }
     }
 
