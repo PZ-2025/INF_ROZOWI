@@ -57,4 +57,20 @@ public class TaskActivity {
     public void setActivityDate(Timestamp activityDate) {
         this.activityDate = activityDate;
     }
+<<<<<<< HEAD
+
+    @Override
+    public String toString() {
+        return "TaskActivity{" +
+               "id=" + id +
+               ", taskId=" + taskId +
+               ", userId=" + userId +
+               ", activityType='" + activityType + '\'' +
+               ", description='" + description + '\'' +
+               ", activityDate=" + activityDate +
+               '}';
+    }
 }
+=======
+}
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)

@@ -42,7 +42,15 @@
             <TableColumn fx:id="colStartDate" text="Data rozpoczęcia" prefWidth="120"/>
             <TableColumn fx:id="colEndDate" text="Data zakończenia" prefWidth="120"/>
             <TableColumn fx:id="colManager" text="Kierownik" prefWidth="150"/>
+<<<<<<< HEAD
+<<<<<<< HEAD
             <!-- Status column removed as requested -->
+=======
+            <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
+>>>>>>> origin/main
+=======
+            <!-- Status column removed as requested -->
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
         </columns>
     </TableView>
 

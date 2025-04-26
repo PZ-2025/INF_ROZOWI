@@ -1,5 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<<<<<<< HEAD
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pl.rozowi.app.controllers.ReportsController"
+      spacing="15" style="-fx-padding: 15px; -fx-background-color: #1E1E2F;">
+
+    <!-- Header Section -->
+    <HBox alignment="CENTER_LEFT" spacing="15">
+        <Label text="Raporty - Panel Kierownika"
+               style="-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        <Pane HBox.hgrow="ALWAYS" />
+    </HBox>
+
+    <!-- Report Options Section -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Typ raportu:" style="-fx-text-fill: white;"/>
+        <ComboBox fx:id="reportTypeComboBox" prefWidth="250"/>
+        <Button fx:id="generateButton" text="Generuj raport" onAction="#handleGenerateReport"
+                style="-fx-background-color: #28a745; -fx-text-fill: white;"/>
+        <Button fx:id="saveAsPdfButton" text="Zapisz jako PDF" onAction="#handleSaveAsPdf"
+                style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+    </HBox>
+
+    <!-- Report Content Preview Area -->
+    <TextArea fx:id="reportsArea" wrapText="true" editable="false" VBox.vgrow="ALWAYS"
+              style="-fx-font-family: monospace;"/>
+
+    <!-- Instructions -->
+    <VBox spacing="5" style="-fx-background-color: #252540; -fx-padding: 10px; -fx-background-radius: 5px;">
+        <Label text="Instrukcja:" style="-fx-font-weight: bold; -fx-text-fill: white;"/>
+        <Label text="1. Wybierz rodzaj raportu z listy rozwijanej." style="-fx-text-fill: white;"/>
+        <Label text="2. Kliknij 'Generuj raport' aby zobaczyć podgląd." style="-fx-text-fill: white;"/>
+        <Label text="3. Użyj przycisku 'Zapisz jako PDF' aby zapisać raport na dysku." style="-fx-text-fill: white;"/>
+        <Label text="Uwaga: W raporcie 'Przegląd Projektów' kierownik widzi tylko swoje projekty."
+               style="-fx-text-fill: #ffc107;"/>
+    </VBox>
+
+</VBox>
+=======
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.control.*?>
@@ -17,3 +61,4 @@
               style="-fx-pref-width: 600; -fx-pref-height: 400;"
               promptText="Tu wstaw raporty..."/>
 </AnchorPane>
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)

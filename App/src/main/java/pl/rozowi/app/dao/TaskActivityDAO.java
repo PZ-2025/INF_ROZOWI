@@ -30,12 +30,19 @@ public class TaskActivityDAO {
 
     public List<TaskActivity> getActivitiesByTaskId(int taskId) {
         List<TaskActivity> activities = new ArrayList<>();
+<<<<<<< HEAD
+        String sql = "SELECT * FROM task_activities WHERE task_id = ? ORDER BY created_at DESC";
+=======
         String sql = "SELECT * FROM task_activities WHERE task_id = ?";
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, taskId);
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
+<<<<<<< HEAD
+                TaskActivity activity = mapActivityFromResultSet(rs);
+=======
                 TaskActivity activity = new TaskActivity();
                 activity.setId(rs.getInt("id"));
                 activity.setTaskId(rs.getInt("task_id"));
@@ -43,6 +50,7 @@ public class TaskActivityDAO {
                 activity.setActivityType(rs.getString("activity_type"));
                 activity.setDescription(rs.getString("description"));
                 activity.setActivityDate(rs.getTimestamp("created_at"));
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)
                 activities.add(activity);
             }
         } catch (SQLException ex) {
@@ -50,4 +58,102 @@ public class TaskActivityDAO {
         }
         return activities;
     }
+<<<<<<< HEAD
+
+    /**
+     * Get all task activities from the system, ordered by date (newest first)
+     */
+    public List<TaskActivity> getAllActivities() {
+        List<TaskActivity> activities = new ArrayList<>();
+        String sql = "SELECT * FROM task_activities ORDER BY created_at DESC";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                TaskActivity activity = mapActivityFromResultSet(rs);
+                activities.add(activity);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return activities;
+    }
+
+    /**
+     * Get activities by user ID
+     */
+    public List<TaskActivity> getActivitiesByUserId(int userId) {
+        List<TaskActivity> activities = new ArrayList<>();
+        String sql = "SELECT * FROM task_activities WHERE user_id = ? ORDER BY created_at DESC";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                TaskActivity activity = mapActivityFromResultSet(rs);
+                activities.add(activity);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return activities;
+    }
+
+    /**
+     * Get activities by activity type
+     */
+    public List<TaskActivity> getActivitiesByType(String activityType) {
+        List<TaskActivity> activities = new ArrayList<>();
+        String sql = "SELECT * FROM task_activities WHERE activity_type = ? ORDER BY created_at DESC";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, activityType);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                TaskActivity activity = mapActivityFromResultSet(rs);
+                activities.add(activity);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return activities;
+    }
+
+    /**
+     * Get activities within a date range
+     */
+    public List<TaskActivity> getActivitiesByDateRange(java.sql.Date startDate, java.sql.Date endDate) {
+        List<TaskActivity> activities = new ArrayList<>();
+        String sql = "SELECT * FROM task_activities WHERE DATE(created_at) BETWEEN ? AND ? ORDER BY created_at DESC";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setDate(1, startDate);
+            stmt.setDate(2, endDate);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                TaskActivity activity = mapActivityFromResultSet(rs);
+                activities.add(activity);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return activities;
+    }
+
+    /**
+     * Helper method to map ResultSet to TaskActivity object
+     */
+    private TaskActivity mapActivityFromResultSet(ResultSet rs) throws SQLException {
+        TaskActivity activity = new TaskActivity();
+        activity.setId(rs.getInt("id"));
+        activity.setTaskId(rs.getInt("task_id"));
+        activity.setUserId(rs.getInt("user_id"));
+        activity.setActivityType(rs.getString("activity_type"));
+        activity.setDescription(rs.getString("description"));
+        activity.setActivityDate(rs.getTimestamp("created_at"));
+        return activity;
+    }
 }
+=======
+}
+>>>>>>> 88cd853 (Zaktualizowana struktura projektu)

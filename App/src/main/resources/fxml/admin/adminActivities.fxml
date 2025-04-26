@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pl.rozowi.app.controllers.AdminActivitiesController"
+      spacing="15" style="-fx-padding: 10px; -fx-background-color: #1E1E2F;">
+
+    <HBox alignment="CENTER_LEFT" spacing="15">
+        <Label text="Aktywność Systemu"
+               style="-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        <Pane HBox.hgrow="ALWAYS" />
+        <TextField fx:id="searchField" promptText="Szukaj w aktywnościach..." prefWidth="250"/>
+        <Button fx:id="searchButton" text="🔍" onAction="#handleSearch"
+                style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+    </HBox>
+
+    <HBox spacing="10">
+        <Button text="Odśwież" onAction="#handleRefresh"
+                style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+        <Button text="Wyczyść filtry" onAction="#handleClearFilters"
+                style="-fx-background-color: #6c757d; -fx-text-fill: white;"/>
+        <Pane HBox.hgrow="ALWAYS" />
+        <Label text="Typ aktywności:" style="-fx-text-fill: white;"/>
+        <ComboBox fx:id="activityTypeCombo" prefWidth="120"/>
+        <Label text="Od:" style="-fx-text-fill: white;"/>
+        <DatePicker fx:id="startDatePicker"/>
+        <Label text="Do:" style="-fx-text-fill: white;"/>
+        <DatePicker fx:id="endDatePicker"/>
+    </HBox>
+
+    <!-- Tabela aktywności -->
+    <TableView fx:id="activitiesTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colTimestamp" text="Data i czas" prefWidth="150"/>
+            <TableColumn fx:id="colUser" text="Użytkownik" prefWidth="180"/>
+            <TableColumn fx:id="colTaskTitle" text="Zadanie" prefWidth="150"/>
+            <TableColumn fx:id="colActivityType" text="Typ aktywności" prefWidth="120"/>
+            <TableColumn fx:id="colDescription" text="Opis" prefWidth="300"/>
+        </columns>
+    </TableView>
+
+    <!-- Panel szczegółów aktywności -->
+    <TitledPane text="Szczegóły aktywności" expanded="false">
+        <VBox spacing="10">
+            <GridPane hgap="15" vgap="10">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="150" />
+                    <ColumnConstraints minWidth="300" />
+                    <ColumnConstraints minWidth="100" />
+                    <ColumnConstraints minWidth="300" />
+                </columnConstraints>
+
+                <Label text="Data i czas:" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
+                <Label fx:id="detailTimestamp" text="-" GridPane.rowIndex="0" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
+
+                <Label text="Użytkownik:" GridPane.rowIndex="0" GridPane.columnIndex="2" style="-fx-text-fill: black;"/>
+                <Label fx:id="detailUser" text="-" GridPane.rowIndex="0" GridPane.columnIndex="3" style="-fx-text-fill: black;"/>
+
+                <Label text="Zadanie:" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
+                <Label fx:id="detailTask" text="-" GridPane.rowIndex="1" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
+
+                <Label text="Typ aktywności:" GridPane.rowIndex="1" GridPane.columnIndex="2" style="-fx-text-fill: black;"/>
+                <Label fx:id="detailType" text="-" GridPane.rowIndex="1" GridPane.columnIndex="3" style="-fx-text-fill: black;"/>
+            </GridPane>
+
+            <Label text="Szczegółowy opis:" style="-fx-text-fill: black;"/>
+            <TextArea fx:id="detailDescription" wrapText="true" editable="false" prefRowCount="4"/>
+        </VBox>
+    </TitledPane>
+</VBox>
