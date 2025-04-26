@@ -3,6 +3,7 @@ module pl.rozowi.app {
     requires javafx.fxml;
     requires java.sql;
 
+
     requires transitive itextpdf;
 
     // Pozostałe wymagania modułu
