@@ -248,13 +248,49 @@ public class AdminActivitiesController {
                                    activity.getDescription().toLowerCase().contains(searchText) ||
                                    activity.getType().toLowerCase().contains(searchText);
 
+            // Fix for activity type filter - handle all potential matches
             boolean matchesType = "Wszystkie".equals(activityType) ||
-                                 activity.getType().equalsIgnoreCase(activityType);
+                                 activity.getType().equalsIgnoreCase(activityType) ||
+                                 mapTypeToPolish(activity.getType()).equalsIgnoreCase(activityType) ||
+                                 mapTypeToEnglish(activity.getType()).equalsIgnoreCase(activityType);
 
             boolean matchesDateRange = isInDateRange(activity.getTimestamp(), startDate, endDate);
 
             return matchesSearch && matchesType && matchesDateRange;
         });
+    }
+
+    // Helper methods to map between English and Polish type names
+    private String mapTypeToPolish(String englishType) {
+        return switch (englishType.toUpperCase()) {
+            case "CREATE" -> "UTWORZENIE";
+            case "UPDATE" -> "AKTUALIZACJA";
+            case "STATUS" -> "ZMIANA STATUSU";
+            case "ASSIGN" -> "PRZYPISANIE";
+            case "COMMENT" -> "KOMENTARZ";
+            case "PASSWORD" -> "ZMIANA HASŁA";
+            case "LOGIN" -> "LOGOWANIE";
+            case "LOGOUT" -> "WYLOGOWANIE";
+            case "USER_MANAGEMENT" -> "ZARZĄDZANIE UŻYTKOWNIKAMI";
+            case "TEAM_MANAGEMENT" -> "ZARZĄDZANIE ZESPOŁAMI";
+            default -> englishType;
+        };
+    }
+
+    private String mapTypeToEnglish(String polishType) {
+        return switch (polishType.toUpperCase()) {
+            case "UTWORZENIE" -> "CREATE";
+            case "AKTUALIZACJA" -> "UPDATE";
+            case "ZMIANA STATUSU" -> "STATUS";
+            case "PRZYPISANIE" -> "ASSIGN";
+            case "KOMENTARZ" -> "COMMENT";
+            case "ZMIANA HASŁA" -> "PASSWORD";
+            case "LOGOWANIE" -> "LOGIN";
+            case "WYLOGOWANIE" -> "LOGOUT";
+            case "ZARZĄDZANIE UŻYTKOWNIKAMI" -> "USER_MANAGEMENT";
+            case "ZARZĄDZANIE ZESPOŁAMI" -> "TEAM_MANAGEMENT";
+            default -> polishType;
+        };
     }
 
     private boolean isInDateRange(String timestampStr, LocalDate startDate, LocalDate endDate) {
@@ -435,8 +471,6 @@ public class AdminActivitiesController {
                 this.timestamp = "";
             }
         }
-
-
 
         public int getId() { return id; }
         public int getTaskId() { return taskId; }
