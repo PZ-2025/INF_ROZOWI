@@ -24,6 +24,8 @@
     <HBox spacing="10">
         <Button text="Odśwież" onAction="#handleRefresh"
                 style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+        <Button text="Eksportuj" onAction="#handleExportActivities"
+                style="-fx-background-color: #28a745; -fx-text-fill: white;"/>
         <Button text="Wyczyść filtry" onAction="#handleClearFilters"
                 style="-fx-background-color: #6c757d; -fx-text-fill: white;"/>
         <Pane HBox.hgrow="ALWAYS" />

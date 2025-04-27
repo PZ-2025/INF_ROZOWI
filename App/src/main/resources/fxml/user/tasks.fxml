@@ -20,6 +20,6 @@
     <HBox spacing="10">
         <TextField fx:id="filterField" promptText="Filtruj zadania..." style="-fx-pref-width: 300px;"/>
         <Button text="Filtruj" onAction="#handleFilter"/>
-        <Button text="Dodaj zadanie" onAction="#handleAddTask"/>
+<!--        <Button text="Dodaj zadanie" onAction="#handleAddTask"/>-->
     </HBox>
 </VBox>

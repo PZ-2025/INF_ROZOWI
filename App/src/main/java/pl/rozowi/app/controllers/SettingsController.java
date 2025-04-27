@@ -11,6 +11,7 @@ import pl.rozowi.app.MainApplication;
 import pl.rozowi.app.dao.UserDAO;
 import pl.rozowi.app.models.User;
 import pl.rozowi.app.services.PasswordChangeService;
+import pl.rozowi.app.services.ActivityService;
 
 import java.io.IOException;
 
@@ -75,6 +76,10 @@ public class SettingsController {
             try {
                 String hashed = passwordService.validateAndHashPassword(newPassword, confirmPassword);
                 currentUser.setPassword(hashed);
+                if (!newPassword.isEmpty()) {
+                    // Logowanie wydarzenia zmiany hasła
+                    ActivityService.logPasswordChange(currentUser.getId(), false);
+}
             } catch (IllegalArgumentException ex) {
                 showAlert(Alert.AlertType.ERROR, "Błąd", ex.getMessage());
                 return;

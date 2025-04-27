@@ -462,29 +462,41 @@ public class AdminTasksController {
     }
 
     @FXML
-    private void handleDeleteTask() {
-        Task selectedTask = tasksTable.getSelectionModel().getSelectedItem();
-        if (selectedTask == null) {
-            showWarning("Wybierz zadanie do usunięcia");
-            return;
+        private void handleDeleteTask() {
+            Task selectedTask = tasksTable.getSelectionModel().getSelectedItem();
+            if (selectedTask == null) {
+                showWarning("Wybierz zadanie do usunięcia");
+                return;
+            }
+
+            Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmDialog.setTitle("Potwierdzenie usunięcia");
+            confirmDialog.setHeaderText("Czy na pewno chcesz usunąć zadanie?");
+            confirmDialog.setContentText("Zadanie: " + selectedTask.getTitle() + "\n\nTa operacja jest nieodwracalna i usunie również wszystkie przypisania i aktywności zadania.");
+
+            Optional<ButtonType> result = confirmDialog.showAndWait();
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                try {
+                    // Wywołanie nowej metody usuwającej zadanie z bazy danych
+                    boolean deleted = taskDAO.deleteTask(selectedTask.getId());
+
+                    if (deleted) {
+                        // Usunięcie zadania z lokalnych kolekcji
+                        allTasks.remove(selectedTask);
+                        filteredTasks.remove(selectedTask);
+                        taskActivities.clear();
+                        clearTaskDetails();
+
+                        showInfo("Zadanie zostało pomyślnie usunięte z systemu");
+                    } else {
+                        showError("Błąd", "Nie udało się usunąć zadania z bazy danych");
+                    }
+                } catch (Exception ex) {
+                    showError("Błąd usuwania", "Wystąpił błąd podczas usuwania zadania: " + ex.getMessage());
+                    ex.printStackTrace();
+                }
+            }
         }
-
-        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmDialog.setTitle("Potwierdzenie usunięcia");
-        confirmDialog.setHeaderText("Czy na pewno chcesz usunąć zadanie?");
-        confirmDialog.setContentText("Zadanie: " + selectedTask.getTitle());
-
-        Optional<ButtonType> result = confirmDialog.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            // W rzeczywistej implementacji usuń zadanie z bazy
-            // Symulacja usuwania poprzez usunięcie z listy
-            allTasks.remove(selectedTask);
-            filteredTasks.remove(selectedTask);
-            clearTaskDetails();
-
-            showInfo("Zadanie zostało usunięte");
-        }
-    }
 
     @FXML
     private void handleAssignUser() {

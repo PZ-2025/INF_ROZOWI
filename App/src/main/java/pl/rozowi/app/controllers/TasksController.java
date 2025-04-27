@@ -9,6 +9,7 @@ import pl.rozowi.app.models.Task;
 import pl.rozowi.app.util.Session;
 
 import java.util.List;
+import java.util.Optional;
 
 public class TasksController {
 
@@ -83,8 +84,62 @@ public class TasksController {
         tasksTable.setItems(filtered);
     }
 
-    @FXML
+@FXML
     private void handleAddTask() {
         System.out.println("Dodawanie nowego zadania...");
+    }
+
+    /**
+     * Obsługuje usuwanie zadania.
+     * Zwykły użytkownik powinien mieć ograniczone uprawnienia do usuwania zadań,
+     * więc ta funkcjonalność może być dostępna tylko dla użytkowników o odpowiednich rolach.
+     */
+    @FXML
+    private void handleDeleteTask() {
+        Task selectedTask = tasksTable.getSelectionModel().getSelectedItem();
+        if (selectedTask == null) {
+            showAlert(Alert.AlertType.WARNING, "Wybierz zadanie", "Wybierz zadanie do usunięcia");
+            return;
+        }
+
+        // Sprawdź czy użytkownik ma uprawnienia do usuwania zadań
+        // Tylko zadania przypisane do danego użytkownika można usunąć
+        if (selectedTask.getAssignedTo() != Session.currentUserId) {
+            showAlert(Alert.AlertType.WARNING, "Brak uprawnień",
+                    "Możesz usuwać tylko zadania, które są przypisane bezpośrednio do Ciebie");
+            return;
+        }
+
+        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmDialog.setTitle("Potwierdzenie usunięcia");
+        confirmDialog.setHeaderText("Czy na pewno chcesz usunąć zadanie?");
+        confirmDialog.setContentText("Zadanie: " + selectedTask.getTitle() +
+                "\n\nTa operacja jest nieodwracalna i usunie również wszystkie przypisania i aktywności zadania.");
+
+        Optional<ButtonType> result = confirmDialog.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                boolean deleted = taskDAO.deleteTask(selectedTask.getId());
+
+                if (deleted) {
+                    loadTasks(); // Odśwież listę zadań
+                    showAlert(Alert.AlertType.INFORMATION, "Sukces", "Zadanie zostało pomyślnie usunięte z systemu");
+                } else {
+                    showAlert(Alert.AlertType.ERROR, "Błąd", "Nie udało się usunąć zadania z bazy danych");
+                }
+            } catch (Exception ex) {
+                showAlert(Alert.AlertType.ERROR, "Błąd usuwania",
+                        "Wystąpił błąd podczas usuwania zadania: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String message) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

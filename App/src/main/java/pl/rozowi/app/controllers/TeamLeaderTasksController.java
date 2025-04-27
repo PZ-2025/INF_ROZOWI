@@ -16,6 +16,7 @@ import pl.rozowi.app.util.Session;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class TeamLeaderTasksController {
@@ -91,7 +92,7 @@ public class TeamLeaderTasksController {
         tasksTable.setItems(filtered);
     }
 
-    private void openDetails(Task task) {
+private void openDetails(Task task) {
         try {
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/fxml/teamleader/taskDetails.fxml"));
@@ -107,6 +108,50 @@ public class TeamLeaderTasksController {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    /**
+     * Obsługuje usuwanie zadania z poziomu interfejsu Team Leadera.
+     * Ta metoda nie jest bezpośrednio widoczna w interfejsie, ale może być dodana
+     * do menu kontekstowego lub jako dodatkowy przycisk w interfejsie.
+     */
+    @FXML
+    private void handleDeleteTask() {
+        Task selectedTask = tasksTable.getSelectionModel().getSelectedItem();
+        if (selectedTask == null) {
+            showAlert(Alert.AlertType.WARNING, "Wybierz zadanie", "Wybierz zadanie do usunięcia");
+            return;
+        }
+
+        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmDialog.setTitle("Potwierdzenie usunięcia");
+        confirmDialog.setHeaderText("Czy na pewno chcesz usunąć zadanie?");
+        confirmDialog.setContentText("Zadanie: " + selectedTask.getTitle() + "\n\nTa operacja jest nieodwracalna i usunie również wszystkie przypisania i aktywności zadania.");
+
+        Optional<ButtonType> result = confirmDialog.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                boolean deleted = taskDAO.deleteTask(selectedTask.getId());
+
+                if (deleted) {
+                    loadTasks(); // Odśwież listę zadań
+                    showAlert(Alert.AlertType.INFORMATION, "Sukces", "Zadanie zostało pomyślnie usunięte z systemu");
+                } else {
+                    showAlert(Alert.AlertType.ERROR, "Błąd", "Nie udało się usunąć zadania z bazy danych");
+                }
+            } catch (Exception ex) {
+                showAlert(Alert.AlertType.ERROR, "Błąd usuwania", "Wystąpił błąd podczas usuwania zadania: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String message) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     @FXML

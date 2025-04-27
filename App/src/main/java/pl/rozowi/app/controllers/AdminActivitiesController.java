@@ -1,22 +1,23 @@
 package pl.rozowi.app.controllers;
 
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
+import pl.rozowi.app.database.DatabaseManager;
 import pl.rozowi.app.dao.TaskActivityDAO;
-import pl.rozowi.app.dao.UserDAO;
 import pl.rozowi.app.dao.TaskDAO;
+import pl.rozowi.app.dao.UserDAO;
 import pl.rozowi.app.models.TaskActivity;
+import pl.rozowi.app.models.EnhancedTaskActivity;
 import pl.rozowi.app.models.User;
-import pl.rozowi.app.models.Task;
 
-import java.sql.Timestamp;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,17 +25,17 @@ import java.util.Map;
 public class AdminActivitiesController {
 
     @FXML
-    private TableView<TaskActivity> activitiesTable;
+    private TableView<ActivityEntry> activitiesTable;
     @FXML
-    private TableColumn<TaskActivity, String> colTimestamp;
+    private TableColumn<ActivityEntry, String> colTimestamp;
     @FXML
-    private TableColumn<TaskActivity, String> colUser;
+    private TableColumn<ActivityEntry, String> colUser;
     @FXML
-    private TableColumn<TaskActivity, String> colTaskTitle;
+    private TableColumn<ActivityEntry, String> colTaskTitle;
     @FXML
-    private TableColumn<TaskActivity, String> colActivityType;
+    private TableColumn<ActivityEntry, String> colActivityType;
     @FXML
-    private TableColumn<TaskActivity, String> colDescription;
+    private TableColumn<ActivityEntry, String> colDescription;
 
     @FXML
     private TextField searchField;
@@ -56,136 +57,134 @@ public class AdminActivitiesController {
     @FXML
     private TextArea detailDescription;
 
-    private final TaskActivityDAO activityDAO = new TaskActivityDAO();
+    private final TaskActivityDAO taskActivityDAO = new TaskActivityDAO();
     private final UserDAO userDAO = new UserDAO();
     private final TaskDAO taskDAO = new TaskDAO();
 
-    private ObservableList<TaskActivity> allActivities = FXCollections.observableArrayList();
-    private ObservableList<TaskActivity> filteredActivities = FXCollections.observableArrayList();
+    private ObservableList<ActivityEntry> allActivities = FXCollections.observableArrayList();
+    private FilteredList<ActivityEntry> filteredActivities;
 
-    // Caches for faster lookups
+    // Cache to improve performance
     private Map<Integer, String> userNameCache = new HashMap<>();
     private Map<Integer, String> taskTitleCache = new HashMap<>();
 
     @FXML
     private void initialize() {
         // Set up table columns
-        colTimestamp.setCellValueFactory(data -> {
-            Timestamp timestamp = data.getValue().getActivityDate();
-            if (timestamp != null) {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                return new SimpleStringProperty(sdf.format(timestamp));
+        colTimestamp.setCellValueFactory(data -> data.getValue().timestampProperty());
+        colUser.setCellValueFactory(data -> data.getValue().userProperty());
+        colTaskTitle.setCellValueFactory(data -> data.getValue().taskProperty());
+        colActivityType.setCellValueFactory(data -> data.getValue().typeProperty());
+        colDescription.setCellValueFactory(data -> data.getValue().descriptionProperty());
+
+        // Set up activity type coloring
+        colActivityType.setCellFactory(column -> new TableCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item);
+
+                    switch (item.toUpperCase()) {
+                        case "CREATE", "UTWORZENIE" -> setStyle("-fx-text-fill: #28a745; -fx-font-weight: bold;");
+                        case "UPDATE", "AKTUALIZACJA" -> setStyle("-fx-text-fill: #17a2b8; -fx-font-weight: bold;");
+                        case "STATUS", "ZMIANA STATUSU" -> setStyle("-fx-text-fill: #ffc107; -fx-font-weight: bold;");
+                        case "ASSIGN", "PRZYPISANIE" -> setStyle("-fx-text-fill: #6f42c1; -fx-font-weight: bold;");
+                        case "COMMENT", "KOMENTARZ" -> setStyle("-fx-text-fill: #007bff; -fx-font-weight: bold;");
+                        case "PASSWORD", "ZMIANA HASŁA" -> setStyle("-fx-text-fill: #dc3545; -fx-font-weight: bold;");
+                        case "LOGIN" -> setStyle("-fx-text-fill: #28a745; -fx-font-weight: bold;");
+                        case "LOGOUT" -> setStyle("-fx-text-fill: #6c757d; -fx-font-weight: bold;");
+                        case "USER_MANAGEMENT" -> setStyle("-fx-text-fill: #fd7e14; -fx-font-weight: bold;");
+                        case "TEAM_MANAGEMENT" -> setStyle("-fx-text-fill: #20c997; -fx-font-weight: bold;");
+                        default -> setStyle("");
+                    }
+                }
             }
-            return new SimpleStringProperty("");
         });
 
-        colUser.setCellValueFactory(data -> {
-            int userId = data.getValue().getUserId();
-            String userName = getUserName(userId);
-            return new SimpleStringProperty(userName);
-        });
-
-        colTaskTitle.setCellValueFactory(data -> {
-            int taskId = data.getValue().getTaskId();
-            String taskTitle = getTaskTitle(taskId);
-            return new SimpleStringProperty(taskTitle);
-        });
-
-        colActivityType.setCellValueFactory(data ->
-            new SimpleStringProperty(data.getValue().getActivityType()));
-
-        colDescription.setCellValueFactory(data ->
-            new SimpleStringProperty(data.getValue().getDescription()));
-
-        // Set up activity type filter
+        // Set up activity type filter options
         activityTypeCombo.getItems().addAll(
-            "Wszystkie", "CREATE", "UPDATE", "STATUS", "ASSIGN", "COMMENT");
+            "Wszystkie", "CREATE", "UPDATE", "STATUS", "ASSIGN", "COMMENT",
+            "PASSWORD", "LOGIN", "LOGOUT", "USER_MANAGEMENT", "TEAM_MANAGEMENT"
+        );
         activityTypeCombo.setValue("Wszystkie");
 
-        // Set up search and filter listeners
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
-        activityTypeCombo.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
-        startDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
-        endDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
+        // Load all activities
+        loadActivities();
 
-        // Handle row selection for showing details
-        activitiesTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                showActivityDetails(newVal);
+        // Configure filtered list
+        filteredActivities = new FilteredList<>(allActivities, p -> true);
+        activitiesTable.setItems(filteredActivities);
+
+        // Handle row selection to show details
+        activitiesTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+            if (newSelection != null) {
+                displayActivityDetails(newSelection);
             } else {
                 clearActivityDetails();
             }
         });
 
-        // Load all activities
-        loadActivities();
+        // Configure search and filters
+        setupFilters();
     }
 
     private void loadActivities() {
-        List<TaskActivity> activities = activityDAO.getAllActivities();
-        allActivities.setAll(activities);
-        filteredActivities.setAll(activities);
-        activitiesTable.setItems(filteredActivities);
-    }
+        try {
+            // Load activities from database
+            List<TaskActivity> activities = taskActivityDAO.getAllActivities();
 
-    private void applyFilters() {
-        String searchText = searchField.getText().toLowerCase().trim();
-        String activityType = activityTypeCombo.getValue();
-        LocalDate startDate = startDatePicker.getValue();
-        LocalDate endDate = endDatePicker.getValue();
+            // Convert to EnhancedTaskActivity objects
+            List<EnhancedTaskActivity> enhancedActivities = new ArrayList<>();
+            for (TaskActivity activity : activities) {
+                EnhancedTaskActivity enhanced = new EnhancedTaskActivity(activity);
 
-        filteredActivities.clear();
+                // Populate user info
+                User user = userDAO.getUserById(activity.getUserId());
+                if (user != null) {
+                    enhanced.setUserName(user.getName());
+                    enhanced.setUserLastName(user.getLastName());
+                    enhanced.setUserEmail(user.getEmail());
+                }
 
-        for (TaskActivity activity : allActivities) {
-            boolean matchesSearch = searchText.isEmpty() ||
-                                   getUserName(activity.getUserId()).toLowerCase().contains(searchText) ||
-                                   getTaskTitle(activity.getTaskId()).toLowerCase().contains(searchText) ||
-                                   activity.getDescription().toLowerCase().contains(searchText);
+                // Get task title for tasks (not system events)
+                if (activity.getTaskId() > 0) {
+                    String title = getTaskTitle(activity.getTaskId());
+                    enhanced.setTaskTitle(title);
+                }
 
-            boolean matchesType = "Wszystkie".equals(activityType) ||
-                                 activity.getActivityType().equals(activityType);
-
-            boolean matchesDateRange = isInDateRange(activity.getActivityDate(), startDate, endDate);
-
-            if (matchesSearch && matchesType && matchesDateRange) {
-                filteredActivities.add(activity);
+                enhancedActivities.add(enhanced);
             }
+
+            // Convert to ActivityEntry objects for display
+            for (EnhancedTaskActivity enhanced : enhancedActivities) {
+                ActivityEntry entry = new ActivityEntry(
+                    enhanced.getId(),
+                    enhanced.getTaskId(),
+                    enhanced.getTaskTitleOrDefault(),
+                    enhanced.getUserId(),
+                    enhanced.getUserDisplayString(),
+                    enhanced.getActivityType(),
+                    enhanced.getDescription(),
+                    enhanced.getActivityDate()
+                );
+                allActivities.add(entry);
+            }
+
+            if (allActivities.isEmpty()) {
+                activitiesTable.setPlaceholder(new Label("Brak aktywności w systemie"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            activitiesTable.setPlaceholder(new Label("Błąd podczas ładowania aktywności: " + e.getMessage()));
         }
-
-        activitiesTable.setItems(filteredActivities);
-    }
-
-    private boolean isInDateRange(Timestamp timestamp, LocalDate startDate, LocalDate endDate) {
-        if (timestamp == null || (startDate == null && endDate == null)) {
-            return true;
-        }
-
-        LocalDate activityDate = timestamp.toLocalDateTime().toLocalDate();
-        boolean afterStartDate = startDate == null || !activityDate.isBefore(startDate);
-        boolean beforeEndDate = endDate == null || !activityDate.isAfter(endDate);
-
-        return afterStartDate && beforeEndDate;
-    }
-
-    private void showActivityDetails(TaskActivity activity) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        detailTimestamp.setText(activity.getActivityDate() != null ?
-                              sdf.format(activity.getActivityDate()) : "-");
-        detailUser.setText(getUserName(activity.getUserId()));
-        detailTask.setText(getTaskTitle(activity.getTaskId()));
-        detailType.setText(activity.getActivityType());
-        detailDescription.setText(activity.getDescription());
-    }
-
-    private void clearActivityDetails() {
-        detailTimestamp.setText("-");
-        detailUser.setText("-");
-        detailTask.setText("-");
-        detailType.setText("-");
-        detailDescription.setText("");
     }
 
     private String getUserName(int userId) {
+        // Check cache first
         if (userNameCache.containsKey(userId)) {
             return userNameCache.get(userId);
         }
@@ -205,15 +204,16 @@ public class AdminActivitiesController {
     }
 
     private String getTaskTitle(int taskId) {
+        // Check cache first
         if (taskTitleCache.containsKey(taskId)) {
             return taskTitleCache.get(taskId);
         }
 
         try {
-            // We'd ideally have a method to get a single task by ID
-            // but we can work with what we have
-            List<Task> tasks = taskDAO.getTasksByProjectId(-1); // This won't work properly, but it's a placeholder
-            for (Task task : tasks) {
+            // In a real implementation, we'd have a method to get a single task by ID
+            // This is a workaround
+            List<pl.rozowi.app.models.Task> tasks = taskDAO.getTasksByProjectId(-1);
+            for (pl.rozowi.app.models.Task task : tasks) {
                 if (task.getId() == taskId) {
                     String title = task.getTitle();
                     taskTitleCache.put(taskId, title);
@@ -227,6 +227,86 @@ public class AdminActivitiesController {
         return "Zadanie ID: " + taskId;
     }
 
+    private void setupFilters() {
+        // Add listeners to filter controls
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
+        activityTypeCombo.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
+        startDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
+        endDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
+    }
+
+    private void applyFilters() {
+        String searchText = searchField.getText().toLowerCase().trim();
+        String activityType = activityTypeCombo.getValue();
+        LocalDate startDate = startDatePicker.getValue();
+        LocalDate endDate = endDatePicker.getValue();
+
+        filteredActivities.setPredicate(activity -> {
+            boolean matchesSearch = searchText.isEmpty() ||
+                                   activity.getUser().toLowerCase().contains(searchText) ||
+                                   activity.getTask().toLowerCase().contains(searchText) ||
+                                   activity.getDescription().toLowerCase().contains(searchText) ||
+                                   activity.getType().toLowerCase().contains(searchText);
+
+            boolean matchesType = "Wszystkie".equals(activityType) ||
+                                 activity.getType().equalsIgnoreCase(activityType);
+
+            boolean matchesDateRange = isInDateRange(activity.getTimestamp(), startDate, endDate);
+
+            return matchesSearch && matchesType && matchesDateRange;
+        });
+    }
+
+    private boolean isInDateRange(String timestampStr, LocalDate startDate, LocalDate endDate) {
+        if (timestampStr == null || timestampStr.isEmpty() || (startDate == null && endDate == null)) {
+            return true;
+        }
+
+        try {
+            // Parse timestamp string to get date part
+            LocalDate date = LocalDate.parse(timestampStr.substring(0, 10));
+
+            boolean afterStartDate = startDate == null || !date.isBefore(startDate);
+            boolean beforeEndDate = endDate == null || !date.isAfter(endDate);
+
+            return afterStartDate && beforeEndDate;
+        } catch (Exception e) {
+            return true; // In case of parsing error, include the activity
+        }
+    }
+
+    private void displayActivityDetails(ActivityEntry activity) {
+        detailTimestamp.setText(activity.getTimestamp());
+        detailUser.setText(activity.getUser());
+        detailTask.setText(activity.getTask());
+        detailType.setText(activity.getType());
+        detailDescription.setText(activity.getDescription());
+
+        // Apply styling to activity type
+        switch (activity.getType().toUpperCase()) {
+            case "CREATE", "UTWORZENIE" -> detailType.setStyle("-fx-text-fill: #28a745; -fx-font-weight: bold;");
+            case "UPDATE", "AKTUALIZACJA" -> detailType.setStyle("-fx-text-fill: #17a2b8; -fx-font-weight: bold;");
+            case "STATUS", "ZMIANA STATUSU" -> detailType.setStyle("-fx-text-fill: #ffc107; -fx-font-weight: bold;");
+            case "ASSIGN", "PRZYPISANIE" -> detailType.setStyle("-fx-text-fill: #6f42c1; -fx-font-weight: bold;");
+            case "COMMENT", "KOMENTARZ" -> detailType.setStyle("-fx-text-fill: #007bff; -fx-font-weight: bold;");
+            case "PASSWORD", "ZMIANA HASŁA" -> detailType.setStyle("-fx-text-fill: #dc3545; -fx-font-weight: bold;");
+            case "LOGIN" -> detailType.setStyle("-fx-text-fill: #28a745; -fx-font-weight: bold;");
+            case "LOGOUT" -> detailType.setStyle("-fx-text-fill: #6c757d; -fx-font-weight: bold;");
+            case "USER_MANAGEMENT" -> detailType.setStyle("-fx-text-fill: #fd7e14; -fx-font-weight: bold;");
+            case "TEAM_MANAGEMENT" -> detailType.setStyle("-fx-text-fill: #20c997; -fx-font-weight: bold;");
+            default -> detailType.setStyle("-fx-font-weight: bold;");
+        }
+    }
+
+    private void clearActivityDetails() {
+        detailTimestamp.setText("-");
+        detailUser.setText("-");
+        detailTask.setText("-");
+        detailType.setText("-");
+        detailDescription.setText("");
+        detailType.setStyle("");
+    }
+
     @FXML
     private void handleSearch() {
         applyFilters();
@@ -238,14 +318,140 @@ public class AdminActivitiesController {
         activityTypeCombo.setValue("Wszystkie");
         startDatePicker.setValue(null);
         endDatePicker.setValue(null);
-
-        filteredActivities.setAll(allActivities);
-        activitiesTable.setItems(filteredActivities);
+        filteredActivities.setPredicate(p -> true);
     }
 
     @FXML
     private void handleRefresh() {
+        allActivities.clear();
+        userNameCache.clear();
+        taskTitleCache.clear();
         loadActivities();
+        filteredActivities.setPredicate(p -> true);
         clearActivityDetails();
+    }
+
+    @FXML
+    private void handleExportActivities() {
+        if (filteredActivities == null || filteredActivities.isEmpty()) {
+            showWarning("Brak aktywności do eksportu");
+            return;
+        }
+
+        // Create file chooser for saving the export
+        javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
+        fileChooser.setTitle("Eksport aktywności");
+        fileChooser.getExtensionFilters().addAll(
+            new javafx.stage.FileChooser.ExtensionFilter("Pliki tekstowe", "*.txt"),
+            new javafx.stage.FileChooser.ExtensionFilter("Pliki CSV", "*.csv")
+        );
+
+        // Set default filename with timestamp
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+        fileChooser.setInitialFileName("aktywnosci_export_" + now.format(formatter) + ".csv");
+
+        // Show save dialog
+        javafx.stage.Stage stage = (javafx.stage.Stage) activitiesTable.getScene().getWindow();
+        java.io.File file = fileChooser.showSaveDialog(stage);
+
+        if (file != null) {
+            try (java.io.FileWriter writer = new java.io.FileWriter(file)) {
+                // Write header
+                writer.write("Data i czas|Użytkownik|Zadanie|Typ aktywności|Opis\n");
+
+                // Write data
+                for (ActivityEntry activity : filteredActivities) {
+                    writer.write(String.format("%s|%s|%s|%s|%s\n",
+                        activity.getTimestamp(),
+                        activity.getUser(),
+                        activity.getTask(),
+                        activity.getType(),
+                        activity.getDescription().replace("\n", " ").replace("|", ",")
+                    ));
+                }
+
+                showInfo("Eksport zakończony", "Dane zostały zapisane do pliku:\n" + file.getAbsolutePath());
+            } catch (java.io.IOException e) {
+                showError("Błąd eksportu", "Nie udało się wyeksportować danych: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
+
+    // Add these helper methods if they don't already exist in your class
+    private void showInfo(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showWarning(String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Ostrzeżenie");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showError(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    /**
+     * Helper class representing an activity entry in the system
+     */
+    public static class ActivityEntry {
+        private final int id;
+        private final int taskId;
+        private final String task;
+        private final int userId;
+        private final String user;
+        private final String type;
+        private final String description;
+        private final String timestamp;
+
+        public ActivityEntry(int id, int taskId, String taskTitle, int userId, String userName,
+                            String activityType, String description, Timestamp timestamp) {
+            this.id = id;
+            this.taskId = taskId;
+            this.task = (taskTitle != null && !taskTitle.isEmpty()) ? taskTitle : "Zadanie ID: " + taskId;
+            this.userId = userId;
+            this.user = userName;
+            this.type = activityType != null ? activityType : "INNE";
+            this.description = description != null ? description : "";
+
+            // Format timestamp
+            if (timestamp != null) {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                this.timestamp = dateFormat.format(timestamp);
+            } else {
+                this.timestamp = "";
+            }
+        }
+
+
+
+        public int getId() { return id; }
+        public int getTaskId() { return taskId; }
+        public String getTask() { return task; }
+        public int getUserId() { return userId; }
+        public String getUser() { return user; }
+        public String getType() { return type; }
+        public String getDescription() { return description; }
+        public String getTimestamp() { return timestamp; }
+
+        // Properties for JavaFX TableView binding
+        public SimpleStringProperty taskProperty() { return new SimpleStringProperty(task); }
+        public SimpleStringProperty userProperty() { return new SimpleStringProperty(user); }
+        public SimpleStringProperty typeProperty() { return new SimpleStringProperty(type); }
+        public SimpleStringProperty descriptionProperty() { return new SimpleStringProperty(description); }
+        public SimpleStringProperty timestampProperty() { return new SimpleStringProperty(timestamp); }
     }
 }

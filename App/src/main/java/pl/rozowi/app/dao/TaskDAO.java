@@ -381,7 +381,7 @@ public class TaskDAO {
         return "";
     }
 
-    /**
+/**
      * Assigns a task to a user, handling the assignment in the junction table.
      *
      * @param taskId The ID of the task to assign
@@ -410,6 +410,74 @@ public class TaskDAO {
                 // If we got here, commit the transaction
                 conn.commit();
                 return true;
+            } catch (SQLException ex) {
+                // If anything goes wrong, roll back
+                conn.rollback();
+                ex.printStackTrace();
+                return false;
+            } finally {
+                // Restore auto-commit state
+                conn.setAutoCommit(true);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * Deletes a task and all its related records from the database.
+     *
+     * @param taskId The ID of the task to delete
+     * @return true if deletion was successful, false otherwise
+     */
+    public boolean deleteTask(int taskId) {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                // 1. Delete task assignments
+                try (PreparedStatement stmt = conn.prepareStatement(
+                        "DELETE FROM task_assignments WHERE task_id = ?")) {
+                    stmt.setInt(1, taskId);
+                    stmt.executeUpdate();
+                }
+
+                // 2. Delete task activities
+                try (PreparedStatement stmt = conn.prepareStatement(
+                        "DELETE FROM task_activities WHERE task_id = ?")) {
+                    stmt.setInt(1, taskId);
+                    stmt.executeUpdate();
+                }
+
+                // 3. Delete notifications related to task if exists
+                try {
+                    PreparedStatement checkStmt = conn.prepareStatement(
+                            "SHOW COLUMNS FROM notifications LIKE 'task_id'");
+                    ResultSet rs = checkStmt.executeQuery();
+                    if (rs.next()) {
+                        // Column exists, delete related notifications
+                        try (PreparedStatement stmt = conn.prepareStatement(
+                                "DELETE FROM notifications WHERE task_id = ?")) {
+                            stmt.setInt(1, taskId);
+                            stmt.executeUpdate();
+                        }
+                    }
+                    rs.close();
+                    checkStmt.close();
+                } catch (SQLException ex) {
+                    // Ignore errors checking for column existence
+                }
+
+                // 4. Finally delete the task itself
+                try (PreparedStatement stmt = conn.prepareStatement(
+                        "DELETE FROM tasks WHERE id = ?")) {
+                    stmt.setInt(1, taskId);
+                    int affected = stmt.executeUpdate();
+
+                    // Commit transaction if we got here
+                    conn.commit();
+                    return affected > 0;
+                }
             } catch (SQLException ex) {
                 // If anything goes wrong, roll back
                 conn.rollback();
