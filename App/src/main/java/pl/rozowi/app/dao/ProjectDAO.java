@@ -92,6 +92,23 @@ public class ProjectDAO {
         return list;
     }
 
+    public String getProjectNameById(int projectId) {
+        String sql = "SELECT project_name FROM projects WHERE id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, projectId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("project_name");
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to fetch project name by ID", e);
+        }
+        return null;
+    }
+
     /**
      * Deletes a project and all its related entities (tasks, teams, etc.)
      *

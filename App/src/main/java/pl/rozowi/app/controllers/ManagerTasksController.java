@@ -3,6 +3,7 @@ package pl.rozowi.app.controllers;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TextField;
@@ -11,9 +12,11 @@ import pl.rozowi.app.dao.ProjectDAO;
 import pl.rozowi.app.dao.TaskDAO;
 import pl.rozowi.app.models.Project;
 import pl.rozowi.app.models.Task;
+import pl.rozowi.app.util.Session;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ManagerTasksController {
 
@@ -35,6 +38,7 @@ public class ManagerTasksController {
     private final ProjectDAO projectDAO = new ProjectDAO();
     private final TaskDAO taskDAO = new TaskDAO();
     private final ObservableList<ProjectRow> data = FXCollections.observableArrayList();
+    private final ObservableList<ProjectRow> filteredData = FXCollections.observableArrayList();
 
     @FXML
     public void initialize() throws SQLException {
@@ -46,33 +50,85 @@ public class ManagerTasksController {
         colProg.setCellFactory(ProgressBarTableCell.forTableColumn());
 
         loadAll();
+
+        // Dodanie nasłuchiwania na zmiany w polu wyszukiwania
+        filterField.textProperty().addListener((observable, oldValue, newValue) -> {
+            onFilter();
+        });
     }
 
     private void loadAll() throws SQLException {
         data.clear();
-        List<Project> projects = projectDAO.getAllProjects();
-        for (Project p : projects) {
+
+        // Pobierz tylko projekty przypisane do zalogowanego kierownika
+        List<Project> managerProjects = projectDAO.getProjectsForManager(Session.currentUserId);
+
+        if (managerProjects.isEmpty()) {
+            showInfo("Nie masz przypisanych żadnych projektów.");
+            return;
+        }
+
+        for (Project p : managerProjects) {
+            // Pobierz zadania dla każdego projektu
             List<Task> tasks = taskDAO.getTasksByProjectId(p.getId());
+
+            // Oblicz liczbę zakończonych zadań
             long done = tasks.stream()
                     .map(Task::getStatus)
                     .filter(s -> s != null && s.trim().equalsIgnoreCase("Zakończone"))
                     .count();
+
+            // Dodaj wiersz projektu z danymi o zadaniach
             data.add(new ProjectRow(p, tasks.size(), (int) done));
         }
-        projectsTable.setItems(data);
+
+        // Ustaw dane w tabeli
+        filteredData.setAll(data);
+        projectsTable.setItems(filteredData);
     }
 
     @FXML
     private void onFilter() {
-        String f = filterField.getText().toLowerCase();
-        if (f.isEmpty()) {
-            projectsTable.setItems(data);
+        String searchText = filterField.getText().toLowerCase().trim();
+
+        if (searchText.isEmpty()) {
+            // Jeśli pole wyszukiwania jest puste, wyświetl wszystkie projekty
+            filteredData.setAll(data);
         } else {
-            projectsTable.setItems(data.filtered(r ->
-                    r.getName().toLowerCase().contains(f) ||
-                            r.getDescription().toLowerCase().contains(f)
-            ));
+            // Filtruj projekty według tekstu wyszukiwania
+            filteredData.setAll(data.stream()
+                    .filter(r ->
+                            r.getName().toLowerCase().contains(searchText) ||
+                                    r.getDescription().toLowerCase().contains(searchText))
+                    .collect(Collectors.toList()));
         }
+
+        projectsTable.setItems(filteredData);
+    }
+
+    @FXML
+    private void handleRefresh() {
+        try {
+            loadAll();
+        } catch (SQLException e) {
+            showError("Błąd odświeżania danych", e.getMessage());
+        }
+    }
+
+    private void showInfo(String message) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Informacja");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    private void showError(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     public static class ProjectRow extends Project {
@@ -87,6 +143,10 @@ public class ManagerTasksController {
             setId(p.getId());
             setProjectName(p.getProjectName());
             setDescription(p.getDescription());
+            setStartDate(p.getStartDate());
+            setEndDate(p.getEndDate());
+            setManagerId(p.getManagerId());
+
             totalTasks.set(total);
             completedTasks.set(done);
             progress.set(total == 0 ? 0.0 : (double) done / total);

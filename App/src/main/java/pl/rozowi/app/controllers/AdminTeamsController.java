@@ -65,6 +65,7 @@ public class AdminTeamsController {
     private final RoleDAO roleDAO = new RoleDAO();
 
     private Map<Integer, String> roleNames = new HashMap<>();
+    private Set<Integer> allowedRoleIds = new HashSet<>(); // Role IDs dozwolone dla członków zespołu
 
     private final ObservableList<Team> teamData = FXCollections.observableArrayList();
     private final ObservableList<UserWithRole> memberData = FXCollections.observableArrayList();
@@ -123,14 +124,16 @@ public class AdminTeamsController {
         private final SimpleStringProperty roleProperty = new SimpleStringProperty();
         private final SimpleStringProperty nameProperty = new SimpleStringProperty();
         private final SimpleStringProperty emailProperty = new SimpleStringProperty();
+        private boolean isEligibleForLeader; // Czy użytkownik może być liderem
 
-        public UserSelectionModel(User user, String roleName, boolean isSelected, boolean isLeader) {
+        public UserSelectionModel(User user, String roleName, boolean isSelected, boolean isLeader, boolean isEligibleForLeader) {
             this.user = user;
             this.selected.set(isSelected);
             this.leader.set(isLeader);
             this.roleProperty.set(roleName);
             this.nameProperty.set(user.getName() + " " + user.getLastName());
             this.emailProperty.set(user.getEmail());
+            this.isEligibleForLeader = isEligibleForLeader;
         }
 
         public User getUser() {
@@ -184,10 +187,21 @@ public class AdminTeamsController {
         public SimpleStringProperty emailProperty() {
             return emailProperty;
         }
+
+        public boolean isEligibleForLeader() {
+            return isEligibleForLeader;
+        }
     }
 
     @FXML
     public void initialize() throws SQLException {
+        // Ustawienie dozwolonych ról dla członków zespołu
+        // Na podstawie data_seed_script.sql:
+        // Rola 3 = Team Lider
+        // Rola 4 = Pracownik
+        allowedRoleIds.add(3); // Team Lider
+        allowedRoleIds.add(4); // Pracownik
+
         // Pobierz mapę ról dla wszystkich użytkowników
         loadRoleNames();
 
@@ -272,14 +286,14 @@ public class AdminTeamsController {
             if (roleNames.isEmpty()) {
                 roleNames.put(1, "Administrator");
                 roleNames.put(2, "Kierownik");
-                roleNames.put(3, "Team Leader");
+                roleNames.put(3, "Team Lider");
                 roleNames.put(4, "Pracownik");
             }
         } catch (Exception e) {
             // W przypadku błędu, dodaj domyślne wartości
             roleNames.put(1, "Administrator");
             roleNames.put(2, "Kierownik");
-            roleNames.put(3, "Team Leader");
+            roleNames.put(3, "Team Lider");
             roleNames.put(4, "Pracownik");
             e.printStackTrace();
         }
@@ -442,6 +456,11 @@ public class AdminTeamsController {
 
         // Przygotuj listę wszystkich użytkowników
         List<User> allUsers = userDAO.getAllUsers();
+        // Filtrowanie użytkowników według roli - tylko pracownicy i team liderzy
+        List<User> eligibleUsers = allUsers.stream()
+                .filter(user -> allowedRoleIds.contains(user.getRoleId()))
+                .collect(Collectors.toList());
+
         List<User> currentMembers = teamDAO.getTeamMembers(selected.getId());
 
         // Utwórz dialog
@@ -457,12 +476,17 @@ public class AdminTeamsController {
 
         // Przygotuj model danych dla tabeli
         ObservableList<UserSelectionModel> usersToAssign = FXCollections.observableArrayList();
-        for (User user : allUsers) {
+        for (User user : eligibleUsers) {
             boolean isCurrentMember = currentMembers.stream().anyMatch(m -> m.getId() == user.getId());
             boolean isLeader = isCurrentMember && teamMemberDAO.isTeamLeader(selected.getId(), user.getId());
-            String roleName = roleNames.getOrDefault(user.getRoleId(), "Rola " + user.getRoleId());
 
-            usersToAssign.add(new UserSelectionModel(user, roleName, isCurrentMember, isLeader));
+            // Pobierz nazwę roli z mapy roleName
+            String roleName = roleNames.getOrDefault(user.getRoleId(), "");
+
+            // Sprawdź, czy użytkownik może być liderem (tylko team liderzy - rola 3)
+            boolean eligibleForLeader = user.getRoleId() == 3; // Tylko team liderzy mogą być liderem zespołu
+
+            usersToAssign.add(new UserSelectionModel(user, roleName, isCurrentMember, isLeader, eligibleForLeader));
         }
 
         // Utwórz tabelę
@@ -476,10 +500,43 @@ public class AdminTeamsController {
         selectedColumn.setCellFactory(CheckBoxTableCell.forTableColumn(selectedColumn));
         selectedColumn.setEditable(true);
 
+        // Nasłuchiwanie zmian we właściwości selected dla wszystkich modeli
+        for (UserSelectionModel model : usersToAssign) {
+            model.selectedProperty().addListener((observable, oldValue, newValue) -> {
+                // Jeśli użytkownik został odznaczony jako członek, odznacz go również jako lidera
+                if (!newValue && model.isLeader()) {
+                    model.setLeader(false);
+                }
+
+                // Odświeżenie tabeli, aby zaktualizować dostępność checkboxów do wyboru lidera
+                usersTable.refresh();
+            });
+        }
+
         // Kolumna lidera
         TableColumn<UserSelectionModel, Boolean> leaderColumn = new TableColumn<>("Lider");
         leaderColumn.setCellValueFactory(p -> p.getValue().leaderProperty());
-        leaderColumn.setCellFactory(CheckBoxTableCell.forTableColumn(leaderColumn));
+        leaderColumn.setCellFactory(tc -> new CheckBoxTableCell<>() {
+            @Override
+            public void updateItem(Boolean item, boolean empty) {
+                super.updateItem(item, empty);
+                if (!empty) {
+                    TableRow<UserSelectionModel> row = getTableRow();
+                    if (row != null && row.getItem() != null) {
+                        UserSelectionModel rowData = row.getItem();
+                        // Dezaktywuj checkboxa dla liderów jeśli użytkownik nie jest Team Liderem
+                        if (!rowData.isEligibleForLeader()) {
+                            this.setDisable(true);
+                            this.setStyle("-fx-opacity: 0.3;"); // Przyciemnij kontrolkę dla lepszej widoczności
+                        } else {
+                            // Dla Team Liderów zawsze aktywuj checkbox, niezależnie od zaznaczenia w pierwszej kolumnie
+                            this.setDisable(false);
+                            this.setStyle("");
+                        }
+                    }
+                }
+            }
+        });
         leaderColumn.setEditable(true);
 
         // Kolumna imienia i nazwiska
@@ -520,11 +577,33 @@ public class AdminTeamsController {
             }
         });
 
+        // Dodaj logikę, która zapewnia, że tylko jeden użytkownik może być liderem
+        // oraz że odznaczenie członka zespołu automatycznie odznacza go jako lidera
+        for (UserSelectionModel model : usersToAssign) {
+            // Obsługa zaznaczenia lidera
+            model.leaderProperty().addListener((observable, oldValue, newValue) -> {
+                if (newValue) {
+                    // Jeśli zaznaczono lidera, to wyłącz innych
+                    for (UserSelectionModel otherModel : usersToAssign) {
+                        if (otherModel != model && otherModel.isLeader()) {
+                            otherModel.setLeader(false);
+                        }
+                    }
+                    // Upewnij się, że wybrany lider jest również członkiem zespołu
+                    if (!model.isSelected()) {
+                        model.setSelected(true);
+                    }
+                }
+            });
+        }
+
         // Układamy kontrolki
         HBox buttonBar = new HBox(10, selectAllButton, deselectAllButton);
-        Label instructionLabel = new Label("Zaznacz użytkowników, których chcesz dodać do zespołu. Możesz również oznaczyć liderów zespołu.");
+        Label instructionLabel = new Label("Zaznacz użytkowników, których chcesz dodać do zespołu. Możesz wybrać tylko jednego lidera zespołu.");
+        Label hintLabel = new Label("UWAGA: Tylko osoby z rolą 'Team Lider' mogą być liderem zespołu. Zaznaczenie lidera automatycznie dodaje go do zespołu.");
+        hintLabel.setStyle("-fx-font-style: italic; -fx-text-fill: #555555;");
 
-        VBox content = new VBox(10, instructionLabel, usersTable, buttonBar);
+        VBox content = new VBox(10, instructionLabel, hintLabel, usersTable, buttonBar);
         content.setPadding(new javafx.geometry.Insets(10));
 
         dlg.getDialogPane().setContent(content);
@@ -533,8 +612,8 @@ public class AdminTeamsController {
         dlg.setResultConverter(dialogButton -> {
             if (dialogButton == assignButtonType) {
                 return usersToAssign.stream()
-                    .filter(UserSelectionModel::isSelected)
-                    .collect(Collectors.toList());
+                        .filter(UserSelectionModel::isSelected)
+                        .collect(Collectors.toList());
             }
             return null;
         });
@@ -543,6 +622,13 @@ public class AdminTeamsController {
         Optional<List<UserSelectionModel>> result = dlg.showAndWait();
         result.ifPresent(selectedUsers -> {
             try {
+                // Sprawdź, czy tylko jeden użytkownik jest zaznaczony jako lider
+                long leaderCount = selectedUsers.stream().filter(UserSelectionModel::isLeader).count();
+                if (leaderCount > 1) {
+                    showError("Błąd", "W zespole może być tylko jeden lider. Proszę wybrać ponownie.");
+                    return;
+                }
+
                 // Najpierw usuń wszystkich obecnych członków
                 for (User member : currentMembers) {
                     teamDAO.deleteTeamMember(selected.getId(), member.getId());
@@ -574,7 +660,7 @@ public class AdminTeamsController {
             ObservableList<Team> filtered = FXCollections.observableArrayList();
             for (Team team : teamData) {
                 if (String.valueOf(team.getId()).contains(searchText) ||
-                    team.getTeamName().toLowerCase().contains(searchText)) {
+                        team.getTeamName().toLowerCase().contains(searchText)) {
                     filtered.add(team);
                 }
             }
