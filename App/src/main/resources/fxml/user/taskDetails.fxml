@@ -27,8 +27,8 @@
                     </columnConstraints>
                     <children>
                         <!-- Wiersz 0: ID zadania -->
-                        <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-                        <Label fx:id="taskIdLabel" text="-" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+<!--                        <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>-->
+<!--                        <Label fx:id="taskIdLabel" text="-" GridPane.rowIndex="0" GridPane.columnIndex="1"/>-->
 
                         <!-- Wiersz 1: Tytuł -->
                         <Label text="Tytuł:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>

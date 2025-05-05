@@ -1,5 +1,6 @@
 package pl.rozowi.app.controllers;
 
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -38,7 +39,10 @@ public class ManagerProjectsController {
 
     @FXML
     public void initialize() {
-        colId.setCellValueFactory(c -> c.getValue().idProperty());
+        // Zmieniono - zamiast rzeczywistego ID, wyświetlamy numer porządkowy (indeks + 1)
+        colId.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(
+                projectsTable.getItems().indexOf(data.getValue()) + 1));
+
         colName.setCellValueFactory(c -> c.getValue().nameProperty());
         colDesc.setCellValueFactory(c -> c.getValue().descriptionProperty());
         colStart.setCellValueFactory(c -> c.getValue().startDateProperty());
@@ -100,7 +104,10 @@ public class ManagerProjectsController {
         confirmDialog.setTitle("Potwierdzenie usunięcia");
         confirmDialog.setHeaderText("Czy na pewno chcesz usunąć projekt?");
 
-        String contentText = "Projekt: " + selectedProject.getName();
+        // Wyświetl numer porządkowy zamiast ID w komunikacie
+        int projectIndex = projectsTable.getItems().indexOf(selectedProject) + 1;
+        String contentText = "Projekt #" + projectIndex + ": " + selectedProject.getName();
+
         if (taskCount > 0) {
             contentText += "\n\nUWAGA: To spowoduje również usunięcie " + taskCount + " zadań, powiązanych zespołów i aktywności!";
         }
@@ -212,8 +219,8 @@ public class ManagerProjectsController {
         private void validateForm(Button okButton) {
             boolean nameValid = !nameField.getText().trim().isEmpty();
             boolean datesValid = dpStart.getValue() != null &&
-                                dpEnd.getValue() != null &&
-                                !dpEnd.getValue().isBefore(dpStart.getValue());
+                    dpEnd.getValue() != null &&
+                    !dpEnd.getValue().isBefore(dpStart.getValue());
 
             okButton.setDisable(!(nameValid && datesValid));
         }

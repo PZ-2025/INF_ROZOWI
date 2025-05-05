@@ -22,17 +22,18 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class ManagerTeamsController {
 
     // tabela zespołów
     @FXML
-    private TableView<Team> teamsTable;
+    private TableView<TeamWithOrdinal> teamsTable;
     @FXML
-    private TableColumn<Team, Number> colId;
+    private TableColumn<TeamWithOrdinal, Number> colId;
     @FXML
-    private TableColumn<Team, String> colName;
+    private TableColumn<TeamWithOrdinal, String> colName;
 
     // tabela członków wybranego zespołu
     @FXML
@@ -61,21 +62,61 @@ public class ManagerTeamsController {
     private final TaskDAO taskDAO = new TaskDAO();
     private final UserDAO userDAO = new UserDAO();
 
-    private final ObservableList<Team> teamData = FXCollections.observableArrayList();
+    private final ObservableList<TeamWithOrdinal> teamData = FXCollections.observableArrayList();
     private final ObservableList<User> memberData = FXCollections.observableArrayList();
     private final ObservableList<Task> taskData = FXCollections.observableArrayList();
 
+    // Class to wrap Team with an ordinal number
+    public static class TeamWithOrdinal {
+        private final Team team;
+        private final SimpleIntegerProperty ordinalNumber = new SimpleIntegerProperty();
+
+        public TeamWithOrdinal(Team team, int ordinalNumber) {
+            this.team = team;
+            this.ordinalNumber.set(ordinalNumber);
+        }
+
+        public Team getTeam() {
+            return team;
+        }
+
+        public int getId() {
+            return team.getId();
+        }
+
+        public String getTeamName() {
+            return team.getTeamName();
+        }
+
+        public int getProjectId() {
+            return team.getProjectId();
+        }
+
+        public SimpleIntegerProperty ordinalProperty() {
+            return ordinalNumber;
+        }
+
+        public int getOrdinalNumber() {
+            return ordinalNumber.get();
+        }
+    }
+
     @FXML
     public void initialize() throws SQLException {
-        // kolumny zespołów
-        colId.setCellValueFactory(c -> c.getValue().idProperty());
-        colName.setCellValueFactory(c -> c.getValue().teamNameProperty());
+        // kolumny zespołów - now using ordinal number
+        colId.setCellValueFactory(c -> c.getValue().ordinalProperty());
+        colName.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getTeamName()));
         teamsTable.setItems(teamData);
 
         teamsTable.getSelectionModel().selectedItemProperty()
                 .addListener((obs, oldT, newT) -> {
                     try {
-                        onTeamSelected(newT);
+                        if (newT != null) {
+                            onTeamSelected(newT.getTeam());
+                        } else {
+                            memberData.clear();
+                            taskData.clear();
+                        }
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
@@ -98,15 +139,23 @@ public class ManagerTeamsController {
     }
 
     private void loadAll() throws SQLException {
+        teamData.clear();
         Set<Integer> mgrProjIds = projectDAO.getProjectsForManager(Session.currentUserId)
                 .stream()
                 .map(Project::getId)
                 .collect(Collectors.toSet());
+
         // filtrujemy zespoły
         List<Team> allTeams = teamDAO.getAllTeams();
-        teamData.setAll(allTeams.stream()
+        List<Team> filteredTeams = allTeams.stream()
                 .filter(t -> mgrProjIds.contains(t.getProjectId()))
-                .collect(Collectors.toList()));
+                .collect(Collectors.toList());
+
+        // Add with ordinal numbers
+        AtomicInteger counter = new AtomicInteger(1);
+        for (Team team : filteredTeams) {
+            teamData.add(new TeamWithOrdinal(team, counter.getAndIncrement()));
+        }
     }
 
     private void onTeamSelected(Team team) throws SQLException {
@@ -181,9 +230,10 @@ public class ManagerTeamsController {
 
     @FXML
     private void onEditTeam() throws SQLException {
-        Team sel = teamsTable.getSelectionModel().getSelectedItem();
-        if (sel == null) return;
+        TeamWithOrdinal selectedWithOrdinal = teamsTable.getSelectionModel().getSelectedItem();
+        if (selectedWithOrdinal == null) return;
 
+        Team sel = selectedWithOrdinal.getTeam();
         List<User> members = teamDAO.getTeamMembers(sel.getId());
         ObservableList<User> memberItems = FXCollections.observableArrayList(members);
         Dialog<ButtonType> dlg = new Dialog<>();
@@ -236,21 +286,45 @@ public class ManagerTeamsController {
 
     @FXML
     private void onAssignMembers() throws SQLException {
-        Team selected = teamsTable.getSelectionModel().getSelectedItem();
-        if (selected == null) return;
+        TeamWithOrdinal selectedWithOrdinal = teamsTable.getSelectionModel().getSelectedItem();
+        if (selectedWithOrdinal == null) return;
 
+        Team selected = selectedWithOrdinal.getTeam();
+
+        // Pobierz wszystkich użytkowników
         List<User> all = userDAO.getAllUsers();
+
+        // Filtruj tylko pracowników (role_id = 4) i team liderów (role_id = 3)
+        List<User> filteredUsers = all.stream()
+                .filter(user -> user.getRoleId() == 3 || user.getRoleId() == 4)
+                .collect(Collectors.toList());
+
         List<User> members = teamDAO.getTeamMembers(selected.getId());
         Dialog<List<User>> dlg = new Dialog<>();
         dlg.setTitle("Przypisz członków do zespołu");
-        ListView<User> listView = new ListView<>(FXCollections.observableArrayList(all));
+        ListView<User> listView = new ListView<>(FXCollections.observableArrayList(filteredUsers));
         listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        for (User u : members) listView.getSelectionModel().select(u);
+
+        // Zaznacz aktualnych członków zespołu
+        for (User u : members) {
+            for (User listUser : filteredUsers) {
+                if (u.getId() == listUser.getId()) {
+                    listView.getSelectionModel().select(listUser);
+                    break;
+                }
+            }
+        }
+
         listView.setCellFactory(lv -> new ListCell<>() {
             @Override
             protected void updateItem(User u, boolean empty) {
                 super.updateItem(u, empty);
-                setText(empty || u == null ? null : u.getId() + " – " + u.getEmail());
+                if (empty || u == null) {
+                    setText(null);
+                } else {
+                    String role = u.getRoleId() == 3 ? "Team Leader" : "Pracownik";
+                    setText(u.getId() + " – " + u.getEmail() + " (" + role + ")");
+                }
             }
         });
 
@@ -270,11 +344,15 @@ public class ManagerTeamsController {
             // dodajemy nowych
             for (User u : chosen) {
                 try {
-                    dao.insertTeamMember(selected.getId(), u.getId(), false);
+                    // Ustawienie użytkownika z rolą Team Leader (role_id = 3) jako lidera zespołu
+                    boolean isLeader = u.getRoleId() == 3;
+                    dao.insertTeamMember(selected.getId(), u.getId(), isLeader);
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
                 }
             }
+
+            memberData.setAll(teamDAO.getTeamMembers(selected.getId()));
         });
     }
 }

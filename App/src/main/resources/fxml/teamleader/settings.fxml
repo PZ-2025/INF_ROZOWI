@@ -39,21 +39,37 @@
             </ComboBox>
         </VBox>
 
+<!--        <VBox spacing="10">-->
+<!--            <Label text="Wybierz domyślny widok:" style="-fx-font-size: 16px; -fx-text-fill: white;"/>-->
+<!--            <ComboBox fx:id="defaultViewComboBox" style="-fx-pref-width: 150px; -fx-font-size: 14px;">-->
+<!--                <items>-->
+<!--                    <FXCollections fx:factory="observableArrayList">-->
+<!--                        <String fx:value="Moje zadania"/>-->
+<!--                        <String fx:value="Zadania"/>-->
+<!--                    </FXCollections>-->
+<!--                </items>-->
+<!--            </ComboBox>-->
+<!--        </VBox>-->
+<!--    </HBox>-->
+
+
+<!--    <Button text="Zapisz zmiany" fx:id="saveSettingsButton"-->
+<!--            onAction="#handleSaveSettings"-->
+<!--            style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-pref-width: 150px;"/>-->
+<!--</VBox>-->
+
         <VBox spacing="10">
-            <Label text="Wybierz domyślny widok:" style="-fx-font-size: 16px; -fx-text-fill: white;"/>
-            <ComboBox fx:id="defaultViewComboBox" style="-fx-pref-width: 150px; -fx-font-size: 14px;">
-                <items>
-                    <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="Moje zadania"/>
-                        <String fx:value="Zadania"/>
-                    </FXCollections>
-                </items>
-            </ComboBox>
+            <Label text="Domyślny widok po zalogowaniu:" style="-fx-font-size: 16px; -fx-text-fill: white;"/>
+            <ComboBox fx:id="defaultViewComboBox" prefWidth="250" style="-fx-font-size: 14px;"/>
         </VBox>
     </HBox>
 
+    <Label text="Domyślny widok zostanie wyświetlony automatycznie po każdym zalogowaniu."
+           style="-fx-font-size: 14px; -fx-text-fill: #AAAAAA;"/>
 
-    <Button text="Zapisz zmiany" fx:id="saveSettingsButton"
-            onAction="#handleSaveSettings"
-            style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-pref-width: 150px;"/>
+    <HBox spacing="15" alignment="CENTER_LEFT" style="-fx-padding: 10 0 0 0;">
+        <Button text="Zapisz zmiany" fx:id="saveSettingsButton"
+                onAction="#handleSaveSettings"
+                style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 150px;"/>
+    </HBox>
 </VBox>

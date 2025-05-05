@@ -7,6 +7,8 @@ import pl.rozowi.app.MainApplication;
 import pl.rozowi.app.dao.TaskDAO;
 import pl.rozowi.app.dao.TeamMemberDAO;
 import pl.rozowi.app.dao.UserDAO;
+import pl.rozowi.app.dao.ProjectDAO;
+import pl.rozowi.app.dao.TeamDAO;
 import pl.rozowi.app.models.Task;
 import pl.rozowi.app.models.User;
 import pl.rozowi.app.util.TaskEditDialog;
@@ -16,8 +18,8 @@ import java.util.List;
 
 public class TaskDetailsController {
 
-    @FXML
-    private Label taskIdLabel;
+//    @FXML
+//    private Label taskIdLabel;
     @FXML
     private Label titleLabel;
     @FXML
@@ -46,6 +48,9 @@ public class TaskDetailsController {
     private final TaskDAO taskDAO = new TaskDAO();
     private final TeamMemberDAO teamMemberDAO = new TeamMemberDAO();
     private final UserDAO userDAO = new UserDAO();
+    private final ProjectDAO projectDAO = new ProjectDAO();
+    private final TeamDAO teamDAO = new TeamDAO();
+
 
     public void setTask(Task task) {
         this.task = task;
@@ -53,13 +58,17 @@ public class TaskDetailsController {
     }
 
     private void displayTaskDetails() {
-        taskIdLabel.setText(String.valueOf(task.getId()));
         titleLabel.setText(task.getTitle());
         descriptionLabel.setText(task.getDescription());
-        projectIdLabel.setText(String.valueOf(task.getProjectId()));
-        teamIdLabel.setText(String.valueOf(task.getTeamId()));
         startDateLabel.setText(task.getStartDate());
         endDateLabel.setText(task.getEndDate());
+
+        String projectName = projectDAO.getProjectNameById(task.getProjectId());
+        String teamName = teamDAO.getTeamNameById(task.getTeamId());
+
+        projectIdLabel.setText(projectName);
+        teamIdLabel.setText(teamName);
+
 
         // Set status dropdown
         statusComboBox.getItems().setAll("Nowe", "W toku", "Zakończone");
@@ -255,3 +264,4 @@ public class TaskDetailsController {
         alert.showAndWait();
     }
 }
+

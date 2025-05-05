@@ -12,6 +12,7 @@ import pl.rozowi.app.dao.ProjectDAO;
 import pl.rozowi.app.dao.TaskDAO;
 import pl.rozowi.app.dao.TeamDAO;
 import pl.rozowi.app.dao.UserDAO;
+import pl.rozowi.app.dao.TeamMemberDAO;
 import pl.rozowi.app.models.Project;
 import pl.rozowi.app.models.Task;
 import pl.rozowi.app.models.Team;
@@ -73,6 +74,7 @@ public class AdminProjectsController {
     private final TeamDAO teamDAO = new TeamDAO();
     private final TaskDAO taskDAO = new TaskDAO();
     private final UserDAO userDAO = new UserDAO();
+    private final TeamMemberDAO teamMemberDAO = new TeamMemberDAO();
 
     private final ObservableList<Project> allProjects = FXCollections.observableArrayList();
     private final ObservableList<Team> projectTeams = FXCollections.observableArrayList();
@@ -113,8 +115,23 @@ public class AdminProjectsController {
         colTeamId.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getId()));
         colTeamName.setCellValueFactory(data -> data.getValue().teamNameProperty());
         colTeamLeader.setCellValueFactory(data -> {
-            // Tutaj logika do pobrania team leadera
-            return new SimpleStringProperty("Nie określono");
+            // Pobierz lidera zespołu
+            int teamId = data.getValue().getId();
+            try {
+                // Użyj TeamMemberDAO do pobrania wszystkich członków zespołu z flagą is_leader=true
+                List<User> teamMembers = teamDAO.getTeamMembers(teamId);
+                for (User member : teamMembers) {
+                    // Sprawdź, czy użytkownik jest liderem zespołu
+                    // Możemy użyć pomocniczej metody isTeamLeader z klasy TeamMemberDAO
+                    if (teamMemberDAO.isTeamLeader(teamId, member.getId())) {
+                        return new SimpleStringProperty(member.getName() + " " + member.getLastName());
+                    }
+                }
+                return new SimpleStringProperty("Brak lidera");
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new SimpleStringProperty("Błąd pobierania");
+            }
         });
         colMembersCount.setCellValueFactory(data -> {
             // Pobierz liczbę członków zespołu

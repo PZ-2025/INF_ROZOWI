@@ -16,6 +16,7 @@ import pl.rozowi.app.util.Session;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class EmployeesController {
 
@@ -81,6 +82,11 @@ public class EmployeesController {
             case 3: // Team Leader
                 int teamId = Integer.parseInt(Session.currentUserTeam);
                 users = teamMemberDAO.getTeamMembers(teamId);
+                // Filter out the current user (team leader) from the list
+                int currentUserId = current.getId();
+                users = users.stream()
+                        .filter(user -> user.getId() != currentUserId)
+                        .collect(Collectors.toList());
                 break;
             case 2: // Manager
             case 1: // Admin
