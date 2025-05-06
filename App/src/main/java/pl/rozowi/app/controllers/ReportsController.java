@@ -8,7 +8,7 @@ import javafx.stage.Stage;
 import pl.rozowi.app.MainApplication;
 import pl.rozowi.app.dao.*;
 import pl.rozowi.app.models.*;
-import pl.rozowi.app.services.ReportService;
+import pl.rozowi.app.reports.ReportService;
 import pl.rozowi.app.util.Session;
 
 import java.io.File;
@@ -130,8 +130,8 @@ public class ReportsController {
 
         report.append("RAPORT: STRUKTURA ZESPOŁÓW\n");
         report.append("Data wygenerowania: ")
-              .append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-              .append("\n\n");
+                .append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .append("\n\n");
 
         if (teams.isEmpty()) {
             report.append("Brak zespołów w systemie.\n");
@@ -164,12 +164,12 @@ public class ReportsController {
                     report.append("\nCZŁONKOWIE ZESPOŁU:\n");
                     for (User member : members) {
                         report.append("- ")
-                              .append(member.getName())
-                              .append(" ")
-                              .append(member.getLastName())
-                              .append(" (")
-                              .append(member.getEmail())
-                              .append(")\n");
+                                .append(member.getName())
+                                .append(" ")
+                                .append(member.getLastName())
+                                .append(" (")
+                                .append(member.getEmail())
+                                .append(")\n");
                     }
                 }
 
@@ -182,12 +182,12 @@ public class ReportsController {
                 } else {
                     for (Task task : tasks) {
                         report.append("- ")
-                              .append(task.getTitle())
-                              .append(" (Status: ")
-                              .append(task.getStatus())
-                              .append(", Priorytet: ")
-                              .append(task.getPriority())
-                              .append(")\n");
+                                .append(task.getTitle())
+                                .append(" (Status: ")
+                                .append(task.getStatus())
+                                .append(", Priorytet: ")
+                                .append(task.getPriority())
+                                .append(")\n");
                     }
                 }
 
@@ -205,8 +205,8 @@ public class ReportsController {
 
         report.append("RAPORT: UŻYTKOWNICY SYSTEMU\n");
         report.append("Data wygenerowania: ")
-              .append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-              .append("\n\n");
+                .append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .append("\n\n");
 
         report.append("Liczba użytkowników: ").append(users.size()).append("\n\n");
 
@@ -224,12 +224,12 @@ public class ReportsController {
             }
 
             report.append("- ")
-                  .append(user.getName())
-                  .append(" ")
-                  .append(user.getLastName())
-                  .append(" (")
-                  .append(user.getEmail())
-                  .append(")\n");
+                    .append(user.getName())
+                    .append(" ")
+                    .append(user.getLastName())
+                    .append(" (")
+                    .append(user.getEmail())
+                    .append(")\n");
 
             // Pobierz przypisanie do zespołu
             int teamId = teamMemberDAO.getTeamIdForUser(user.getId());
@@ -260,8 +260,8 @@ public class ReportsController {
 
         report.append("RAPORT: PRZEGLĄD PROJEKTÓW\n");
         report.append("Data wygenerowania: ")
-              .append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
-              .append("\n\n");
+                .append(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+                .append("\n\n");
 
         report.append("Liczba projektów: ").append(projects.size()).append("\n\n");
 
@@ -364,7 +364,7 @@ public class ReportsController {
                 String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
                 String sanitizedReportType = currentReportType.replaceAll("\\s+", "_").toLowerCase();
                 String filename = selectedDir.getAbsolutePath() + File.separator +
-                                 "raport_" + sanitizedReportType + "_" + timestamp + ".pdf";
+                        "raport_" + sanitizedReportType + "_" + timestamp + ".pdf";
 
                 // Generuj raport PDF przy użyciu ulepszonej usługi
                 switch (currentReportType) {
