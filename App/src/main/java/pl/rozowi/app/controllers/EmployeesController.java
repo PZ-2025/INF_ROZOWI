@@ -46,7 +46,12 @@ public class EmployeesController {
 
     @FXML
     private void initialize() throws SQLException {
-        colId.setCellValueFactory(c -> new SimpleIntegerProperty(c.getValue().getId()));
+        // Zmieniamy sposób wyświetlania ID na numer porządkowy
+        colId.setCellValueFactory(c -> {
+            int index = allEmployees.indexOf(c.getValue()) + 1;
+            return new SimpleIntegerProperty(index);
+        });
+
         colName.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getName()));
         colLastName.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getLastName()));
         colEmail.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEmail()));
@@ -54,7 +59,7 @@ public class EmployeesController {
 
         loadEmployees();
 
-        // filtracja
+        // reszta kodu pozostaje bez zmian
         FilteredList<User> filtered = new FilteredList<>(allEmployees, u -> true);
         employeesTable.setItems(filtered);
         searchField.textProperty().addListener((obs, oldVal, newVal) -> {

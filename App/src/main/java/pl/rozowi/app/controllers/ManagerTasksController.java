@@ -13,6 +13,7 @@ import pl.rozowi.app.dao.TaskDAO;
 import pl.rozowi.app.models.Project;
 import pl.rozowi.app.models.Task;
 import pl.rozowi.app.util.Session;
+import javafx.beans.property.SimpleIntegerProperty;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -24,6 +25,8 @@ public class ManagerTasksController {
     private TextField filterField;
     @FXML
     private TableView<ProjectRow> projectsTable;
+    @FXML
+    private TableColumn<ProjectRow, Number> colId;
     @FXML
     private TableColumn<ProjectRow, String> colName;
     @FXML
@@ -42,6 +45,7 @@ public class ManagerTasksController {
 
     @FXML
     public void initialize() throws SQLException {
+        colId.setCellValueFactory(c -> new SimpleIntegerProperty(filteredData.indexOf(c.getValue()) + 1));
         colName.setCellValueFactory(c -> c.getValue().nameProperty());
         colDesc.setCellValueFactory(c -> c.getValue().descriptionProperty());
         colTotal.setCellValueFactory(c -> c.getValue().totalTasksProperty());

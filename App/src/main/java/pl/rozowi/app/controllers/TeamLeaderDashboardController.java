@@ -38,9 +38,6 @@ public class TeamLeaderDashboardController {
                 case "Ustawienia":
                     goToSettings();
                     break;
-                case "Powiadomienia":
-                    goToNotifications();
-                    break;
                 default:
                     goToMyTasks();
                     break;

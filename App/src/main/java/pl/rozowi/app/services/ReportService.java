@@ -8,11 +8,15 @@ import com.itextpdf.text.pdf.PdfPageEventHelper;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfWriter;
+import pl.rozowi.app.models.Team;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 public class ReportService {
@@ -24,6 +28,7 @@ public class ReportService {
     private Font SMALL_FONT;
     private Font TABLE_HEADER_FONT;
     private Font TABLE_DATA_FONT;
+    private Font FILTER_FONT;
 
     private BaseColor PRIMARY_COLOR = new BaseColor(0, 123, 255);
     private BaseColor SECONDARY_COLOR = new BaseColor(30, 30, 47);
@@ -39,6 +44,7 @@ public class ReportService {
             SMALL_FONT = new Font(base, 8, Font.NORMAL);
             TABLE_HEADER_FONT = new Font(base, 10, Font.BOLD, BaseColor.WHITE);
             TABLE_DATA_FONT = new Font(base, 9, Font.NORMAL);
+            FILTER_FONT = new Font(base, 10, Font.ITALIC, new BaseColor(100, 100, 100));
         } catch (Exception e) {
             TITLE_FONT = new Font(Font.FontFamily.HELVETICA, 18, Font.BOLD, PRIMARY_COLOR);
             SUBTITLE_FONT = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD, PRIMARY_COLOR);
@@ -47,18 +53,23 @@ public class ReportService {
             SMALL_FONT = new Font(Font.FontFamily.HELVETICA, 8, Font.NORMAL);
             TABLE_HEADER_FONT = new Font(Font.FontFamily.HELVETICA, 10, Font.BOLD, BaseColor.WHITE);
             TABLE_DATA_FONT = new Font(Font.FontFamily.HELVETICA, 9, Font.NORMAL);
+            FILTER_FONT = new Font(Font.FontFamily.HELVETICA, 10, Font.ITALIC, new BaseColor(100, 100, 100));
         }
     }
 
-    public void generateTeamsStructurePdf(String filename, String content) throws IOException {
+    public void generateTeamsStructurePdf(String filename, String content, Map<String, Object> filterOptions) throws IOException {
         Document doc = new Document(PageSize.A4);
         try {
             PdfWriter writer = PdfWriter.getInstance(doc, new FileOutputStream(filename));
             writer.setPageEvent(new FooterEvent());
             doc.open();
             addReportHeader(doc, "Raport: Struktura Zespołów");
+
+            // Dodaj sekcję z zastosowanymi filtrami
+            addFilterSection(doc, filterOptions);
+
             addSeparator(doc);
-            parseTeams(doc, content);
+            parseTeams(doc, content, filterOptions);
         } catch (DocumentException de) {
             throw new IOException(de.getMessage(), de);
         } finally {
@@ -66,15 +77,19 @@ public class ReportService {
         }
     }
 
-    public void generateUsersReportPdf(String filename, String content) throws IOException {
+    public void generateUsersReportPdf(String filename, String content, Map<String, Object> filterOptions) throws IOException {
         Document doc = new Document(PageSize.A4);
         try {
             PdfWriter writer = PdfWriter.getInstance(doc, new FileOutputStream(filename));
             writer.setPageEvent(new FooterEvent());
             doc.open();
             addReportHeader(doc, "Raport: Użytkownicy Systemu");
+
+            // Dodaj sekcję z zastosowanymi filtrami
+            addFilterSection(doc, filterOptions);
+
             addSeparator(doc);
-            parseUsers(doc, content);
+            parseUsers(doc, content, filterOptions);
         } catch (DocumentException de) {
             throw new IOException(de.getMessage(), de);
         } finally {
@@ -82,20 +97,90 @@ public class ReportService {
         }
     }
 
-    public void generateProjectsOverviewPdf(String filename, String content) throws IOException {
+    public void generateProjectsOverviewPdf(String filename, String content, Map<String, Object> filterOptions) throws IOException {
         Document doc = new Document(PageSize.A4);
         try {
             PdfWriter writer = PdfWriter.getInstance(doc, new FileOutputStream(filename));
             writer.setPageEvent(new FooterEvent());
             doc.open();
             addReportHeader(doc, "Raport: Przegląd Projektów");
+
+            // Dodaj sekcję z zastosowanymi filtrami
+            addFilterSection(doc, filterOptions);
+
             addSeparator(doc);
-            parseProjects(doc, content);
+            parseProjects(doc, content, filterOptions);
         } catch (DocumentException de) {
             throw new IOException(de.getMessage(), de);
         } finally {
             if (doc.isOpen()) doc.close();
         }
+    }
+
+    private void addFilterSection(Document doc, Map<String, Object> filterOptions) throws DocumentException {
+        if (filterOptions == null || filterOptions.isEmpty()) {
+            return;
+        }
+
+        Paragraph filterHeader = new Paragraph("Zastosowane filtry:", SECTION_FONT);
+        filterHeader.setSpacingBefore(5);
+        filterHeader.setSpacingAfter(5);
+        doc.add(filterHeader);
+
+        // Filtry zespołów
+        @SuppressWarnings("unchecked")
+        List<Team> selectedTeams = (List<Team>) filterOptions.get("selectedTeams");
+        if (selectedTeams != null && !selectedTeams.isEmpty()) {
+            StringBuilder teamsList = new StringBuilder();
+            for (int i = 0; i < selectedTeams.size(); i++) {
+                teamsList.append(selectedTeams.get(i).getTeamName());
+                if (i < selectedTeams.size() - 1) teamsList.append(", ");
+            }
+            Paragraph teamsPara = new Paragraph("Wybrane zespoły: " + teamsList.toString(), FILTER_FONT);
+            teamsPara.setIndentationLeft(10);
+            doc.add(teamsPara);
+        }
+
+        // Filtry dat
+        LocalDate startDate = (LocalDate) filterOptions.get("startDate");
+        LocalDate endDate = (LocalDate) filterOptions.get("endDate");
+
+        if (startDate != null) {
+            Paragraph startDatePara = new Paragraph("Data początkowa: " + startDate.toString(), FILTER_FONT);
+            startDatePara.setIndentationLeft(10);
+            doc.add(startDatePara);
+        }
+
+        if (endDate != null) {
+            Paragraph endDatePara = new Paragraph("Data końcowa: " + endDate.toString(), FILTER_FONT);
+            endDatePara.setIndentationLeft(10);
+            doc.add(endDatePara);
+        }
+
+        // Filtry zawartości
+        Boolean showTasks = (Boolean) filterOptions.get("showTasks");
+        Boolean showMembers = (Boolean) filterOptions.get("showMembers");
+        Boolean showStatistics = (Boolean) filterOptions.get("showStatistics");
+
+        if (showTasks != null) {
+            Paragraph tasksPara = new Paragraph("Pokaż zadania: " + (showTasks ? "Tak" : "Nie"), FILTER_FONT);
+            tasksPara.setIndentationLeft(10);
+            doc.add(tasksPara);
+        }
+
+        if (showMembers != null) {
+            Paragraph membersPara = new Paragraph("Pokaż członków zespołów: " + (showMembers ? "Tak" : "Nie"), FILTER_FONT);
+            membersPara.setIndentationLeft(10);
+            doc.add(membersPara);
+        }
+
+        if (showStatistics != null) {
+            Paragraph statsPara = new Paragraph("Pokaż statystyki: " + (showStatistics ? "Tak" : "Nie"), FILTER_FONT);
+            statsPara.setIndentationLeft(10);
+            doc.add(statsPara);
+        }
+
+        doc.add(new Paragraph(" ")); // Dodaj pustą linię po filtrach
     }
 
     private void addReportHeader(Document doc, String title) throws DocumentException {
@@ -132,15 +217,30 @@ public class ReportService {
         }
     }
 
-    // parse teams
-    private void parseTeams(Document doc, String content) throws DocumentException {
+    // Metoda parsująca raport zespołów
+    private void parseTeams(Document doc, String content, Map<String, Object> filterOptions) throws DocumentException {
         StringTokenizer st = new StringTokenizer(content, "\n");
-        // skip initial header lines until first team
+        // Pomiń nagłówek i sekcję filtrów
+        while (st.hasMoreTokens() && !st.nextToken().startsWith("=== ZESPÓŁ:")) {}
+
+        if (!st.hasMoreTokens()) {
+            doc.add(new Paragraph("Brak zespołów spełniających kryteria raportu.", NORMAL_FONT));
+            addReportFooter(doc);
+            return;
+        }
+
+        // Cofnij tokenizer o jedną linię, aby nie utracić pierwszego zespołu
+        // (w prawdziwej implementacji potrzebowalibyśmy dostępu do poprzedniego tokena)
+
+        // Tworzymy nowy tokenizer, aby zacząć od początku
+        st = new StringTokenizer(content, "\n");
+
+        // Pomiń nagłówek i filtry, szukając pierwszego zespołu
         PdfPTable table = null;
         while (st.hasMoreTokens()) {
             String tmp = st.nextToken();
             if (tmp.startsWith("=== ZESPÓŁ:")) {
-                // process first header
+                // Przetwórz pierwszy nagłówek
                 Paragraph h = new Paragraph(tmp.replace("===", "").trim(), SUBTITLE_FONT);
                 h.setSpacingBefore(10);
                 h.setSpacingAfter(5);
@@ -151,7 +251,8 @@ public class ReportService {
                 break;
             }
         }
-        // main loop for remaining lines
+
+        // Główna pętla dla pozostałych linii
         while (st.hasMoreTokens()) {
             String line = st.nextToken();
             if (line.startsWith("=== ZESPÓŁ:")) {
@@ -182,23 +283,25 @@ public class ReportService {
         addReportFooter(doc);
     }
 
-    // parse users
-    private void parseUsers(Document doc, String content) throws DocumentException {
+    // Metoda parsująca raport użytkowników
+    private void parseUsers(Document doc, String content, Map<String, Object> filterOptions) throws DocumentException {
         StringTokenizer st = new StringTokenizer(content, "\n");
-        // skip initial header lines
-        for (int i = 0; i < 3 && st.hasMoreTokens(); i++) st.nextToken();
-        PdfPTable table = null;
-        String role = "";
-        while (st.hasMoreTokens()) {
+        // Pomiń nagłówek i sekcję filtrów
+        boolean skipFilters = true;
+        while (st.hasMoreTokens() && skipFilters) {
             String line = st.nextToken();
             if (line.startsWith("=== ROLA:")) {
-                if (table != null) doc.add(table);
-                role = line.replace("=== ROLA:", "").replace("===", "").trim();
+                skipFilters = false;
+
+                // Dodaj pierwszy nagłówek roli
+                String role = line.replace("=== ROLA:", "").replace("===", "").trim();
                 Paragraph h = new Paragraph(role, SUBTITLE_FONT);
                 h.setSpacingBefore(10);
                 h.setSpacingAfter(5);
                 doc.add(h);
-                table = new PdfPTable(3);
+
+                // Utwórz tabelę dla użytkowników
+                PdfPTable table = new PdfPTable(3);
                 table.setWidthPercentage(100);
                 table.setWidths(new float[]{40, 30, 30});
                 String[] hdr = {"Użytkownik", "Email", "Zespół"};
@@ -208,80 +311,138 @@ public class ReportService {
                     c.setPadding(5);
                     table.addCell(c);
                 }
-            } else if (line.startsWith("-")) {
-                String u = line.substring(1).trim();
-                String name = u, email = "";
-                int s = u.lastIndexOf("(");
-                int e = u.lastIndexOf(")");
-                if (s >= 0 && e > s) {
-                    name = u.substring(0, s).trim();
-                    email = u.substring(s + 1, e);
-                }
-                String team = "Brak";
-                if (st.hasMoreTokens()) {
-                    String l2 = st.nextToken();
-                    if (l2.trim().startsWith("Zespół:")) {
-                        team = l2.trim().replace("Zespół:", "").trim();
+
+                // Przetwarzaj użytkowników
+                while (st.hasMoreTokens()) {
+                    line = st.nextToken();
+                    if (line.startsWith("=== ROLA:")) {
+                        // Zapisz poprzednią tabelę i przejdź do nowej roli
+                        doc.add(table);
+
+                        role = line.replace("=== ROLA:", "").replace("===", "").trim();
+                        h = new Paragraph(role, SUBTITLE_FONT);
+                        h.setSpacingBefore(10);
+                        h.setSpacingAfter(5);
+                        doc.add(h);
+
+                        table = new PdfPTable(3);
+                        table.setWidthPercentage(100);
+                        table.setWidths(new float[]{40, 30, 30});
+                        for (String t : hdr) {
+                            PdfPCell c = new PdfPCell(new Phrase(t, TABLE_HEADER_FONT));
+                            c.setBackgroundColor(PRIMARY_COLOR);
+                            c.setPadding(5);
+                            table.addCell(c);
+                        }
+                    } else if (line.startsWith("-")) {
+                        String u = line.substring(1).trim();
+                        String name = u, email = "";
+                        int s = u.lastIndexOf("(");
+                        int e = u.lastIndexOf(")");
+                        if (s >= 0 && e > s) {
+                            name = u.substring(0, s).trim();
+                            email = u.substring(s + 1, e);
+                        }
+                        String team = "Brak";
+                        if (st.hasMoreTokens()) {
+                            String l2 = st.nextToken();
+                            if (l2.trim().startsWith("Zespół:")) {
+                                team = l2.trim().replace("Zespół:", "").trim();
+                            }
+                        }
+
+                        PdfPCell n = new PdfPCell(new Phrase(name, TABLE_DATA_FONT));
+                        n.setPadding(5);
+                        table.addCell(n);
+                        PdfPCell em = new PdfPCell(new Phrase(email, TABLE_DATA_FONT));
+                        em.setPadding(5);
+                        table.addCell(em);
+                        PdfPCell tm = new PdfPCell(new Phrase(team, TABLE_DATA_FONT));
+                        tm.setPadding(5);
+                        table.addCell(tm);
                     }
                 }
-                if (table != null) {
-                    PdfPCell n = new PdfPCell(new Phrase(name, TABLE_DATA_FONT));
-                    n.setPadding(5);
-                    table.addCell(n);
-                    PdfPCell em = new PdfPCell(new Phrase(email, TABLE_DATA_FONT));
-                    em.setPadding(5);
-                    table.addCell(em);
-                    PdfPCell tm = new PdfPCell(new Phrase(team, TABLE_DATA_FONT));
-                    tm.setPadding(5);
-                    table.addCell(tm);
-                }
+
+                // Dodaj ostatnią tabelę
+                doc.add(table);
+                break;
             }
         }
-        if (table != null) doc.add(table);
+
         addReportFooter(doc);
     }
 
-    // parse projects (unchanged)
-    private void parseProjects(Document doc, String content) throws DocumentException {
+    // Metoda parsująca przegląd projektów
+    private void parseProjects(Document doc, String content, Map<String, Object> filterOptions) throws DocumentException {
         StringTokenizer st = new StringTokenizer(content, "\n");
-        for (int i = 0; i < 3 && st.hasMoreTokens(); i++) st.nextToken();
-        PdfPTable table = null;
-        while (st.hasMoreTokens()) {
+        // Pomiń nagłówek i sekcję filtrów
+        boolean foundProject = false;
+        while (st.hasMoreTokens() && !foundProject) {
             String line = st.nextToken();
-            if (line.startsWith("=== PROJEKT: ")) {
-                if (table != null) doc.add(table);
+            if (line.startsWith("=== PROJEKT:")) {
+                foundProject = true;
+                // Dodaj pierwszy nagłówek projektu
                 Paragraph h = new Paragraph(line.replace("===", "").trim(), SUBTITLE_FONT);
                 h.setSpacingBefore(10);
                 h.setSpacingAfter(5);
                 doc.add(h);
-                table = new PdfPTable(2);
+
+                // Utwórz tabelę dla szczegółów projektu
+                PdfPTable table = new PdfPTable(2);
                 table.setWidthPercentage(100);
                 table.setWidths(new float[]{30, 70});
-            } else if (line.trim().isEmpty()) {
+
+                // Przetwarzaj projekty
+                while (st.hasMoreTokens()) {
+                    line = st.nextToken();
+                    if (line.startsWith("=== PROJEKT:")) {
+                        // Zapisz poprzednią tabelę i przejdź do nowego projektu
+                        if (table != null) doc.add(table);
+
+                        h = new Paragraph(line.replace("===", "").trim(), SUBTITLE_FONT);
+                        h.setSpacingBefore(10);
+                        h.setSpacingAfter(5);
+                        doc.add(h);
+
+                        table = new PdfPTable(2);
+                        table.setWidthPercentage(100);
+                        table.setWidths(new float[]{30, 70});
+                    } else if (line.trim().isEmpty()) {
+                        if (table != null) doc.add(table);
+                        table = null;
+                    } else if (table != null && line.contains(":")) {
+                        String[] p = line.split(":", 2);
+                        PdfPCell k = new PdfPCell(new Phrase(p[0].trim() + ":", NORMAL_FONT));
+                        k.setBorder(Rectangle.NO_BORDER);
+                        PdfPCell v = new PdfPCell(new Phrase(p[1].trim(), NORMAL_FONT));
+                        v.setBorder(Rectangle.NO_BORDER);
+                        table.addCell(k);
+                        table.addCell(v);
+                    } else if (line.startsWith("Zespoły:")) {
+                        if (table != null) doc.add(table);
+                        table = null;
+                        Paragraph mh = new Paragraph("Zespoły projektu:", SECTION_FONT);
+                        mh.setSpacingBefore(10);
+                        mh.setSpacingAfter(5);
+                        doc.add(mh);
+                    } else if (line.startsWith("-")) {
+                        Paragraph pl = new Paragraph(line.substring(1).trim(), NORMAL_FONT);
+                        pl.setIndentationLeft(10);
+                        doc.add(pl);
+                    }
+                }
+
+                // Dodaj ostatnią tabelę
                 if (table != null) doc.add(table);
-                table = null;
-            } else if (table != null && line.contains(":")) {
-                String[] p = line.split(":", 2);
-                PdfPCell k = new PdfPCell(new Phrase(p[0].trim() + ":", NORMAL_FONT));
-                k.setBorder(Rectangle.NO_BORDER);
-                PdfPCell v = new PdfPCell(new Phrase(p[1].trim(), NORMAL_FONT));
-                v.setBorder(Rectangle.NO_BORDER);
-                table.addCell(k);
-                table.addCell(v);
-            } else if (line.startsWith("Zespoły:")) {
-                if (table != null) doc.add(table);
-                table = null;
-                Paragraph mh = new Paragraph("Zespoły projektu:", SECTION_FONT);
-                mh.setSpacingBefore(10);
-                mh.setSpacingAfter(5);
-                doc.add(mh);
-            } else if (line.startsWith("-")) {
-                Paragraph pl = new Paragraph(line.substring(1).trim(), NORMAL_FONT);
-                pl.setIndentationLeft(10);
-                doc.add(pl);
+                break;
             }
         }
-        if (table != null) doc.add(table);
+
+        // Jeśli nie znaleziono żadnego projektu
+        if (!foundProject) {
+            doc.add(new Paragraph("Brak projektów spełniających kryteria raportu.", NORMAL_FONT));
+        }
+
         addReportFooter(doc);
     }
 

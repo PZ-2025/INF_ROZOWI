@@ -107,7 +107,8 @@ public class AdminTasksController {
     @FXML
     private void initialize() {
         // Konfiguracja kolumn tabeli zadań
-        colId.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getId()));
+        colId.setCellValueFactory(data -> new SimpleObjectProperty<>(
+                tasksTable.getItems().indexOf(data.getValue()) + 1));
         colTitle.setCellValueFactory(data -> data.getValue().titleProperty());
         colProject.setCellValueFactory(data -> {
             int projectId = data.getValue().getProjectId();
@@ -274,7 +275,8 @@ public class AdminTasksController {
             return;
         }
 
-        detailId.setText(String.valueOf(task.getId()));
+        int orderNumber = filteredTasks.indexOf(task) + 1;
+        detailId.setText(String.valueOf(orderNumber));
         detailTitle.setText(task.getTitle());
 
         try {

@@ -57,24 +57,46 @@ public class MyTasksController {
         }
     }
 
-    private void loadTasks() {
-        List<Task> tasks = taskDAO.getTasksForUser(Session.currentUserId);
-        myTasks = FXCollections.observableArrayList(tasks);
+//    private void loadTasks() {
+//        List<Task> tasks = taskDAO.getTasksForUser(Session.currentUserId);
+//        myTasks = FXCollections.observableArrayList(tasks);
+//
+//        tasksList.setCellFactory(lv -> new ListCell<Task>() {
+//            @Override
+//            protected void updateItem(Task task, boolean empty) {
+//                super.updateItem(task, empty);
+//                if (empty || task == null) {
+//                    setText(null);
+//                } else {
+//                    setText("[" + task.getStatus() + "] " + task.getTitle() + " - " + task.getDescription());
+//                }
+//            }
+//        });
+//
+//        tasksList.setItems(myTasks);
+//    }
+private void loadTasks() {
+    List<Task> tasks = taskDAO.getTasksForUser(Session.currentUserId);
+    myTasks = FXCollections.observableArrayList(tasks);
 
-        tasksList.setCellFactory(lv -> new ListCell<Task>() {
-            @Override
-            protected void updateItem(Task task, boolean empty) {
-                super.updateItem(task, empty);
-                if (empty || task == null) {
-                    setText(null);
-                } else {
-                    setText("[" + task.getStatus() + "] " + task.getTitle() + " - " + task.getDescription());
-                }
+    tasksList.setCellFactory(lv -> new ListCell<Task>() {
+        @Override
+        protected void updateItem(Task task, boolean empty) {
+            super.updateItem(task, empty);
+            if (empty || task == null) {
+                setText(null);
+            } else {
+                String teamInfo = (task.getTeamName() != null && !task.getTeamName().isEmpty())
+                        ? " (Drużyna: " + task.getTeamName() + ")"
+                        : "";
+                setText("[" + task.getStatus() + "] " + task.getTitle() + " - " +
+                        task.getDescription() + teamInfo);
             }
-        });
+        }
+    });
 
-        tasksList.setItems(myTasks);
-    }
+    tasksList.setItems(myTasks);
+}
 
     @FXML
     private void handleRefresh() {
