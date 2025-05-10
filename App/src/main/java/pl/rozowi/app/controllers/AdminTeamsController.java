@@ -236,7 +236,9 @@ public class AdminTeamsController {
         teamsTable.setItems(teamData);
 
         // Konfiguracja kolumn tabeli członków zespołu
-        colMemberId.setCellValueFactory(c -> new SimpleIntegerProperty(c.getValue().getId()));
+        colMemberId.setCellValueFactory(c -> new SimpleIntegerProperty(
+                membersTable.getItems().indexOf(c.getValue()) + 1
+        ));
         colMemberEmail.setCellValueFactory(c -> new SimpleStringProperty(
                 c.getValue().getFullName() + " (" + c.getValue().getEmail() + ")"
         ));
@@ -246,7 +248,9 @@ public class AdminTeamsController {
         membersTable.setItems(memberData);
 
         // Konfiguracja kolumn tabeli zadań
-        colTaskId.setCellValueFactory(c -> c.getValue().idProperty());
+        colTaskId.setCellValueFactory(c -> new SimpleIntegerProperty(
+                tasksTable.getItems().indexOf(c.getValue()) + 1
+        ));
         colTaskTitle.setCellValueFactory(c -> c.getValue().titleProperty());
         colTaskStatus.setCellValueFactory(c -> c.getValue().statusProperty());
         colTaskPriority.setCellValueFactory(c -> c.getValue().priorityProperty());

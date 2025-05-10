@@ -43,8 +43,6 @@
                     style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
             <Button text="Aktywność" onAction="#goToActivities"
                     style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
-            <Button text="Konfiguracja systemu" onAction="#goToSystem"
-                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
 
             <!-- Rozciągający się spacer -->
             <Region VBox.vgrow="ALWAYS"/>

@@ -50,9 +50,6 @@ public class MainApplication extends Application {
         } else if (controller instanceof pl.rozowi.app.controllers.ManagerDashboardController) {
             ((pl.rozowi.app.controllers.ManagerDashboardController) controller).setUser(currentUser);
         }
-//        } else if (controller instanceof pl.rozowi.app.controllers.TeamLeaderDashboardController) {
-//            ((pl.rozowi.app.controllers.TeamLeaderDashboardController) controller).setUser(currentUser);
-//        }
         primaryStage.getScene().setRoot(root);
         primaryStage.setTitle(title);
     }
@@ -63,10 +60,6 @@ public class MainApplication extends Application {
 
     public static User getCurrentUser() {
         return currentUser;
-    }
-
-    public static Stage getPrimaryStage() {
-        return primaryStage;
     }
 
     public static void main(String[] args) {

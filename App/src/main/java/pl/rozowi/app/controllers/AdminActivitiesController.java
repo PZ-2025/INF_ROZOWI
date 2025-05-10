@@ -36,6 +36,8 @@ public class AdminActivitiesController {
     private TableColumn<ActivityEntry, String> colActivityType;
     @FXML
     private TableColumn<ActivityEntry, String> colDescription;
+    @FXML
+    private TableColumn<ActivityEntry, String> colId;
 
     @FXML
     private TextField searchField;
@@ -103,6 +105,10 @@ public class AdminActivitiesController {
                     }
                 }
             }
+        });
+        colId.setCellValueFactory(cellData -> {
+            int index = activitiesTable.getItems().indexOf(cellData.getValue()) + 1;
+            return new SimpleStringProperty(String.valueOf(index));
         });
 
         // Set up activity type filter options

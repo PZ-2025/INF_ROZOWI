@@ -1,9 +1,14 @@
 package pl.rozowi.app.controllers;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -11,7 +16,6 @@ import pl.rozowi.app.MainApplication;
 import pl.rozowi.app.dao.*;
 import pl.rozowi.app.models.*;
 import pl.rozowi.app.services.ReportService;
-import pl.rozowi.app.util.Session;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,10 +23,8 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ReportsController {
 
@@ -62,6 +64,24 @@ public class ReportsController {
     @FXML
     private CheckBox showStatisticsCheckbox;
 
+    @FXML private HBox teamsContainer;
+    @FXML private HBox teamsButtonsContainer;
+
+    @FXML
+    private ListView<Project> projectsListView;
+    @FXML
+    private Label teamsLabel;
+
+    @FXML
+    private Label projectsLabel;
+    @FXML
+    private Label dateRangeLabel;
+    @FXML private HBox userTypesContainer;
+    @FXML private CheckBox adminCheckbox;
+    @FXML private CheckBox managerCheckbox;
+    @FXML private CheckBox teamLeaderCheckbox;
+    @FXML private CheckBox userCheckbox;
+
     private final UserDAO userDAO = new UserDAO();
     private final TeamDAO teamDAO = new TeamDAO();
     private final ProjectDAO projectDAO = new ProjectDAO();
@@ -73,54 +93,179 @@ public class ReportsController {
     private String currentReportType = "";
 
     // Ustawienia raportów
-    private List<Team> selectedTeams = new ArrayList<>();
+    private ObservableList<Team> selectedTeams = FXCollections.observableArrayList();
+    private ObservableList<Project> selectedProjects = FXCollections.observableArrayList();
+    @FXML private Button selectAllProjectsBtn;
+    @FXML private Button deselectAllProjectsBtn;
     private LocalDate startDate = null;
     private LocalDate endDate = null;
     private boolean showTasks = true;
     private boolean showMembers = true;
     private boolean showStatistics = true;
+    private boolean showAdmins = true;
+    private boolean showManagers = true;
+    private boolean showTeamLeaders = true;
+    private boolean showUsers = true;
 
     @FXML
     private void initialize() {
         reportService = new ReportService();
-
-        // Ustaw styl monospace dla pola tekstowego raportu
         reportsArea.setStyle("-fx-font-family: 'Consolas', 'Courier New', monospace; -fx-font-size: 12px;");
 
-        // Dodaj typy raportów
-        loadReportTypes();
+        // Domyślne wartości dla checkboxów
+        showTasksCheckbox.setSelected(true);
+        showMembersCheckbox.setSelected(true);
+        showStatisticsCheckbox.setSelected(true);
+        adminCheckbox.setSelected(true);
+        managerCheckbox.setSelected(true);
+        teamLeaderCheckbox.setSelected(true);
+        userCheckbox.setSelected(true);
 
-        // Inicjalizacja opcji filtrowania
+        loadReportTypes();
         initFilterOptions();
 
-        // Wyłącz przycisk zapisu PDF dopóki nie zostanie wygenerowany raport
+        generateButton.setDisable(true);
+        filterOptionsButton.setDisable(true);
         saveAsPdfButton.setDisable(true);
 
-        // Nasłuchuj zmiany typu raportu
+        // Dodaj listenery do ObservableList
+        selectedTeams.addListener((ListChangeListener<Team>) change -> updateGenerateButtonState());
+
+        selectedProjects.addListener((ListChangeListener<Project>) change -> updateGenerateButtonState());
+
         reportTypeComboBox.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, newValue) -> {
                     if (newValue != null) {
+                        // Wyczyść poprzedni raport
+                        reportsArea.clear();
+                        currentReportContent = "";
+                        saveAsPdfButton.setDisable(true);
+
                         currentReportType = newValue;
                         generateButton.setDisable(false);
-
-                        // Aktualizuj widoczność odpowiednich filtrów dla wybranego typu raportu
+                        filterOptionsButton.setDisable(false);
                         updateFilterVisibility(newValue);
                     }
                 });
 
-        // Domyślnie panel filtrów jest ukryty
         filterOptionsPane.setVisible(false);
         filterOptionsPane.setManaged(false);
+
+        adminCheckbox.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            showAdmins = newVal;
+            updateGenerateButtonState();
+        });
+        managerCheckbox.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            showManagers = newVal;
+            updateGenerateButtonState();
+        });
+        teamLeaderCheckbox.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            showTeamLeaders = newVal;
+            updateGenerateButtonState();
+        });
+        userCheckbox.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            showUsers = newVal;
+            updateGenerateButtonState();
+        });
+    }
+
+    @FXML
+    private void handleSelectAllTeams() {
+        selectedTeams.setAll(teamsListView.getItems());
+        refreshTeamsListView();
+        updateGenerateButtonState();
+    }
+
+    @FXML
+    private void handleDeselectAllTeams() {
+        selectedTeams.clear();
+        refreshTeamsListView();
+        updateGenerateButtonState();
+    }
+
+    @FXML
+    private void handleSelectAllProjects() {
+        selectedProjects.setAll(projectsListView.getItems());
+        refreshProjectsListView();
+        updateGenerateButtonState();
+    }
+
+    @FXML
+    private void handleDeselectAllProjects() {
+        selectedProjects.clear();
+        refreshProjectsListView();
+        updateGenerateButtonState();
+    }
+
+    // Metody pomocnicze do odświeżania widoków
+    private void refreshTeamsListView() {
+        teamsListView.refresh();
+    }
+
+    private void refreshProjectsListView() {
+        projectsListView.refresh();
+    }
+
+    private void updateGenerateButtonState() {
+        boolean disableGenerateButton = false;
+
+        // Sprawdź warunki dla poszczególnych typów raportów
+        if ("Użytkownicy Systemu".equals(currentReportType)) {
+            disableGenerateButton = !adminCheckbox.isSelected()
+                    && !managerCheckbox.isSelected()
+                    && !teamLeaderCheckbox.isSelected()
+                    && !userCheckbox.isSelected();
+
+            if (disableGenerateButton) {
+                generateButton.setTooltip(new Tooltip("Wybierz przynajmniej jeden typ użytkownika"));
+            }
+        }
+        else if ("Struktura Zespołów".equals(currentReportType)) {
+            disableGenerateButton = selectedTeams.isEmpty();
+
+            if (disableGenerateButton) {
+                generateButton.setTooltip(new Tooltip("Wybierz przynajmniej jeden zespół"));
+            }
+        }
+        else if ("Przegląd Projektów".equals(currentReportType)) {
+            disableGenerateButton = selectedProjects.isEmpty();
+
+            if (disableGenerateButton) {
+                generateButton.setTooltip(new Tooltip("Wybierz przynajmniej jeden projekt"));
+            }
+        }
+
+        // Jeśli nie ma wybranego typu raportu
+        if (currentReportType == null || currentReportType.isEmpty()) {
+            disableGenerateButton = true;
+            generateButton.setTooltip(new Tooltip("Wybierz typ raportu"));
+        }
+
+        generateButton.setDisable(disableGenerateButton);
+
+        if (!disableGenerateButton) {
+            generateButton.setTooltip(null);
+        }
     }
 
     private void initFilterOptions() {
         try {
             // Inicjalizacja listy zespołów
-            List<Team> teams = teamDAO.getAllTeams();
-            teamsListView.setCellFactory(new Callback<ListView<Team>, ListCell<Team>>() {
+            User currentUser = MainApplication.getCurrentUser();
+            ObservableList<Team> teams;
+
+            if (currentUser != null && currentUser.getRoleId() == 2) {
+                teams = FXCollections.observableArrayList(teamDAO.getTeamsForManager(currentUser.getId()));
+            } else {
+                teams = FXCollections.observableArrayList(teamDAO.getAllTeams());
+            }
+            // Automatycznie zaznacz wszystkie zespoły
+            selectedTeams.setAll(teams);
+
+            teamsListView.setCellFactory(new Callback<>() {
                 @Override
                 public ListCell<Team> call(ListView<Team> param) {
-                    return new ListCell<Team>() {
+                    return new ListCell<>() {
                         private final CheckBox checkBox = new CheckBox();
 
                         @Override
@@ -131,13 +276,13 @@ public class ReportsController {
                             } else {
                                 checkBox.setText(team.getTeamName());
                                 checkBox.setSelected(selectedTeams.contains(team));
-                                checkBox.setStyle("-fx-text-fill: white;");
                                 checkBox.setOnAction(e -> {
                                     if (checkBox.isSelected()) {
                                         selectedTeams.add(team);
                                     } else {
                                         selectedTeams.remove(team);
                                     }
+                                    updateGenerateButtonState();
                                 });
                                 setGraphic(checkBox);
                             }
@@ -145,41 +290,87 @@ public class ReportsController {
                     };
                 }
             });
+
+            projectsListView.setCellFactory(param -> new ListCell<>() {
+                private final CheckBox checkBox = new CheckBox();
+
+                @Override
+                protected void updateItem(Project project, boolean empty) {
+                    super.updateItem(project, empty);
+                    if (empty || project == null) {
+                        setGraphic(null);
+                    } else {
+                        checkBox.setText(project.getName());
+                        checkBox.setSelected(selectedProjects.contains(project));
+                        checkBox.setStyle("-fx-text-fill: black;");
+                        checkBox.setOnAction(e -> {
+                            if (checkBox.isSelected()) {
+                                selectedProjects.add(project);
+                            } else {
+                                selectedProjects.remove(project);
+                            }
+                            updateGenerateButtonState();
+                        });
+                        setGraphic(checkBox);
+                    }
+                }
+            });
+
             teamsListView.setItems(FXCollections.observableArrayList(teams));
 
+            // Inicjalizacja listy projektów
+            if (projectsListView != null) {
+                ObservableList<Project> projects;
+                if (currentUser != null && currentUser.getRoleId() == 2) {
+                    projects = FXCollections.observableArrayList(projectDAO.getProjectsForManager(currentUser.getId()));
+                } else {
+                    projects = FXCollections.observableArrayList(projectDAO.getAllProjects());
+                }
+
+                // Automatycznie zaznacz wszystkie projekty
+                selectedProjects.setAll(projects);
+                projectsListView.setItems(FXCollections.observableArrayList(projects));
+            }
+
             // Obsługa pól dat
-            LocalDate now = LocalDate.now();
-            startDatePicker.setValue(now.minusMonths(1));
-            endDatePicker.setValue(now);
+            startDatePicker.setValue(null);
+            endDatePicker.setValue(null);
 
-            startDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
-                startDate = newVal;
-            });
 
-            endDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> {
-                endDate = newVal;
-            });
+            startDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> startDate = newVal);
+
+            endDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> endDate = newVal);
 
             // Obsługa checkboxów
-            showTasksCheckbox.selectedProperty().addListener((obs, oldVal, newVal) -> {
-                showTasks = newVal;
-            });
+            showTasksCheckbox.selectedProperty().addListener((obs, oldVal, newVal) -> showTasks = newVal);
 
-            showMembersCheckbox.selectedProperty().addListener((obs, oldVal, newVal) -> {
-                showMembers = newVal;
-            });
+            showMembersCheckbox.selectedProperty().addListener((obs, oldVal, newVal) -> showMembers = newVal);
 
-            showStatisticsCheckbox.selectedProperty().addListener((obs, oldVal, newVal) -> {
-                showStatistics = newVal;
-            });
+            showStatisticsCheckbox.selectedProperty().addListener((obs, oldVal, newVal) -> showStatistics = newVal);
 
         } catch (SQLException e) {
             showError("Błąd inicjalizacji filtrów", e.getMessage());
         }
-    }
+        if (projectsListView != null) {
+            List<Project> projects;
+            User currentUser = MainApplication.getCurrentUser();
+            if (currentUser != null && currentUser.getRoleId() == 2) {
+                projects = projectDAO.getProjectsForManager(currentUser.getId());
+            } else {
+                projects = projectDAO.getAllProjects();
+            }
 
+            projectsListView.setItems(FXCollections.observableArrayList(projects));
+        }
+
+    }
     @FXML
     private void handleShowFilterOptions() {
+        if (currentReportType == null || currentReportType.isEmpty()) {
+            showWarning("Najpierw wybierz typ raportu.");
+            return;
+        }
+
         // Przełącz widoczność panelu filtrów
         filterOptionsPane.setVisible(!filterOptionsPane.isVisible());
         filterOptionsPane.setManaged(filterOptionsPane.isVisible());
@@ -193,39 +384,117 @@ public class ReportsController {
     }
 
     private void updateFilterVisibility(String reportType) {
-        // Dostosuj widoczność filtrów w zależności od typu raportu
-        switch (reportType) {
-            case "Struktura Zespołów":
-                teamsListView.setDisable(false);
-                startDatePicker.setDisable(true);
-                endDatePicker.setDisable(true);
-                showTasksCheckbox.setDisable(false);
-                showMembersCheckbox.setDisable(false);
-                showStatisticsCheckbox.setDisable(true);
-                break;
-            case "Użytkownicy Systemu":
-                teamsListView.setDisable(true);
-                startDatePicker.setDisable(true);
-                endDatePicker.setDisable(true);
-                showTasksCheckbox.setDisable(true);
-                showMembersCheckbox.setDisable(false);
-                showStatisticsCheckbox.setDisable(true);
-                break;
-            case "Przegląd Projektów":
-                teamsListView.setDisable(true);
-                startDatePicker.setDisable(false);
-                endDatePicker.setDisable(false);
-                showTasksCheckbox.setDisable(false);
-                showMembersCheckbox.setDisable(true);
-                showStatisticsCheckbox.setDisable(false);
-                break;
-            default:
-                teamsListView.setDisable(false);
-                startDatePicker.setDisable(false);
-                endDatePicker.setDisable(false);
-                showTasksCheckbox.setDisable(false);
-                showMembersCheckbox.setDisable(false);
-                showStatisticsCheckbox.setDisable(false);
+        boolean isProjectsReport = "Przegląd Projektów".equals(reportType);
+        boolean isTeamStructureReport = "Struktura Zespołów".equals(reportType);
+        boolean isUsersReport = "Użytkownicy Systemu".equals(reportType);
+
+        // Ustawienia widoczności dla sekcji zespołów
+        setTeamSectionVisibility(isTeamStructureReport);
+
+        // Ustawienia widoczności dla sekcji projektów
+        setProjectSectionVisibility(isProjectsReport);
+
+        // Ustawienia widoczności dla sekcji dat i statystyk
+        boolean showDateFields = isProjectsReport;
+        setDateAndStatsVisibility(showDateFields);
+
+        // Ustawienia widoczności dla opcji zadań
+        setTasksOptionsVisibility(!isUsersReport);
+
+        // Ustawienia widoczności dla typów użytkowników
+        userTypesContainer.setVisible(isUsersReport);
+        userTypesContainer.setManaged(isUsersReport);
+
+        // Ograniczenia dla kierownika
+        restrictOptionsForManager();
+
+        // Ustawienia widoczności dla checkboxa członków
+        setVisibility(showMembersCheckbox, !isProjectsReport);
+        if (showMembersCheckbox != null) {
+            showMembersCheckbox.setDisable(isProjectsReport);
+        }
+
+        // Automatyczne zaznaczenie elementów i reset dat
+        handleAutoSelection(isTeamStructureReport, isProjectsReport);
+        resetDatePickers();
+
+        updateGenerateButtonState();
+    }
+
+    private void setTeamSectionVisibility(boolean visible) {
+        setVisibility(teamsContainer, visible);
+        setVisibility(teamsButtonsContainer, visible);
+        setVisibility(teamsLabel, visible);
+
+        if (teamsListView != null) {
+            teamsListView.setVisible(visible);
+            teamsListView.setManaged(visible);
+            teamsListView.setDisable(!visible);
+        }
+    }
+
+    private void setProjectSectionVisibility(boolean visible) {
+        setVisibility(projectsListView, visible);
+        setVisibility(projectsLabel, visible);
+        setVisibility(selectAllProjectsBtn, visible);
+        setVisibility(deselectAllProjectsBtn, visible);
+    }
+
+    private void setDateAndStatsVisibility(boolean visible) {
+        setVisibility(dateRangeLabel, visible);
+        setVisibility(startDatePicker, visible);
+        setVisibility(endDatePicker, visible);
+        setVisibility(showStatisticsCheckbox, visible);
+
+        if (startDatePicker != null) {
+            startDatePicker.setDisable(!visible);
+        }
+        if (endDatePicker != null) {
+            endDatePicker.setDisable(!visible);
+        }
+        if (showStatisticsCheckbox != null) {
+            showStatisticsCheckbox.setDisable(!visible);
+        }
+    }
+
+    private void setTasksOptionsVisibility(boolean visible) {
+        setVisibility(showTasksCheckbox, visible);
+        if (showTasksCheckbox != null) {
+            showTasksCheckbox.setDisable(!visible);
+        }
+    }
+
+    private void restrictOptionsForManager() {
+        User currentUser = MainApplication.getCurrentUser();
+        if (currentUser != null && currentUser.getRoleId() == 2) {
+            setVisibility(adminCheckbox, false);
+            setVisibility(managerCheckbox, false);
+        }
+    }
+
+    private void handleAutoSelection(boolean isTeamStructureReport, boolean isProjectsReport) {
+        if (isTeamStructureReport && teamsListView != null) {
+            selectedTeams.setAll(teamsListView.getItems());
+        }
+
+        if (isProjectsReport && projectsListView != null) {
+            selectedProjects.setAll(projectsListView.getItems());
+        }
+    }
+
+    private void resetDatePickers() {
+        if (startDatePicker != null) {
+            startDatePicker.setValue(null);
+        }
+        if (endDatePicker != null) {
+            endDatePicker.setValue(null);
+        }
+    }
+
+    private void setVisibility(Node node, boolean visible) {
+        if (node != null) {
+            node.setVisible(visible);
+            node.setManaged(visible);
         }
     }
 
@@ -239,10 +508,7 @@ public class ReportsController {
                 "Użytkownicy Systemu",
                 "Przegląd Projektów"
         ));
-
-        // Wybierz pierwszy element jako domyślny
-        reportTypeComboBox.getSelectionModel().selectFirst();
-        currentReportType = reportTypeComboBox.getValue();
+        reportTypeComboBox.getSelectionModel().clearSelection();
     }
 
     @FXML
@@ -261,9 +527,6 @@ public class ReportsController {
             // Wyczyść poprzedni raport
             reportsArea.clear();
 
-            // Pokaż informację o generowaniu raportu
-            reportsArea.setText("Generowanie raportu...");
-
             // Sprawdź czy filtry są poprawne
             if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
                 showWarning("Data początkowa nie może być późniejsza niż data końcowa");
@@ -272,25 +535,25 @@ public class ReportsController {
 
             Map<String, Object> filterOptions = new HashMap<>();
             filterOptions.put("selectedTeams", selectedTeams);
+            filterOptions.put("selectedProjects", selectedProjects);
             filterOptions.put("startDate", startDate);
             filterOptions.put("endDate", endDate);
             filterOptions.put("showTasks", showTasks);
             filterOptions.put("showMembers", showMembers);
             filterOptions.put("showStatistics", showStatistics);
+            filterOptions.put("showAdmins", showAdmins);
+            filterOptions.put("showManagers", showManagers);
+            filterOptions.put("showTeamLeaders", showTeamLeaders);
+            filterOptions.put("showUsers", showUsers);
 
             switch (currentReportType) {
-                case "Struktura Zespołów":
-                    generateTeamsStructureReport(filterOptions);
-                    break;
-                case "Użytkownicy Systemu":
-                    generateUsersReport(filterOptions);
-                    break;
-                case "Przegląd Projektów":
-                    generateProjectsOverviewReport(isAdmin, managerId, filterOptions);
-                    break;
-                default:
+                case "Struktura Zespołów" -> generateTeamsStructureReport(filterOptions);
+                case "Użytkownicy Systemu" -> generateUsersReport(filterOptions);
+                case "Przegląd Projektów" -> generateProjectsOverviewReport(isAdmin, managerId, filterOptions);
+                default -> {
                     showWarning("Wybierz typ raportu");
                     return;
+                }
             }
 
             // Włącz przycisk zapisu PDF po pomyślnym wygenerowaniu
@@ -312,7 +575,13 @@ public class ReportsController {
         if (selectedTeams != null && !selectedTeams.isEmpty()) {
             teamsToShow = selectedTeams;
         } else {
-            teamsToShow = teamDAO.getAllTeams();
+            User currentUser = MainApplication.getCurrentUser();
+            if (currentUser != null && currentUser.getRoleId() == 2) {
+                teamsToShow = teamDAO.getTeamsForManager(currentUser.getId()); // tylko zespoły menedżera
+            } else {
+                teamsToShow = teamDAO.getAllTeams(); // admin
+            }
+
         }
 
         StringBuilder report = new StringBuilder();
@@ -405,11 +674,60 @@ public class ReportsController {
 
         currentReportContent = report.toString();
         reportsArea.setText(currentReportContent);
+
+        // Sprawdź czy menedżer nie próbuje wygenerować cudzych zespołów
+        User currentUser = MainApplication.getCurrentUser();
+        if (currentUser != null && currentUser.getRoleId() == 2) {
+            List<Team> allowedTeams = teamDAO.getTeamsForManager(currentUser.getId());
+            teamsToShow.removeIf(team -> allowedTeams.stream().noneMatch(t -> t.getId() == team.getId()));
+        }
+
     }
 
     private void generateUsersReport(Map<String, Object> filterOptions) throws SQLException {
-        List<User> users = userDAO.getAllUsers();
+        List<User> allUsers = userDAO.getAllUsers();
+        List<User> users = new ArrayList<>();
         boolean showMembers = (boolean) filterOptions.get("showMembers");
+        User currentUser = MainApplication.getCurrentUser();
+
+        // Filtruj użytkowników według wybranych typów
+        for (User user : allUsers) {
+            if (currentUser != null && currentUser.getRoleId() == 2) { // Kierownik
+                // Pobierz projekty kierownika
+                List<Project> managerProjects = projectDAO.getProjectsForManager(currentUser.getId());
+
+                // Sprawdź czy użytkownik jest przypisany do któregoś z projektów kierownika
+                boolean isInManagerProjects = false;
+                if (user.getRoleId() == 3 || user.getRoleId() == 4) { // Team lider lub pracownik
+                    int teamId = teamMemberDAO.getTeamIdForUser(user.getId());
+                    if (teamId > 0) {
+                        Team team = teamDAO.getTeamById(teamId);
+                        if (team != null) {
+                            for (Project project : managerProjects) {
+                                if (project.getId() == team.getProjectId()) {
+                                    isInManagerProjects = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (!isInManagerProjects) continue;
+
+                // Filtruj według wybranych typów (dla kierownika tylko team liderzy i pracownicy)
+                if ((user.getRoleId() == 3 && showTeamLeaders) || (user.getRoleId() == 4 && showUsers)) {
+                    users.add(user);
+                }
+            } else { // Admin lub inny użytkownik
+                if ((user.getRoleId() == 1 && showAdmins) ||
+                        (user.getRoleId() == 2 && showManagers) ||
+                        (user.getRoleId() == 3 && showTeamLeaders) ||
+                        (user.getRoleId() == 4 && showUsers)) {
+                    users.add(user);
+                }
+            }
+        }
 
         StringBuilder report = new StringBuilder();
 
@@ -420,15 +738,22 @@ public class ReportsController {
 
         // Dodaj informację o zastosowanych filtrach
         report.append("Zastosowane filtry:\n");
+        if (currentUser != null && currentUser.getRoleId() == 2) {
+            report.append("- Tylko użytkownicy z moich projektów\n");
+        }
+        report.append("- Typy użytkowników: ");
+        List<String> selectedTypes = new ArrayList<>();
+        if (showAdmins) selectedTypes.add("Administratorzy");
+        if (showManagers) selectedTypes.add("Kierownicy");
+        if (showTeamLeaders) selectedTypes.add("Team liderzy");
+        if (showUsers) selectedTypes.add("Pracownicy");
+        report.append(String.join(", ", selectedTypes)).append("\n");
         report.append("- Pokaż przynależność do zespołów: ").append(showMembers ? "Tak" : "Nie").append("\n\n");
-
-        report.append("Liczba użytkowników: ").append(users.size()).append("\n\n");
-
         // Pobierz nazwy ról
         Map<Integer, String> roleNames = userDAO.getAllRolesMap();
 
         // Sortuj użytkowników według roli
-        users.sort((u1, u2) -> Integer.compare(u1.getRoleId(), u2.getRoleId()));
+        users.sort(Comparator.comparingInt(User::getRoleId));
 
         int currentRole = -1;
         for (User user : users) {
@@ -461,18 +786,6 @@ public class ReportsController {
         reportsArea.setText(currentReportContent);
     }
 
-    private LocalDate getProjectDateAsLocalDate(String dateStr) {
-        try {
-            // Jeśli data jest w formacie YYYY-MM-DD, parsujemy ją
-            return LocalDate.parse(dateStr);
-        } catch (Exception e) {
-            // W przypadku błędu (nieprawidłowy format, null, itp.) zwracamy null
-            System.out.println("Błąd parsowania daty: " + dateStr + " - " + e.getMessage());
-            return null;
-        }
-    }
-
-    //private void generateProjectsOverviewReport(boolean isAdmin, int managerId, Map<String, Object> filterOptions) throws SQLException {
     private void generateProjectsOverviewReport(boolean isAdmin, int managerId, Map<String, Object> filterOptions) throws SQLException {
         List<Project> allProjects;
         List<Project> filteredProjects = new ArrayList<>();
@@ -480,6 +793,7 @@ public class ReportsController {
         LocalDate endDate = (LocalDate) filterOptions.get("endDate");
         boolean showTasks = (boolean) filterOptions.get("showTasks");
         boolean showStatistics = (boolean) filterOptions.get("showStatistics");
+        //boolean useDateFilter = (boolean) filterOptions.getOrDefault("useDateFilter", false);
 
         if (isAdmin) {
             allProjects = projectDAO.getAllProjects();
@@ -487,28 +801,20 @@ public class ReportsController {
             allProjects = projectDAO.getProjectsForManager(managerId);
         }
 
-        // Zastosuj filtr dat (jeśli podano)
-        if (startDate != null || endDate != null) {
-            for (Project project : allProjects) {
-                // Tutaj daty są już w formacie LocalDate
-                LocalDate projectStart = project.getStartDate(); // Zakładamy, że zwraca LocalDate
-                LocalDate projectEnd = project.getEndDate();     // Zakładamy, że zwraca LocalDate
+        List<Project> selectedProjects = (List<Project>) filterOptions.get("selectedProjects");
 
-                boolean matchesFilter = true;
-                if (startDate != null && projectEnd.isBefore(startDate)) {
-                    matchesFilter = false;
-                }
-                if (endDate != null && projectStart.isAfter(endDate)) {
-                    matchesFilter = false;
-                }
+        List<Project> baseProjects;
 
-                if (matchesFilter) {
-                    filteredProjects.add(project);
-                }
-            }
+        if (selectedProjects != null && !selectedProjects.isEmpty()) {
+            baseProjects = selectedProjects;
         } else {
-            filteredProjects = allProjects;
+            baseProjects = allProjects;
         }
+
+        filteredProjects = baseProjects.stream()
+                .filter(project -> startDate == null || !project.getEndDate().isBefore(startDate))
+                .filter(project -> endDate == null || !project.getStartDate().isAfter(endDate))
+                .collect(Collectors.toList());
 
         StringBuilder report = new StringBuilder();
 
@@ -567,41 +873,41 @@ public class ReportsController {
                     }
                 }
 
-                // Pobierz zadania dla tego projektu (jeśli filtr włączony)
+                List<Task> tasks = taskDAO.getTasksByProjectId(project.getId());
+
                 if (showTasks) {
-                    List<Task> tasks = taskDAO.getTasksByProjectId(project.getId());
                     report.append("Liczba zadań: ").append(tasks.size()).append("\n");
+                    for (Task task : tasks) {
+                        report.append("- ").append(task.getTitle())
+                                .append(" (Status: ").append(task.getStatus())
+                                .append(", Priorytet: ").append(task.getPriority())
+                                .append(")\n");
+                    }
+                }
 
-                    if (!tasks.isEmpty() && showStatistics) {
-                        // Zlicz zadania według statusu
-                        int newTasks = 0;
-                        int inProgressTasks = 0;
-                        int completedTasks = 0;
+                if (showStatistics) {
+                    report.append("Statystyki zadań:\n");
+                    if (tasks.isEmpty()) {
+                        report.append("Brak danych do obliczenia statystyk.\n");
+                    } else {
+                        long newTasks = tasks.stream()
+                                .filter(t -> "Nowe".equalsIgnoreCase(t.getStatus()))
+                                .count();
+                        long inProgressTasks = tasks.stream()
+                                .filter(t -> "W toku".equalsIgnoreCase(t.getStatus()))
+                                .count();
+                        long completedTasks = tasks.stream()
+                                .filter(t -> "Zakończone".equalsIgnoreCase(t.getStatus()))
+                                .count();
 
-                        for (Task task : tasks) {
-                            String status = task.getStatus();
-                            if (status == null) continue;
-
-                            if (status.equalsIgnoreCase("Nowe")) {
-                                newTasks++;
-                            } else if (status.equalsIgnoreCase("W toku")) {
-                                inProgressTasks++;
-                            } else if (status.equalsIgnoreCase("Zakończone")) {
-                                completedTasks++;
-                            }
-                        }
-
-                        report.append("Status zadań:\n");
                         report.append("- Nowe: ").append(newTasks).append("\n");
                         report.append("- W toku: ").append(inProgressTasks).append("\n");
                         report.append("- Zakończone: ").append(completedTasks).append("\n");
 
-                        // Oblicz procent ukończenia
                         double completionPercentage = (double) completedTasks / tasks.size() * 100;
                         report.append("- Procent ukończenia: ").append(String.format("%.2f", completionPercentage)).append("%\n");
                     }
                 }
-
                 report.append("\n\n");
             }
         }
@@ -644,18 +950,16 @@ public class ReportsController {
 
                 // Generuj raport PDF przy użyciu ulepszonej usługi
                 switch (currentReportType) {
-                    case "Struktura Zespołów":
-                        reportService.generateTeamsStructurePdf(filename, currentReportContent, filterOptions);
-                        break;
-                    case "Użytkownicy Systemu":
-                        reportService.generateUsersReportPdf(filename, currentReportContent, filterOptions);
-                        break;
-                    case "Przegląd Projektów":
-                        reportService.generateProjectsOverviewPdf(filename, currentReportContent, filterOptions);
-                        break;
-                    default:
+                    case "Struktura Zespołów" ->
+                            reportService.generateTeamsStructurePdf(filename, currentReportContent, filterOptions);
+                    case "Użytkownicy Systemu" ->
+                            reportService.generateUsersReportPdf(filename, currentReportContent, filterOptions);
+                    case "Przegląd Projektów" ->
+                            reportService.generateProjectsOverviewPdf(filename, currentReportContent, filterOptions);
+                    default -> {
                         showError("Błąd", "Nieznany typ raportu");
                         return;
+                    }
                 }
 
                 showInfo("Raport zapisany", "Raport PDF został pomyślnie zapisany:\n" + filename);

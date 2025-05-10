@@ -40,6 +40,7 @@
     <!-- Tabela aktywności -->
     <TableView fx:id="activitiesTable" VBox.vgrow="ALWAYS">
         <columns>
+            <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
             <TableColumn fx:id="colTimestamp" text="Data i czas" prefWidth="150"/>
             <TableColumn fx:id="colUser" text="Użytkownik" prefWidth="180"/>
             <TableColumn fx:id="colTaskTitle" text="Zadanie" prefWidth="150"/>
