@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -12,7 +13,6 @@
         <java.util.logging.ConsoleHandler.level>SEVERE</java.util.logging.ConsoleHandler.level>
     </properties>
     <dependencies>
-        <!-- JavaFX Dependencies -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
@@ -23,7 +23,6 @@
             <artifactId>javafx-fxml</artifactId>
             <version>21</version>
         </dependency>
-        <!-- FormsFX -->
         <dependency>
             <groupId>com.dlsc.formsfx</groupId>
             <artifactId>formsfx-core</artifactId>
@@ -35,28 +34,22 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- JUnit for Testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
-        <!-- Podstawowa zależność iText PDF (już obecna w projekcie) -->
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>itextpdf</artifactId>
             <version>5.5.13.3</version>
         </dependency>
-
-        <!-- Dodatkowa biblioteka dla lepszej obsługi czcionek z polskimi znakami -->
         <dependency>
             <groupId>com.itextpdf</groupId>
             <artifactId>itext-pdfa</artifactId>
             <version>5.5.13.3</version>
         </dependency>
-
-        <!-- Biblioteka ułatwiająca osadzanie czcionek w PDF -->
         <dependency>
             <groupId>com.itextpdf.tool</groupId>
             <artifactId>xmlworker</artifactId>
@@ -68,27 +61,22 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
-        <!-- Mockito -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>3.12.4</version>
             <scope>test</scope>
         </dependency>
-        <!-- MariaDB Java Client -->
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
             <version>3.0.8</version>
         </dependency>
-        <!-- Dodaj w sekcji <dependencies> -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>2.2.224</version>
-            <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>pl.rozowi</groupId>
             <artifactId>task-app-reports</artifactId>
@@ -96,11 +84,9 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/task-app-reports-1.0-SNAPSHOT.jar</systemPath>
         </dependency>
-
     </dependencies>
     <build>
         <plugins>
-            <!-- Compiler Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -110,8 +96,6 @@
                     <target>21</target>
                 </configuration>
             </plugin>
-
-            <!-- SUREFIRE: Testy z flagami JVM -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -122,8 +106,6 @@
                     </argLine>
                 </configuration>
             </plugin>
-
-            <!-- JavaFX Maven Plugin -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -144,8 +126,64 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <!-- Jar Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>pl.rozowi.app.MainApplication</mainClass>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <!-- Dodajemy shadedArtifactAttached aby nie zastępować oryginalnego JAR-a -->
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>with-dependencies</shadedClassifierName>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Dodajemy plugin do kopiowania zależności -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                            <includeScope>runtime</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Plugin do tworzenia pliku JAR z manifestem -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -153,27 +191,90 @@
                 <configuration>
                     <archive>
                         <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
                             <mainClass>pl.rozowi.app.MainApplication</mainClass>
                         </manifest>
+                        <manifestEntries>
+                            <Class-Path>.</Class-Path>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
-
-            <!-- Exec Plugin -->
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.0.0</version>
-                <configuration>
-                    <executable>java</executable>
-                    <arguments>
-                        <argument>-Dprism.order=sw</argument>
-                        <argument>-Djavafx.embed.singleThread=false</argument>
-                        <argument>-cp</argument>
-                        <classpath/>
-                        <argument>pl.rozowi.app.MainApplication</argument>
-                    </arguments>
-                </configuration>
+                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                <artifactId>launch4j-maven-plugin</artifactId>
+                <version>2.5.0</version>
+                <executions>
+                    <execution>
+                        <id>l4j-gui</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
+                        <configuration>
+                            <headerType>gui</headerType>
+                            <outfile>${project.build.directory}/RozowiApp.exe</outfile>
+                            <jar>${project.build.directory}/${project.artifactId}-${project.version}-with-dependencies.jar</jar>
+                            <errTitle>Application Error</errTitle>
+                            <classPath>
+                                <mainClass>pl.rozowi.app.MainApplication</mainClass>
+                                <addDependencies>false</addDependencies>
+                            </classPath>
+                            <jre>
+                                <minVersion>21.0.0</minVersion>
+                                <opts>
+                                    <opt>--module-path . --add-modules=javafx.controls,javafx.fxml</opt>
+                                </opts>
+                            </jre>
+                            <versionInfo>
+                                <fileVersion>1.0.0.0</fileVersion>
+                                <txtFileVersion>${project.version}</txtFileVersion>
+                                <fileDescription>Rozowi Application</fileDescription>
+                                <copyright>Rozowi</copyright>
+                                <productVersion>1.0.0.0</productVersion>
+                                <txtProductVersion>${project.version}</txtProductVersion>
+                                <productName>Rozowi App</productName>
+                                <internalName>RozowiApp</internalName>
+                                <originalFilename>RozowiApp.exe</originalFilename>
+                            </versionInfo>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Plugin do tworzenia dystrybucji -->
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>create-dist</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <mkdir dir="${project.build.directory}/dist"/>
+                                <copy todir="${project.build.directory}/dist">
+                                    <fileset dir="${project.build.directory}">
+                                        <include name="*.jar"/>
+                                        <include name="*.exe"/>
+                                    </fileset>
+                                </copy>
+                                <copy todir="${project.build.directory}/dist/lib">
+                                    <fileset dir="${project.build.directory}/lib">
+                                        <include name="javafx-*.jar"/>
+                                        <include name="h2-*.jar"/>
+                                        <include name="mariadb-*.jar"/>
+                                    </fileset>
+                                </copy>
+                                <echo file="${project.build.directory}/dist/run.bat">@echo off
+                                    java --module-path lib --add-modules=javafx.controls,javafx.fxml -jar ${project.artifactId}-${project.version}-with-dependencies.jar</echo>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

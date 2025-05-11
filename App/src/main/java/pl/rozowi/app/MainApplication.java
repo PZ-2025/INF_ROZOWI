@@ -24,10 +24,16 @@ public class MainApplication extends Application {
     public void start(Stage stage) throws IOException {
         primaryStage = stage;
 
-        try (Connection conn = DatabaseManager.getConnection()) {
-            System.out.println("Connected to database successfully!");
-        } catch (SQLException ex) {
-            System.err.println("Failed to connect to database: " + ex.getMessage());
+        try {
+            DatabaseManager.initializeDatabase();
+            try (Connection conn = DatabaseManager.getConnection()) {
+                System.out.println("Connected to database successfully!");
+            } catch (SQLException ex) {
+                System.err.println("Failed to connect to database: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        } catch (Exception ex) {
+            System.err.println("Failed to initialize database: " + ex.getMessage());
             ex.printStackTrace();
         }
 
