@@ -20,14 +20,17 @@
 
             <TableView fx:id="tasksTable" VBox.vgrow="ALWAYS">
                 <columns>
-                    <TableColumn fx:id="colId" text="ID" prefWidth="40"/>
-                    <TableColumn fx:id="colTitle" text="Tytuł" prefWidth="150"/>
-                    <TableColumn fx:id="colStatus" text="Status" prefWidth="80"/>
-                    <TableColumn fx:id="colPriority" text="Priorytet" prefWidth="80"/>
-                    <TableColumn fx:id="colEnd" text="Deadline" prefWidth="100"/>
-                    <TableColumn fx:id="colTeam" text="Zespół" prefWidth="100"/>
-                    <TableColumn fx:id="colAssignedTo" text="Przypisane" prefWidth="120"/>
+                    <TableColumn fx:id="colId" text="ID" prefWidth="40" />
+                    <TableColumn fx:id="colTitle" text="Tytuł" prefWidth="200" />
+                    <TableColumn fx:id="colStatus" text="Status" prefWidth="100" />
+                    <TableColumn fx:id="colPriority" text="Priorytet" prefWidth="100" />
+                    <TableColumn fx:id="colEnd" text="Deadline" prefWidth="120" />
+                    <TableColumn fx:id="colTeam" text="Zespół" prefWidth="120" />
+                    <TableColumn fx:id="colAssignedTo" text="Przypisane" prefWidth="200" />
                 </columns>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                </columnResizePolicy>
             </TableView>
         </VBox>
     </children>

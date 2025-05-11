@@ -55,9 +55,6 @@ public class UserDashboardController extends BaseDashboardController {
                     case "Zadania":
                         goToAllTasks();
                         break;
-                    case "Powiadomienia":
-                        goToNotifications();
-                        break;
                     case "Ustawienia":
                         goToSettings();
                         break;
@@ -86,11 +83,6 @@ public class UserDashboardController extends BaseDashboardController {
     @FXML
     private void goToAllTasks() throws IOException {
         loadView("/fxml/user/tasks.fxml");
-    }
-
-    @FXML
-    private void goToNotifications() throws IOException {
-        loadView("/fxml/notifications.fxml");
     }
 
     @FXML

@@ -59,6 +59,9 @@
             <TableColumn fx:id="colEndDate" text="Data zakończenia" prefWidth="120"/>
             <TableColumn fx:id="colAssignee" text="Przypisane do" prefWidth="150"/>
         </columns>
+        <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+        </columnResizePolicy>
     </TableView>
 
     <TitledPane text="Szczegóły zadania" expanded="false">
@@ -113,6 +116,9 @@
                         <TableColumn fx:id="colActivityType" text="Typ" prefWidth="120"/>
                         <TableColumn fx:id="colActivityDesc" text="Opis" prefWidth="400"/>
                     </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                    </columnResizePolicy>
                 </TableView>
             </TitledPane>
         </VBox>

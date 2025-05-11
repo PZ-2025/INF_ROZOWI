@@ -9,10 +9,13 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import pl.rozowi.app.MainApplication;
 import pl.rozowi.app.dao.UserDAO;
+import pl.rozowi.app.dao.SettingsDAO;
 import pl.rozowi.app.models.User;
+import pl.rozowi.app.models.Settings;
 import pl.rozowi.app.services.PasswordChangeService;
 import pl.rozowi.app.services.ActivityService;
 import pl.rozowi.app.util.ThemeManager;
+import pl.rozowi.app.util.DefaultViewManager;
 
 import java.io.IOException;
 
@@ -34,6 +37,7 @@ public class SettingsController {
     private Button saveSettingsButton;
 
     private final UserDAO userDAO = new UserDAO();
+    private final SettingsDAO settingsDAO = new SettingsDAO();
     private final PasswordChangeService passwordService = new PasswordChangeService();
     private User currentUser;
 
@@ -76,7 +80,6 @@ public class SettingsController {
                         "Zadania zespołu",
                         "Pracownicy",
                         "Raporty",
-                        "Powiadomienia",
                         "Ustawienia"
                 );
                 break;
@@ -84,7 +87,6 @@ public class SettingsController {
                 defaultViewComboBox.getItems().addAll(
                         "Moje zadania",
                         "Zadania",
-                        "Powiadomienia",
                         "Ustawienia"
                 );
                 break;
@@ -149,13 +151,14 @@ public class SettingsController {
         }
 
         currentUser.setEmail(newEmail);
-        currentUser.setTheme(newTheme);
-        currentUser.setDefaultView(newDefaultView);
         currentUser.setPasswordHint(newHint);
+
+        ThemeManager.saveThemeToDatabase(currentUser, newTheme);
+        DefaultViewManager.saveDefaultView(currentUser, newDefaultView);
 
         boolean success = userDAO.updateUser(currentUser);
         if (!success) {
-            showAlert(Alert.AlertType.ERROR, "Błąd", "Nie udało się zapisać zmian!");
+            showAlert(Alert.AlertType.ERROR, "Błąd", "Nie udało się zapisać zmian użytkownika!");
             return;
         }
 
@@ -169,7 +172,7 @@ public class SettingsController {
                 case 1 -> MainApplication.switchScene(
                         "/fxml/admin/adminDashboard.fxml", "TaskApp - Admin");
                 case 2 -> MainApplication.switchScene(
-                        "/fxml/manager/managerDashboard.fxml", "TaskApp - Manager");
+                        "/fxml/manager/managerDashboard.fxml", "TaskApp - Kierownik");
                 case 3 -> {
                     FXMLLoader loader = new FXMLLoader(
                             getClass().getResource("/fxml/teamleader/teamLeaderDashboard.fxml"));
@@ -199,7 +202,7 @@ public class SettingsController {
                     stage.setTitle("TaskApp - User");
                 }
                 default -> MainApplication.switchScene(
-                        "/fxml/user/userDashboard.fxml", "TaskApp - Dashboard");
+                        "/fxml/user/userDashboard.fxml", "TaskApp - Panel");
             }
             stage.show();
         } catch (IOException ex) {

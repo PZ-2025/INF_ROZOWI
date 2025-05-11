@@ -24,8 +24,6 @@
             <Label fx:id="welcomeLabel" text="Witaj, użytkowniku" styleClass="sidebar-label"/>
             <Button text="Moje Zadania" onAction="#goToMyTasks" styleClass="sidebar-button"/>
             <Button text="Zadania" onAction="#goToAllTasks" styleClass="sidebar-button"/>
-            <Button text="Powiadomienia" onAction="#goToNotifications"
-                    style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-font-size: 14px; -fx-pref-width: 220px;"/>
             <Region fx:id="spacer" VBox.vgrow="ALWAYS"/>
             <Button text="Ustawienia" onAction="#goToSettings" styleClass="sidebar-button"/>
             <Button text="Wyloguj" onAction="#logout" styleClass="sidebar-logout-button"/>
@@ -35,19 +33,10 @@
     <center>
         <AnchorPane fx:id="mainPane" styleClass="content-pane">
             <HBox layoutX="20" layoutY="20" spacing="10" style="-fx-pref-width: 450;">
-                <Label text="Powiadomienia" style="-fx-font-size: 20px; -fx-text-fill: white;"/>
                 <Region fx:id="spacer2" HBox.hgrow="ALWAYS"/>
                 <TextField fx:id="searchField" promptText="Szukaj..." style="-fx-pref-width: 200px;"/>
                 <Button fx:id="searchButton" text="🔍" style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
             </HBox>
-            <TableView fx:id="notificationsTable" layoutX="20" layoutY="60"
-                       style="-fx-pref-width: 400; -fx-pref-height: 400;">
-                <columns>
-                    <TableColumn fx:id="colName" text="Nazwa"/>
-                    <TableColumn fx:id="colDescription" text="Opis"/>
-                    <TableColumn fx:id="colDate" text="Data"/>
-                </columns>
-            </TableView>
         </AnchorPane>
     </center>
 

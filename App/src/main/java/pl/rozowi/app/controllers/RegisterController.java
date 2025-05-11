@@ -115,7 +115,6 @@ public class RegisterController {
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
-        alert.getDialogPane().setStyle("-fx-background-color: green;");
         alert.showAndWait();
     }
 

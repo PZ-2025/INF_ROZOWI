@@ -49,9 +49,6 @@ public class TeamLeaderDashboardController extends BaseDashboardController {
                     case "Raporty":
                         goToReports();
                         break;
-                    case "Powiadomienia":
-                        goToNotifications();
-                        break;
                     case "Ustawienia":
                         goToSettings();
                         break;
@@ -70,11 +67,6 @@ public class TeamLeaderDashboardController extends BaseDashboardController {
     @Override
     protected Scene getScene() {
         return mainPane != null ? mainPane.getScene() : null;
-    }
-
-    @FXML
-    private void goToNotifications() throws IOException {
-        loadView("/fxml/notifications.fxml");
     }
 
     @FXML

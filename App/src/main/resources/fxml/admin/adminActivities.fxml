@@ -41,6 +41,9 @@
             <TableColumn fx:id="colActivityType" text="Typ aktywności" prefWidth="120"/>
             <TableColumn fx:id="colDescription" text="Opis" prefWidth="300"/>
         </columns>
+        <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+        </columnResizePolicy>
     </TableView>
 
     <TitledPane text="Szczegóły aktywności" expanded="false">

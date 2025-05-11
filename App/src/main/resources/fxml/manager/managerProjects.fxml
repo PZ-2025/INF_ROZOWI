@@ -23,6 +23,9 @@
             <TableColumn fx:id="colStart" text="Data startu" prefWidth="120"/>
             <TableColumn fx:id="colEnd" text="Data końca" prefWidth="120"/>
         </columns>
+        <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+        </columnResizePolicy>
     </TableView>
 
 </VBox>

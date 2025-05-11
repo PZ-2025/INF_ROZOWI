@@ -209,31 +209,6 @@ public class ProjectDAO {
                     }
                 }
 
-                boolean notificationHasTaskId = false;
-                try (PreparedStatement stmt = conn.prepareStatement(
-                        "SHOW COLUMNS FROM notifications LIKE 'task_id'")) {
-                    ResultSet rs = stmt.executeQuery();
-                    notificationHasTaskId = rs.next(); 
-                }
-
-                if (notificationHasTaskId && !taskIds.isEmpty()) {
-                    StringBuilder questionMarks = new StringBuilder();
-                    for (int i = 0; i < taskIds.size(); i++) {
-                        if (i > 0) {
-                            questionMarks.append(",");
-                        }
-                        questionMarks.append("?");
-                    }
-
-                    try (PreparedStatement stmt = conn.prepareStatement(
-                            "DELETE FROM notifications WHERE task_id IN (" + questionMarks.toString() + ")")) {
-                        for (int i = 0; i < taskIds.size(); i++) {
-                            stmt.setInt(i + 1, taskIds.get(i));
-                        }
-                        stmt.executeUpdate();
-                    }
-                }
-
                 try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM tasks WHERE project_id = ?")) {
                     stmt.setInt(1, projectId);
                     stmt.executeUpdate();

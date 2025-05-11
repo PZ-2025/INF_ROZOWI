@@ -435,22 +435,6 @@ public class TaskDAO {
                     stmt.executeUpdate();
                 }
 
-                try {
-                    PreparedStatement checkStmt = conn.prepareStatement(
-                            "SHOW COLUMNS FROM notifications LIKE 'task_id'");
-                    ResultSet rs = checkStmt.executeQuery();
-                    if (rs.next()) {
-                        try (PreparedStatement stmt = conn.prepareStatement(
-                                "DELETE FROM notifications WHERE task_id = ?")) {
-                            stmt.setInt(1, taskId);
-                            stmt.executeUpdate();
-                        }
-                    }
-                    rs.close();
-                    checkStmt.close();
-                } catch (SQLException ex) {
-                }
-
                 try (PreparedStatement stmt = conn.prepareStatement(
                         "DELETE FROM tasks WHERE id = ?")) {
                     stmt.setInt(1, taskId);

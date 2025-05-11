@@ -35,6 +35,9 @@
             <TableColumn fx:id="colManager" text="Kierownik" prefWidth="150"/>
             <TableColumn fx:id="colStatus" text="Status" prefWidth="100"/>
         </columns>
+        <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+        </columnResizePolicy>
     </TableView>
 
     <TitledPane text="Zespoły przypisane do projektu" expanded="false">
@@ -46,6 +49,9 @@
                     <TableColumn fx:id="colTeamLeader" text="Leader" prefWidth="150"/>
                     <TableColumn fx:id="colMembersCount" text="Liczba członków" prefWidth="120"/>
                 </columns>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                </columnResizePolicy>
             </TableView>
         </VBox>
     </TitledPane>
@@ -61,6 +67,9 @@
                     <TableColumn fx:id="colTaskDeadline" text="Termin" prefWidth="120"/>
                     <TableColumn fx:id="colTaskAssignee" text="Przypisane do" prefWidth="150"/>
                 </columns>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                </columnResizePolicy>
             </TableView>
         </VBox>
     </TitledPane>

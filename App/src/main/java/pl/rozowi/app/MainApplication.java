@@ -7,6 +7,8 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import pl.rozowi.app.database.DatabaseManager;
 import pl.rozowi.app.models.User;
+import pl.rozowi.app.models.Settings;
+import pl.rozowi.app.dao.SettingsDAO;
 import pl.rozowi.app.util.ThemeManager;
 
 import java.io.IOException;
@@ -74,8 +76,27 @@ public class MainApplication extends Application {
     public static void setCurrentUser(User user) {
         currentUser = user;
 
+        if (user != null) {
+            loadUserSettings(user);
+        }
+
         if (primaryStage != null && primaryStage.getScene() != null) {
             ThemeManager.applyTheme(primaryStage.getScene(), user);
+        }
+    }
+
+    private static void loadUserSettings(User user) {
+        SettingsDAO settingsDAO = new SettingsDAO();
+        Settings userSettings = settingsDAO.getSettingsByUserId(user.getId());
+
+        if (userSettings != null) {
+            if (userSettings.getTheme() != null) {
+                user.setTheme(userSettings.getTheme());
+            }
+
+            if (userSettings.getDefaultView() != null) {
+                user.setDefaultView(userSettings.getDefaultView());
+            }
         }
     }
 

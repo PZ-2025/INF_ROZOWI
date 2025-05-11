@@ -113,7 +113,7 @@ public class LoginController {
                     MainApplication.switchScene("/fxml/admin/adminDashboard.fxml", "TaskApp - Admin");
                 }
                 default -> {
-                    MainApplication.switchScene("/fxml/user/userDashboard.fxml", "TaskApp - Dashboard");
+                    MainApplication.switchScene("/fxml/user/userDashboard.fxml", "TaskApp - Panel");
                 }
             }
         } catch (IOException e) {

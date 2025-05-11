@@ -26,7 +26,6 @@
             <Button text="Zadania Zespołu" onAction="#goToTasks" styleClass="sidebar-button"/>
             <Button text="Pracownicy" onAction="#goToEmployees" styleClass="sidebar-button"/>
             <Button text="Raporty" onAction="#goToReports" styleClass="sidebar-button"/>
-            <Button text="Powiadomienia" onAction="#goToNotifications" styleClass="sidebar-button"/>
             <Region VBox.vgrow="ALWAYS"/>
             <Button text="Ustawienia" onAction="#goToSettings" styleClass="sidebar-button"/>
             <Button text="Wyloguj" onAction="#logout" styleClass="sidebar-logout-button"/>
