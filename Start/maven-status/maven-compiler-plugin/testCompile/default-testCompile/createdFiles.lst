@@ -1,0 +1,6 @@
+pl/rozowi/app/services/LoginServiceTest.class
+pl/rozowi/app/services/PasswordChangeServiceTest.class
+pl/rozowi/app/database/DatabaseManagerTest.class
+pl/rozowi/app/dao/TaskDAOTest.class
+pl/rozowi/app/dao/UserDAOTest.class
+pl/rozowi/app/services/RegisterServiceTest.class
