@@ -83,8 +83,8 @@ public class RegisterController {
         newUser.setLastName(lastNameField.getText());
         newUser.setEmail(emailField.getText());
         newUser.setPassword(hashPassword(passwordField.getText()));
-        newUser.setRoleId(4);       // domyślna rola: użytkownik (role id 4)
-        newUser.setGroupId(1);      // domyślne przypisanie nowego użytkownika do teamu 1
+        newUser.setRoleId(4);   
+        newUser.setGroupId(1); 
         newUser.setPasswordHint("");
 
         boolean inserted = userDAO.insertUser(newUser);
@@ -119,7 +119,6 @@ public class RegisterController {
         alert.showAndWait();
     }
 
-    // Hashowanie hasła używając sha-256
     private String hashPassword(String password) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

@@ -18,8 +18,6 @@ import java.util.List;
 
 public class TaskDetailsController {
 
-//    @FXML
-//    private Label taskIdLabel;
     @FXML
     private Label titleLabel;
     @FXML
@@ -42,7 +40,7 @@ public class TaskDetailsController {
     @FXML
     private Button cancelButton;
     @FXML
-    private Button editButton; // New button for editing all task details
+    private Button editButton; 
 
     private Task task;
     private final TaskDAO taskDAO = new TaskDAO();
@@ -70,33 +68,26 @@ public class TaskDetailsController {
         teamIdLabel.setText(teamName);
 
 
-        // Set status dropdown
         statusComboBox.getItems().setAll("Nowe", "W toku", "Zakończone");
         statusComboBox.setValue(task.getStatus());
 
-        // Check current user role
         User current = MainApplication.getCurrentUser();
         boolean isLeader = current.getRoleId() == 3;
         boolean isEmployee = current.getRoleId() == 4;
         boolean isManager = current.getRoleId() == 2;
         boolean isAdmin = current.getRoleId() == 1;
 
-        // Status editable for leader, employee, manager, and admin
         statusComboBox.setDisable(!(isLeader || isEmployee || isManager || isAdmin));
 
-        // Only show edit button for admin and manager
         if (editButton != null) {
             editButton.setVisible(isAdmin || isManager);
         }
 
-        // Populate and configure assignee dropdown
         if (assigneeComboBox != null) {
             try {
-                // Get team members
                 List<User> members = teamMemberDAO.getTeamMembers(task.getTeamId());
                 assigneeComboBox.getItems().setAll(members);
 
-                // Set the current assignee if one exists
                 int assignedUserId = task.getAssignedTo();
                 if (assignedUserId > 0) {
                     for (User u : members) {
@@ -107,10 +98,8 @@ public class TaskDetailsController {
                     }
                 }
 
-                // Only leaders, managers, and admins can reassign tasks
                 assigneeComboBox.setDisable(!(isLeader || isManager || isAdmin));
 
-                // Set up cell factory for better display
                 assigneeComboBox.setButtonCell(new ListCell<User>() {
                     @Override
                     protected void updateItem(User item, boolean empty) {
@@ -140,7 +129,6 @@ public class TaskDetailsController {
             }
         }
 
-        // Save button visible for authorized users
         saveButton.setVisible(isLeader || isEmployee || isManager || isAdmin);
     }
 
@@ -149,7 +137,6 @@ public class TaskDetailsController {
         User current = MainApplication.getCurrentUser();
         int role = current.getRoleId();
 
-        // Only leader (3), employee (4), manager (2), or admin (1) can save changes
         if (role != 3 && role != 4 && role != 2 && role != 1) {
             closeWindow();
             return;
@@ -157,7 +144,6 @@ public class TaskDetailsController {
 
         boolean okStatus = true, okAssign = true;
 
-        // Save status change
         String newStatus = statusComboBox.getValue();
         if (newStatus != null && !newStatus.equals(task.getStatus())) {
             okStatus = taskDAO.updateTaskStatus(task.getId(), newStatus);
@@ -166,7 +152,6 @@ public class TaskDetailsController {
             }
         }
 
-        // Only leaders, managers, and admins can reassign
         if ((role == 3 || role == 2 || role == 1) && assigneeComboBox != null) {
             User newAssignee = assigneeComboBox.getValue();
             if (newAssignee != null &&
@@ -193,22 +178,17 @@ public class TaskDetailsController {
      */
     @FXML
     private void handleEdit() {
-        // Only admin and manager can use full edit functionality
         User current = MainApplication.getCurrentUser();
         if (current.getRoleId() != 1 && current.getRoleId() != 2) {
             showInfo("You don't have permission to edit all task properties");
             return;
         }
 
-        // Use our new TaskEditDialog utility
         boolean success = TaskEditDialog.showEditDialog(task);
 
         if (success) {
-            // Refresh the task from the database to show updated values
             Task updatedTask = null;
             try {
-                // In a real implementation, we would have a taskDAO.getTaskById method
-                // Here's a workaround assuming we have a project or team ID
                 List<Task> tasks = null;
                 if (task.getProjectId() > 0) {
                     tasks = taskDAO.getTasksByProjectId(task.getProjectId());
@@ -233,7 +213,6 @@ public class TaskDetailsController {
                 displayTaskDetails();
             }
 
-            // Close this dialog as it now shows stale data
             closeWindow();
         }
     }

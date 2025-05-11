@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import pl.rozowi.app.database.DatabaseManager;
 import pl.rozowi.app.models.User;
+import pl.rozowi.app.util.ThemeManager;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -21,7 +22,6 @@ public class MainApplication extends Application {
     public void start(Stage stage) throws IOException {
         primaryStage = stage;
 
-        // Połączenie z bazą
         try (Connection conn = DatabaseManager.getConnection()) {
             System.out.println("Connected to database successfully!");
         } catch (SQLException ex) {
@@ -31,13 +31,18 @@ public class MainApplication extends Application {
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SplashScreen.fxml"));
         Parent root = loader.load();
-        Scene scene = new Scene(root);
+        Scene scene = new Scene(root, 1440, 900);
+
+        ThemeManager.applyTheme(scene, null);
+
         stage.setTitle("TaskApp - Start");
         stage.setFullScreen(false);
         stage.setScene(scene);
+        stage.setMinWidth(1440);
+        stage.setMinHeight(900);
+        stage.setResizable(true);
         stage.show();
     }
-
 
     public static void switchScene(String fxmlPath, String title) throws IOException {
         FXMLLoader loader = new FXMLLoader(MainApplication.class.getResource(fxmlPath));
@@ -50,15 +55,28 @@ public class MainApplication extends Application {
         } else if (controller instanceof pl.rozowi.app.controllers.ManagerDashboardController) {
             ((pl.rozowi.app.controllers.ManagerDashboardController) controller).setUser(currentUser);
         }
-//        } else if (controller instanceof pl.rozowi.app.controllers.TeamLeaderDashboardController) {
-//            ((pl.rozowi.app.controllers.TeamLeaderDashboardController) controller).setUser(currentUser);
-//        }
-        primaryStage.getScene().setRoot(root);
+
+        Scene currentScene = primaryStage.getScene();
+        Scene newScene;
+
+        if (currentScene != null) {
+            newScene = new Scene(root, currentScene.getWidth(), currentScene.getHeight());
+        } else {
+            newScene = new Scene(root, 1440, 900);
+        }
+
+        ThemeManager.applyTheme(newScene, currentUser);
+
+        primaryStage.setScene(newScene);
         primaryStage.setTitle(title);
     }
 
     public static void setCurrentUser(User user) {
         currentUser = user;
+
+        if (primaryStage != null && primaryStage.getScene() != null) {
+            ThemeManager.applyTheme(primaryStage.getScene(), user);
+        }
     }
 
     public static User getCurrentUser() {

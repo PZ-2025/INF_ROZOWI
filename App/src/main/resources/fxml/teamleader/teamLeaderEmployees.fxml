@@ -7,12 +7,12 @@
 
 <AnchorPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="pl.rozowi.app.controllers.EmployeesController"
-            style="-fx-background-color: #1E1E2F;">
+            styleClass="dashboard-container">
     <HBox layoutX="20" layoutY="20" spacing="10">
-        <Label text="Pracownicy (Team Leader)" style="-fx-font-size: 20px; -fx-text-fill: white;"/>
+        <Label text="Pracownicy (Team Leader)" styleClass="section-header"/>
         <Region fx:id="spacer" HBox.hgrow="ALWAYS"/>
         <TextField fx:id="searchField" promptText="Szukaj pracownika..." style="-fx-pref-width: 200px;"/>
-        <Button fx:id="searchButton" text="🔍" style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+        <Button fx:id="searchButton" text="🔍" styleClass="primary-button"/>
     </HBox>
     <TableView fx:id="employeesTable" layoutX="20" layoutY="60"
                style="-fx-pref-width: 700; -fx-pref-height: 500;">

@@ -15,13 +15,14 @@ import pl.rozowi.app.dao.UserDAO;
 import pl.rozowi.app.models.User;
 import pl.rozowi.app.services.LoginService;
 import pl.rozowi.app.util.Session;
+import pl.rozowi.app.util.ThemeManager;
 
 import java.io.IOException;
 
 public class LoginController {
 
     @FXML
-    private TextField usernameField; // email
+    private TextField usernameField;
     @FXML
     private PasswordField passwordField;
 
@@ -57,7 +58,6 @@ public class LoginController {
             return;
         }
 
-        // zapisujemy zalogowanego
         MainApplication.setCurrentUser(user);
         Session.currentUserId = user.getId();
         Session.currentUserTeam = String.valueOf(loginService.findTeamIdForUser(user.getId()));
@@ -68,45 +68,53 @@ public class LoginController {
 
         try {
             Stage stage = (Stage) usernameField.getScene().getWindow();
+            Scene scene;
+            Parent root;
+
             switch (user.getRoleId()) {
-                case 2 -> {  // Manager-Kierownik
+                case 2 -> {  
                     FXMLLoader loader = new FXMLLoader(
                             getClass().getResource("/fxml/manager/managerDashboard.fxml"));
-                    Parent root = loader.load();
-                    ManagerDashboardController ctrl =
-                            loader.getController();
+                    root = loader.load();
+                    ManagerDashboardController ctrl = loader.getController();
                     ctrl.setUser(user);
-                    stage.setScene(new Scene(root));
+                    scene = new Scene(root);
+                    ThemeManager.applyTheme(scene, user);
+                    stage.setScene(scene);
                     stage.setTitle("TaskApp - Kierownik");
                     stage.show();
                 }
-                case 3 -> {  // Team Leader
+                case 3 -> { 
                     FXMLLoader loader = new FXMLLoader(
                             getClass().getResource("/fxml/teamleader/teamLeaderDashboard.fxml"));
-                    Parent root = loader.load();
-                    TeamLeaderDashboardController ctrl =
-                            loader.getController();
+                    root = loader.load();
+                    TeamLeaderDashboardController ctrl = loader.getController();
                     ctrl.setUser(user);
-                    stage.setScene(new Scene(root));
+                    scene = new Scene(root);
+                    ThemeManager.applyTheme(scene, user);
+                    stage.setScene(scene);
                     stage.setTitle("TaskApp - Team Leader");
                     stage.show();
                 }
-                case 4 -> {  // User
+                case 4 -> { 
                     FXMLLoader loader = new FXMLLoader(
                             getClass().getResource("/fxml/user/userDashboard.fxml"));
-                    Parent root = loader.load();
-                    UserDashboardController ctrl =
-                            loader.getController();
+                    root = loader.load();
+                    UserDashboardController ctrl = loader.getController();
                     ctrl.setUser(user);
-                    stage.setScene(new Scene(root));
+                    scene = new Scene(root);
+                    ThemeManager.applyTheme(scene, user);
+                    stage.setScene(scene);
                     stage.setTitle("TaskApp - User");
                     stage.show();
                 }
-                case 1 -> MainApplication.switchScene(
-                        "/fxml/admin/adminDashboard.fxml", "TaskApp - Admin");
-
-                default -> MainApplication.switchScene(
-                        "/fxml/user/userDashboard.fxml", "TaskApp - Dashboard");
+                case 1 -> {
+                    Scene currentScene = stage.getScene();
+                    MainApplication.switchScene("/fxml/admin/adminDashboard.fxml", "TaskApp - Admin");
+                }
+                default -> {
+                    MainApplication.switchScene("/fxml/user/userDashboard.fxml", "TaskApp - Dashboard");
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();

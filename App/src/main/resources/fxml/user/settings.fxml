@@ -9,51 +9,53 @@
 <VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
       fx:controller="pl.rozowi.app.controllers.SettingsController"
       spacing="15"
-      style="-fx-padding: 20px; -fx-background-color: #1E1E2F;">
-    <Label text="Ustawienia" style="-fx-font-size: 24px; -fx-text-fill: white;"/>
+      styleClass="settings-container">
+    <Label text="Ustawienia" styleClass="header-label"/>
 
-    <Label text="Zmień adres e-mail:" style="-fx-font-size: 16px; -fx-text-fill: white;"/>
+    <Label text="Zmień adres e-mail:" styleClass="settings-label"/>
     <TextField fx:id="emailField" promptText="Nowy adres e-mail"
-               style="-fx-pref-width: 60%; -fx-font-size: 14px;"/>
-    <Label text="Zmień hasło:" style="-fx-font-size: 16px; -fx-text-fill: white;"/>
+               styleClass="settings-field"/>
+
+    <Label text="Zmień hasło:" styleClass="settings-label"/>
     <PasswordField fx:id="newPasswordField" promptText="Nowe hasło"
-                   style="-fx-pref-width: 60%; -fx-font-size: 14px;"/>
+                   styleClass="settings-field"/>
 
-    <Label text="Powtórz hasło:" style="-fx-font-size: 16px; -fx-text-fill: white;"/>
+    <Label text="Powtórz hasło:" styleClass="settings-label"/>
     <PasswordField fx:id="confirmPasswordField" promptText="Powtórz hasło"
-                   style="-fx-pref-width: 60%; -fx-font-size: 14px;"/>
+                   styleClass="settings-field"/>
 
-    <Label text="Podpowiedź hasła:" style="-fx-font-size: 16px; -fx-text-fill: white;"/>
+    <Label text="Podpowiedź hasła:" styleClass="settings-label"/>
     <TextField fx:id="passwordHintField" promptText="Podpowiedź hasła"
-               style="-fx-pref-width: 60%; -fx-font-size: 14px;"/>
+               styleClass="settings-field"/>
+
     <HBox spacing="20" alignment="CENTER">
         <VBox spacing="10">
-            <Label text="Wybierz motyw:" style="-fx-font-size: 16px; -fx-text-fill: white;"/>
-            <ComboBox fx:id="themeComboBox" style="-fx-pref-width: 150px; -fx-font-size: 14px;">
+            <Label text="Wybierz motyw:" styleClass="settings-label"/>
+            <ComboBox fx:id="themeComboBox" styleClass="settings-combo">
                 <items>
                     <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="Jasny"/>
-                        <String fx:value="Ciemny"/>
+                        <String fx:value="Light"/>
+                        <String fx:value="Dark"/>
                     </FXCollections>
                 </items>
             </ComboBox>
         </VBox>
 
         <VBox spacing="10">
-            <Label text="Wybierz domyślny widok:" style="-fx-font-size: 16px; -fx-text-fill: white;"/>
-            <ComboBox fx:id="defaultViewComboBox" style="-fx-pref-width: 150px; -fx-font-size: 14px;">
+            <Label text="Wybierz domyślny widok:" styleClass="settings-label"/>
+            <ComboBox fx:id="defaultViewComboBox" styleClass="settings-combo">
                 <items>
                     <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="Moje zadania"/>
+                        <String fx:value="Moje Zadania"/>
                         <String fx:value="Zadania"/>
+                        <String fx:value="Powiadomienia"/>
                     </FXCollections>
                 </items>
             </ComboBox>
         </VBox>
     </HBox>
 
-
     <Button text="Zapisz zmiany" fx:id="saveSettingsButton"
             onAction="#handleSaveSettings"
-            style="-fx-background-color: #007BFF; -fx-text-fill: white; -fx-pref-width: 150px;"/>
+            styleClass="primary-button"/>
 </VBox>

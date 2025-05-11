@@ -13,7 +13,6 @@ public class EnhancedTaskActivity extends TaskActivity {
     private String userLastName;
     private String userEmail;
 
-    // Konstruktor kopiujący z podstawowej klasy TaskActivity
     public EnhancedTaskActivity(TaskActivity baseActivity) {
         this.setId(baseActivity.getId());
         this.setTaskId(baseActivity.getTaskId());
@@ -24,10 +23,8 @@ public class EnhancedTaskActivity extends TaskActivity {
     }
 
     public EnhancedTaskActivity() {
-        // Domyślny konstruktor
     }
 
-    // Gettery i settery dla nowych pól
 
     public String getTaskTitle() {
         return taskTitle;
@@ -95,12 +92,10 @@ public class EnhancedTaskActivity extends TaskActivity {
      * @return Tytuł zadania lub informacja o braku
      */
     public String getTaskTitleOrDefault() {
-        // Dla aktywności systemowych (taskId = 0) nie wyświetlamy zadania
         if (getTaskId() == 0) {
             return "Zdarzenie systemowe";
         }
 
-        // Dla aktywności na zadaniach zwracamy tytuł lub ID
         if (taskTitle != null && !taskTitle.isEmpty()) {
             return taskTitle;
         } else {

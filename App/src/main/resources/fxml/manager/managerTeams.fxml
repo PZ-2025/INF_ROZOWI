@@ -3,11 +3,6 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<!--
-  Widok dzieli ekran na:
-  - lewa kolumna: lista zespołów
-  - prawa: dwie tabele: członkowie i zadania wybranego zespołu
--->
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="pl.rozowi.app.controllers.ManagerTeamsController">
 

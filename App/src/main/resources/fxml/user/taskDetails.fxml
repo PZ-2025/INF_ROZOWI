@@ -12,50 +12,100 @@
 <?import javafx.scene.layout.VBox?>
 
 <?import java.lang.String?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml" fx:controller="pl.rozowi.app.controllers.TaskDetailsController" stylesheets="@../../css/style.css">
+<AnchorPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="pl.rozowi.app.controllers.TaskDetailsController"
+            styleClass="content-pane">
     <children>
         <VBox spacing="15" AnchorPane.topAnchor="10" AnchorPane.leftAnchor="10" AnchorPane.rightAnchor="10">
             <padding>
                 <Insets top="20" right="20" bottom="20" left="20"/>
             </padding>
             <children>
-                <Label text="Szczegóły Zadania" styleClass="header-label"/>
-                <GridPane hgap="15" vgap="15">
+                <Label text="Szczegóły Zadania" styleClass="header-label">
+                    <padding>
+                        <Insets bottom="10"/>
+                    </padding>
+                </Label>
+                <GridPane hgap="15" vgap="15" styleClass="task-details-grid">
+                    <padding>
+                        <Insets top="10" right="10" bottom="10" left="10"/>
+                    </padding>
                     <columnConstraints>
                         <ColumnConstraints halignment="RIGHT" minWidth="80"/>
                         <ColumnConstraints halignment="LEFT" minWidth="250"/>
                     </columnConstraints>
                     <children>
-                        <!-- Wiersz 0: ID zadania -->
-<!--                        <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>-->
-<!--                        <Label fx:id="taskIdLabel" text="-" GridPane.rowIndex="0" GridPane.columnIndex="1"/>-->
+                        <Label text="Tytuł:" GridPane.rowIndex="1" GridPane.columnIndex="0">
+                            <padding>
+                                <Insets right="5"/>
+                            </padding>
+                        </Label>
+                        <Label fx:id="titleLabel" text="-" GridPane.rowIndex="1" GridPane.columnIndex="1">
+                            <padding>
+                                <Insets left="5"/>
+                            </padding>
+                        </Label>
 
-                        <!-- Wiersz 1: Tytuł -->
-                        <Label text="Tytuł:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-                        <Label fx:id="titleLabel" text="-" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+                        <Label text="Opis:" GridPane.rowIndex="2" GridPane.columnIndex="0">
+                            <padding>
+                                <Insets right="5"/>
+                            </padding>
+                        </Label>
+                        <Label fx:id="descriptionLabel" text="-" wrapText="true" GridPane.rowIndex="2" GridPane.columnIndex="1">
+                            <padding>
+                                <Insets left="5"/>
+                            </padding>
+                        </Label>
 
-                        <!-- Wiersz 2: Opis -->
-                        <Label text="Opis:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-                        <Label fx:id="descriptionLabel" text="-" wrapText="true" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                        <Label text="Projekt:" GridPane.rowIndex="3" GridPane.columnIndex="0">
+                            <padding>
+                                <Insets right="5"/>
+                            </padding>
+                        </Label>
+                        <Label fx:id="projectIdLabel" text="-" GridPane.rowIndex="3" GridPane.columnIndex="1">
+                            <padding>
+                                <Insets left="5"/>
+                            </padding>
+                        </Label>
 
-                        <!-- Wiersz 3: Projekt -->
-                        <Label text="Projekt:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-                        <Label fx:id="projectIdLabel" text="-" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+                        <Label text="Zespół:" GridPane.rowIndex="4" GridPane.columnIndex="0">
+                            <padding>
+                                <Insets right="5"/>
+                            </padding>
+                        </Label>
+                        <Label fx:id="teamIdLabel" text="-" GridPane.rowIndex="4" GridPane.columnIndex="1">
+                            <padding>
+                                <Insets left="5"/>
+                            </padding>
+                        </Label>
 
-                        <!-- Wiersz 4: Zespół -->
-                        <Label text="Zespół:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-                        <Label fx:id="teamIdLabel" text="-" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                        <Label text="Start:" GridPane.rowIndex="5" GridPane.columnIndex="0">
+                            <padding>
+                                <Insets right="5"/>
+                            </padding>
+                        </Label>
+                        <Label fx:id="startDateLabel" text="-" GridPane.rowIndex="5" GridPane.columnIndex="1">
+                            <padding>
+                                <Insets left="5"/>
+                            </padding>
+                        </Label>
 
-                        <!-- Wiersz 5: Data rozpoczęcia -->
-                        <Label text="Start:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-                        <Label fx:id="startDateLabel" text="-" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                        <Label text="Koniec:" GridPane.rowIndex="6" GridPane.columnIndex="0">
+                            <padding>
+                                <Insets right="5"/>
+                            </padding>
+                        </Label>
+                        <Label fx:id="endDateLabel" text="-" GridPane.rowIndex="6" GridPane.columnIndex="1">
+                            <padding>
+                                <Insets left="5"/>
+                            </padding>
+                        </Label>
 
-                        <!-- Wiersz 6: Data zakończenia -->
-                        <Label text="Koniec:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-                        <Label fx:id="endDateLabel" text="-" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
-
-                        <!-- Wiersz 7: Status -->
-                        <Label text="Status:" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                        <Label text="Status:" GridPane.rowIndex="7" GridPane.columnIndex="0">
+                            <padding>
+                                <Insets right="5"/>
+                            </padding>
+                        </Label>
                         <ComboBox fx:id="statusComboBox" GridPane.rowIndex="7" GridPane.columnIndex="1">
                             <items>
                                 <FXCollections fx:factory="observableArrayList">
@@ -68,8 +118,19 @@
                     </children>
                 </GridPane>
                 <HBox spacing="20">
-                    <Button fx:id="saveButton" text="Zapisz" onAction="#handleSave" styleClass="primary-button"/>
-                    <Button fx:id="cancelButton" text="Anuluj" onAction="#handleCancel" styleClass="secondary-button"/>
+                    <padding>
+                        <Insets top="15" bottom="5"/>
+                    </padding>
+                    <Button fx:id="saveButton" text="Zapisz" onAction="#handleSave" styleClass="primary-button">
+                        <padding>
+                            <Insets top="8" right="15" bottom="8" left="15"/>
+                        </padding>
+                    </Button>
+                    <Button fx:id="cancelButton" text="Anuluj" onAction="#handleCancel" styleClass="secondary-button">
+                        <padding>
+                            <Insets top="8" right="15" bottom="8" left="15"/>
+                        </padding>
+                    </Button>
                 </HBox>
             </children>
         </VBox>

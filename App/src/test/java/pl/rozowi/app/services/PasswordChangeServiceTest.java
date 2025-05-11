@@ -17,8 +17,8 @@ public class PasswordChangeServiceTest {
         String password = "Test1234!";
         String confirm = "Test1234!";
         String hashed = service.validateAndHashPassword(password, confirm);
-        assertNotNull(hashed); // Hash nie powinien być nullem
-        assertEquals(service.hashPassword(password), hashed); // Hash powinien być taki sam jak wywołanie bezpośrednie hashPassword
+        assertNotNull(hashed);
+        assertEquals(service.hashPassword(password), hashed); 
     }
 
     /**
@@ -78,7 +78,7 @@ public class PasswordChangeServiceTest {
     public void testHashPasswordNotNull() {
         String pass = "secure";
         String hashed = service.hashPassword(pass);
-        assertNotNull(hashed); // Hash nie powinien być nullem
-        assertTrue(hashed.length() > 0); // Hash nie powinien być pustym stringiem
+        assertNotNull(hashed); 
+        assertTrue(hashed.length() > 0); 
     }
 }

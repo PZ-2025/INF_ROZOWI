@@ -3,15 +3,17 @@ package pl.rozowi.app.controllers;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import pl.rozowi.app.MainApplication;
 import pl.rozowi.app.models.User;
+import pl.rozowi.app.util.ThemeManager;
 
 import java.io.IOException;
 
-public class ManagerDashboardController {
+public class ManagerDashboardController extends BaseDashboardController {
 
     @FXML
     private Label welcomeLabel;
@@ -20,11 +22,8 @@ public class ManagerDashboardController {
     @FXML
     private AnchorPane mainPane;
 
-    private User currentUser;
-
     @FXML
     private void initialize() {
-        // Na starcie ładujemy domyślny widok – "Zadania"
         try {
             goToTasks();
         } catch (IOException e) {
@@ -32,32 +31,45 @@ public class ManagerDashboardController {
         }
     }
 
-
-    public void setUser(User user) throws IOException {
-        this.currentUser = user;
+    @Override
+    protected void onUserSet(User user) {
         welcomeLabel.setText("Witaj, " + user.getName());
 
-        String def = user.getDefaultView();
-        if (def != null) {
-            switch (def) {
-                case "Pracownicy":
-                    goToEmployees();
-                    return;
-                case "Zadania":
-                    goToTasks();
-                    return;
-                case "Ustawienia":
-                    goToSettings();
-                    return;
-                case "Zespoły":
-                    goToTeams();
-                    return;
-                default:
-                    goToProjects();
-                    return;
+        try {
+            String def = user.getDefaultView();
+            if (def != null) {
+                switch (def) {
+                    case "Pracownicy":
+                        goToEmployees();
+                        break;
+                    case "Projekty":
+                        goToProjects();
+                        break;
+                    case "Zespoły":
+                        goToTeams();
+                        break;
+                    case "Raporty":
+                        goToReports();
+                        break;
+                    case "Ustawienia":
+                        goToSettings();
+                        break;
+                    default:
+                        goToProjects();
+                        break;
+                }
+            } else {
+                goToProjects();
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        goToProjects();
+    }
+
+
+    @Override
+    protected Scene getScene() {
+        return mainPane != null ? mainPane.getScene() : null;
     }
 
     @FXML
@@ -92,6 +104,7 @@ public class ManagerDashboardController {
 
     @FXML
     private void logout() throws IOException {
+        MainApplication.setCurrentUser(null);
         MainApplication.switchScene("/fxml/login.fxml", "TaskApp - Logowanie");
     }
 
@@ -102,6 +115,8 @@ public class ManagerDashboardController {
         Object controller = loader.getController();
         if (controller instanceof SettingsController) {
             ((SettingsController) controller).setUser(currentUser);
+        } else if (controller instanceof UserAwareController) {
+            ((UserAwareController) controller).setUser(currentUser);
         }
 
         mainPane.getChildren().clear();

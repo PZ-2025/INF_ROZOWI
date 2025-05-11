@@ -21,7 +21,6 @@ public class Task {
     private final StringProperty teamName = new SimpleStringProperty();
     private final StringProperty assignedEmail = new SimpleStringProperty();
 
-    // --- id ---
     public int getId() {
         return id.get();
     }
@@ -34,7 +33,6 @@ public class Task {
         return id;
     }
 
-    // --- projectId ---
     public int getProjectId() {
         return projectId.get();
     }
@@ -47,7 +45,6 @@ public class Task {
         return projectId;
     }
 
-    // --- teamId ---
     public int getTeamId() {
         return teamId.get();
     }
@@ -60,7 +57,6 @@ public class Task {
         return teamId;
     }
 
-    // --- assignedTo ---
     public int getAssignedTo() {
         return assignedTo.get();
     }
@@ -73,7 +69,6 @@ public class Task {
         return assignedTo;
     }
 
-    // --- title ---
     public String getTitle() {
         return title.get();
     }
@@ -86,7 +81,6 @@ public class Task {
         return title;
     }
 
-    // --- description ---
     public String getDescription() {
         return description.get();
     }
@@ -99,7 +93,6 @@ public class Task {
         return description;
     }
 
-    // --- status ---
     public String getStatus() {
         return status.get();
     }
@@ -112,7 +105,6 @@ public class Task {
         return status;
     }
 
-    // --- priority ---
     public String getPriority() {
         return priority.get();
     }
@@ -125,7 +117,6 @@ public class Task {
         return priority;
     }
 
-    // --- startDate ---
     public String getStartDate() {
         return startDate.get();
     }
@@ -138,7 +129,6 @@ public class Task {
         return startDate;
     }
 
-    // --- endDate ---
     public String getEndDate() {
         return endDate.get();
     }
@@ -151,7 +141,6 @@ public class Task {
         return endDate;
     }
 
-    // --- teamName ---
     public String getTeamName() {
         return teamName.get();
     }
@@ -164,7 +153,6 @@ public class Task {
         return teamName;
     }
 
-    // --- assignedEmail ---
     public String getAssignedEmail() {
         return assignedEmail.get();
     }

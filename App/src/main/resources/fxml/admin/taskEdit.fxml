@@ -20,41 +20,32 @@
             <ColumnConstraints hgrow="ALWAYS" minWidth="200" prefWidth="400" />
         </columnConstraints>
 
-        <!-- Task Title -->
         <Label text="Title:" GridPane.rowIndex="0" GridPane.columnIndex="0" />
         <TextField fx:id="titleField" GridPane.rowIndex="0" GridPane.columnIndex="1" />
 
-        <!-- Task Description -->
         <Label text="Description:" GridPane.rowIndex="1" GridPane.columnIndex="0" GridPane.valignment="TOP" />
         <TextArea fx:id="descriptionArea" prefHeight="80" wrapText="true"
                   GridPane.rowIndex="1" GridPane.columnIndex="1" />
 
-        <!-- Task Status -->
         <Label text="Status:" GridPane.rowIndex="2" GridPane.columnIndex="0" />
         <ComboBox fx:id="statusComboBox" GridPane.rowIndex="2" GridPane.columnIndex="1" />
 
-        <!-- Task Priority -->
         <Label text="Priority:" GridPane.rowIndex="3" GridPane.columnIndex="0" />
         <ComboBox fx:id="priorityComboBox" GridPane.rowIndex="3" GridPane.columnIndex="1" />
 
-        <!-- Start Date -->
         <Label text="Start Date:" GridPane.rowIndex="4" GridPane.columnIndex="0" />
         <DatePicker fx:id="startDatePicker" GridPane.rowIndex="4" GridPane.columnIndex="1" />
 
-        <!-- End Date -->
         <Label text="End Date:" GridPane.rowIndex="5" GridPane.columnIndex="0" />
         <DatePicker fx:id="endDatePicker" GridPane.rowIndex="5" GridPane.columnIndex="1" />
 
-        <!-- Team -->
         <Label text="Team:" GridPane.rowIndex="6" GridPane.columnIndex="0" />
         <ComboBox fx:id="teamComboBox" GridPane.rowIndex="6" GridPane.columnIndex="1" />
 
-        <!-- Assignee -->
         <Label text="Assigned To:" GridPane.rowIndex="7" GridPane.columnIndex="0" />
         <ComboBox fx:id="assigneeComboBox" GridPane.rowIndex="7" GridPane.columnIndex="1" />
     </GridPane>
 
-    <!-- Action Buttons -->
     <HBox spacing="15" alignment="CENTER_RIGHT">
         <Button fx:id="saveButton" text="Save" onAction="#handleSave"
                 style="-fx-background-color: #4CAF50; -fx-text-fill: white;" prefWidth="100" />

@@ -17,9 +17,10 @@
     <center>
         <TableView fx:id="projectsTable">
             <columns>
+                <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
                 <TableColumn fx:id="colName" text="Projekt" prefWidth="200"/>
-                <TableColumn fx:id="colDesc" text="Projekt" prefWidth="300"/>
-                <TableColumn fx:id="colTotal" text="Zadania" prefWidth="100"/>
+                <TableColumn fx:id="colDesc" text="Opis" prefWidth="300"/>
+                <TableColumn fx:id="colTotal" text="Liczba zadań" prefWidth="100"/>
                 <TableColumn fx:id="colDone" text="Zakończone" prefWidth="100"/>
                 <TableColumn fx:id="colProg" text="Postęp" prefWidth="150"/>
             </columns>

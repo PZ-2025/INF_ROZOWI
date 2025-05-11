@@ -5,8 +5,8 @@
 <?import javafx.scene.control.*?>
 
 <VBox xmlns:fx="http://javafx.com/fxml" fx:controller="pl.rozowi.app.controllers.TasksController"
-      alignment="CENTER" spacing="15" style="-fx-padding: 20px; -fx-background-color: #1E1E2F;">
-    <Label text="Zadania" style="-fx-font-size: 24px; -fx-text-fill: white;"/>
+      alignment="CENTER" spacing="15" styleClass="content-pane">
+    <Label text="Zadania" styleClass="page-title"/>
     <TableView fx:id="tasksTable">
         <columns>
             <TableColumn fx:id="taskIdColumn" text="ID" />
@@ -20,8 +20,7 @@
         </columns>
     </TableView>
     <HBox spacing="10">
-        <TextField fx:id="filterField" promptText="Filtruj zadania..." style="-fx-pref-width: 300px;"/>
-        <Button text="Filtruj" onAction="#handleFilter"/>
-        <!--        <Button text="Dodaj zadanie" onAction="#handleAddTask"/>-->
+        <TextField fx:id="filterField" promptText="Filtruj zadania..." prefWidth="300"/>
+        <Button text="Filtruj" onAction="#handleFilter" styleClass="primary-button"/>
     </HBox>
 </VBox>

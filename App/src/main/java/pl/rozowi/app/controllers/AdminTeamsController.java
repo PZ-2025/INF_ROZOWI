@@ -42,7 +42,7 @@ public class AdminTeamsController {
     @FXML
     private TableColumn<UserWithRole, String> colMemberEmail;
     @FXML
-    private TableColumn<UserWithRole, String> colMemberRole; // Kolumna dla roli
+    private TableColumn<UserWithRole, String> colMemberRole; 
 
     @FXML
     private TableView<Task> tasksTable;
@@ -65,13 +65,12 @@ public class AdminTeamsController {
     private final RoleDAO roleDAO = new RoleDAO();
 
     private Map<Integer, String> roleNames = new HashMap<>();
-    private Set<Integer> allowedRoleIds = new HashSet<>(); // Role IDs dozwolone dla członków zespołu
+    private Set<Integer> allowedRoleIds = new HashSet<>(); 
 
     private final ObservableList<Team> teamData = FXCollections.observableArrayList();
     private final ObservableList<UserWithRole> memberData = FXCollections.observableArrayList();
     private final ObservableList<Task> taskData = FXCollections.observableArrayList();
 
-    // Klasa pomocnicza do reprezentowania użytkownika z jego rolą i statusem lidera
     public static class UserWithRole {
         private final User user;
         private final String roleName;
@@ -116,7 +115,6 @@ public class AdminTeamsController {
         }
     }
 
-    // Klasa dla modelu wiersza w tabeli wyboru członków
     public static class UserSelectionModel {
         private final User user;
         private final SimpleBooleanProperty selected = new SimpleBooleanProperty(false);
@@ -124,7 +122,7 @@ public class AdminTeamsController {
         private final SimpleStringProperty roleProperty = new SimpleStringProperty();
         private final SimpleStringProperty nameProperty = new SimpleStringProperty();
         private final SimpleStringProperty emailProperty = new SimpleStringProperty();
-        private boolean isEligibleForLeader; // Czy użytkownik może być liderem
+        private boolean isEligibleForLeader; 
 
         public UserSelectionModel(User user, String roleName, boolean isSelected, boolean isLeader, boolean isEligibleForLeader) {
             this.user = user;
@@ -195,17 +193,11 @@ public class AdminTeamsController {
 
     @FXML
     public void initialize() throws SQLException {
-        // Ustawienie dozwolonych ról dla członków zespołu
-        // Na podstawie data_seed_script.sql:
-        // Rola 3 = Team Lider
-        // Rola 4 = Pracownik
-        allowedRoleIds.add(3); // Team Lider
-        allowedRoleIds.add(4); // Pracownik
+        allowedRoleIds.add(3); 
+        allowedRoleIds.add(4); 
 
-        // Pobierz mapę ról dla wszystkich użytkowników
         loadRoleNames();
 
-        // Konfiguracja kolumn tabeli zespołów
         colId.setCellValueFactory(c -> c.getValue().idProperty());
         colName.setCellValueFactory(c -> c.getValue().teamNameProperty());
         colProjectName.setCellValueFactory(c -> {
@@ -235,8 +227,9 @@ public class AdminTeamsController {
 
         teamsTable.setItems(teamData);
 
-        // Konfiguracja kolumn tabeli członków zespołu
-        colMemberId.setCellValueFactory(c -> new SimpleIntegerProperty(c.getValue().getId()));
+        colMemberId.setCellValueFactory(c -> new SimpleIntegerProperty(
+                membersTable.getItems().indexOf(c.getValue()) + 1
+        ));
         colMemberEmail.setCellValueFactory(c -> new SimpleStringProperty(
                 c.getValue().getFullName() + " (" + c.getValue().getEmail() + ")"
         ));
@@ -245,15 +238,15 @@ public class AdminTeamsController {
         ));
         membersTable.setItems(memberData);
 
-        // Konfiguracja kolumn tabeli zadań
-        colTaskId.setCellValueFactory(c -> c.getValue().idProperty());
+        colTaskId.setCellValueFactory(c -> new SimpleIntegerProperty(
+                tasksTable.getItems().indexOf(c.getValue()) + 1
+        ));
         colTaskTitle.setCellValueFactory(c -> c.getValue().titleProperty());
         colTaskStatus.setCellValueFactory(c -> c.getValue().statusProperty());
         colTaskPriority.setCellValueFactory(c -> c.getValue().priorityProperty());
         colTaskAssignee.setCellValueFactory(c -> c.getValue().assignedEmailProperty());
         tasksTable.setItems(taskData);
 
-        // Obsługa wyboru zespołu
         teamsTable.getSelectionModel().selectedItemProperty()
                 .addListener((obs, oldT, newT) -> {
                     try {
@@ -266,23 +259,19 @@ public class AdminTeamsController {
         loadAll();
     }
 
-    // Pobieranie nazw ról z bazy danych
     private void loadRoleNames() {
         try {
-            // Najpierw spróbuj pobrać przez UserDAO
             Map<Integer, String> roles = userDAO.getAllRolesMap();
             if (!roles.isEmpty()) {
                 roleNames = roles;
                 return;
             }
 
-            // Jeśli to nie zadziała, użyj RoleDAO
             List<Role> rolesList = roleDAO.getAllRoles();
             for (Role role : rolesList) {
                 roleNames.put(role.getId(), role.getRoleName());
             }
 
-            // Jeśli nadal brak ról, dodaj domyślne wartości
             if (roleNames.isEmpty()) {
                 roleNames.put(1, "Administrator");
                 roleNames.put(2, "Kierownik");
@@ -290,7 +279,6 @@ public class AdminTeamsController {
                 roleNames.put(4, "Pracownik");
             }
         } catch (Exception e) {
-            // W przypadku błędu, dodaj domyślne wartości
             roleNames.put(1, "Administrator");
             roleNames.put(2, "Kierownik");
             roleNames.put(3, "Team Lider");
@@ -314,20 +302,16 @@ public class AdminTeamsController {
         }
     }
 
-    // Ładowanie członków zespołu wraz z ich rolami
     private void loadTeamMembers(int teamId) throws SQLException {
         memberData.clear();
         List<User> members = teamDAO.getTeamMembers(teamId);
 
         for (User member : members) {
-            // Pobierz rolę użytkownika
             int roleId = member.getRoleId();
             String roleName = roleNames.getOrDefault(roleId, "Rola " + roleId);
 
-            // Sprawdź, czy użytkownik jest liderem zespołu
             boolean isLeader = teamMemberDAO.isTeamLeader(teamId, member.getId());
 
-            // Dodaj użytkownika z informacją o roli do listy
             memberData.add(new UserWithRole(member, roleName, isLeader));
         }
     }
@@ -394,7 +378,6 @@ public class AdminTeamsController {
         Team sel = teamsTable.getSelectionModel().getSelectedItem();
         if (sel == null) return;
 
-        // Konwertuj UserWithRole z powrotem na User dla kompatybilności z istniejącym kodem
         List<User> members = memberData.stream().map(UserWithRole::getUser).collect(Collectors.toList());
         ObservableList<User> memberItems = FXCollections.observableArrayList(members);
 
@@ -454,66 +437,53 @@ public class AdminTeamsController {
             return;
         }
 
-        // Przygotuj listę wszystkich użytkowników
         List<User> allUsers = userDAO.getAllUsers();
-        // Filtrowanie użytkowników według roli - tylko pracownicy i team liderzy
         List<User> eligibleUsers = allUsers.stream()
                 .filter(user -> allowedRoleIds.contains(user.getRoleId()))
                 .collect(Collectors.toList());
 
         List<User> currentMembers = teamDAO.getTeamMembers(selected.getId());
 
-        // Utwórz dialog
         Dialog<List<UserSelectionModel>> dlg = new Dialog<>();
         dlg.setTitle("Przypisz członków do zespołu: " + selected.getTeamName());
         dlg.getDialogPane().setPrefWidth(800);
         dlg.getDialogPane().setPrefHeight(600);
 
-        // Przyciski
         ButtonType assignButtonType = new ButtonType("Przypisz", ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelButtonType = new ButtonType("Anuluj", ButtonBar.ButtonData.CANCEL_CLOSE);
         dlg.getDialogPane().getButtonTypes().addAll(assignButtonType, cancelButtonType);
 
-        // Przygotuj model danych dla tabeli
         ObservableList<UserSelectionModel> usersToAssign = FXCollections.observableArrayList();
         for (User user : eligibleUsers) {
             boolean isCurrentMember = currentMembers.stream().anyMatch(m -> m.getId() == user.getId());
             boolean isLeader = isCurrentMember && teamMemberDAO.isTeamLeader(selected.getId(), user.getId());
 
-            // Pobierz nazwę roli z mapy roleName
             String roleName = roleNames.getOrDefault(user.getRoleId(), "");
 
-            // Sprawdź, czy użytkownik może być liderem (tylko team liderzy - rola 3)
-            boolean eligibleForLeader = user.getRoleId() == 3; // Tylko team liderzy mogą być liderem zespołu
+            boolean eligibleForLeader = user.getRoleId() == 3; 
 
             usersToAssign.add(new UserSelectionModel(user, roleName, isCurrentMember, isLeader, eligibleForLeader));
         }
 
-        // Utwórz tabelę
         TableView<UserSelectionModel> usersTable = new TableView<>();
         usersTable.setEditable(true);
         usersTable.setItems(usersToAssign);
 
-        // Kolumna wyboru
         TableColumn<UserSelectionModel, Boolean> selectedColumn = new TableColumn<>("Wybierz");
         selectedColumn.setCellValueFactory(p -> p.getValue().selectedProperty());
         selectedColumn.setCellFactory(CheckBoxTableCell.forTableColumn(selectedColumn));
         selectedColumn.setEditable(true);
 
-        // Nasłuchiwanie zmian we właściwości selected dla wszystkich modeli
         for (UserSelectionModel model : usersToAssign) {
             model.selectedProperty().addListener((observable, oldValue, newValue) -> {
-                // Jeśli użytkownik został odznaczony jako członek, odznacz go również jako lidera
                 if (!newValue && model.isLeader()) {
                     model.setLeader(false);
                 }
 
-                // Odświeżenie tabeli, aby zaktualizować dostępność checkboxów do wyboru lidera
                 usersTable.refresh();
             });
         }
 
-        // Kolumna lidera
         TableColumn<UserSelectionModel, Boolean> leaderColumn = new TableColumn<>("Lider");
         leaderColumn.setCellValueFactory(p -> p.getValue().leaderProperty());
         leaderColumn.setCellFactory(tc -> new CheckBoxTableCell<>() {
@@ -524,12 +494,10 @@ public class AdminTeamsController {
                     TableRow<UserSelectionModel> row = getTableRow();
                     if (row != null && row.getItem() != null) {
                         UserSelectionModel rowData = row.getItem();
-                        // Dezaktywuj checkboxa dla liderów jeśli użytkownik nie jest Team Liderem
                         if (!rowData.isEligibleForLeader()) {
                             this.setDisable(true);
-                            this.setStyle("-fx-opacity: 0.3;"); // Przyciemnij kontrolkę dla lepszej widoczności
+                            this.setStyle("-fx-opacity: 0.3;"); 
                         } else {
-                            // Dla Team Liderów zawsze aktywuj checkbox, niezależnie od zaznaczenia w pierwszej kolumnie
                             this.setDisable(false);
                             this.setStyle("");
                         }
@@ -539,29 +507,23 @@ public class AdminTeamsController {
         });
         leaderColumn.setEditable(true);
 
-        // Kolumna imienia i nazwiska
         TableColumn<UserSelectionModel, String> nameColumn = new TableColumn<>("Imię i Nazwisko");
         nameColumn.setCellValueFactory(p -> p.getValue().nameProperty());
 
-        // Kolumna email
         TableColumn<UserSelectionModel, String> emailColumn = new TableColumn<>("Email");
         emailColumn.setCellValueFactory(p -> p.getValue().emailProperty());
 
-        // Kolumna roli
         TableColumn<UserSelectionModel, String> roleColumn = new TableColumn<>("Rola");
         roleColumn.setCellValueFactory(p -> p.getValue().roleProperty());
 
-        // Dodaj kolumny do tabeli
         usersTable.getColumns().addAll(selectedColumn, leaderColumn, nameColumn, emailColumn, roleColumn);
 
-        // Ustaw szerokości kolumn
         selectedColumn.setPrefWidth(70);
         leaderColumn.setPrefWidth(70);
         nameColumn.setPrefWidth(200);
         emailColumn.setPrefWidth(250);
         roleColumn.setPrefWidth(150);
 
-        // Przyciski Zaznacz wszystkie/Odznacz wszystkie
         Button selectAllButton = new Button("Zaznacz wszystkie");
         selectAllButton.setOnAction(e -> {
             for (UserSelectionModel model : usersToAssign) {
@@ -577,19 +539,14 @@ public class AdminTeamsController {
             }
         });
 
-        // Dodaj logikę, która zapewnia, że tylko jeden użytkownik może być liderem
-        // oraz że odznaczenie członka zespołu automatycznie odznacza go jako lidera
         for (UserSelectionModel model : usersToAssign) {
-            // Obsługa zaznaczenia lidera
             model.leaderProperty().addListener((observable, oldValue, newValue) -> {
                 if (newValue) {
-                    // Jeśli zaznaczono lidera, to wyłącz innych
                     for (UserSelectionModel otherModel : usersToAssign) {
                         if (otherModel != model && otherModel.isLeader()) {
                             otherModel.setLeader(false);
                         }
                     }
-                    // Upewnij się, że wybrany lider jest również członkiem zespołu
                     if (!model.isSelected()) {
                         model.setSelected(true);
                     }
@@ -597,7 +554,6 @@ public class AdminTeamsController {
             });
         }
 
-        // Układamy kontrolki
         HBox buttonBar = new HBox(10, selectAllButton, deselectAllButton);
         Label instructionLabel = new Label("Zaznacz użytkowników, których chcesz dodać do zespołu. Możesz wybrać tylko jednego lidera zespołu.");
         Label hintLabel = new Label("UWAGA: Tylko osoby z rolą 'Team Lider' mogą być liderem zespołu. Zaznaczenie lidera automatycznie dodaje go do zespołu.");
@@ -608,7 +564,6 @@ public class AdminTeamsController {
 
         dlg.getDialogPane().setContent(content);
 
-        // Konwerter rezultatu
         dlg.setResultConverter(dialogButton -> {
             if (dialogButton == assignButtonType) {
                 return usersToAssign.stream()
@@ -618,30 +573,25 @@ public class AdminTeamsController {
             return null;
         });
 
-        // Wyświetl dialog i obsłuż rezultat
         Optional<List<UserSelectionModel>> result = dlg.showAndWait();
         result.ifPresent(selectedUsers -> {
             try {
-                // Sprawdź, czy tylko jeden użytkownik jest zaznaczony jako lider
                 long leaderCount = selectedUsers.stream().filter(UserSelectionModel::isLeader).count();
                 if (leaderCount > 1) {
                     showError("Błąd", "W zespole może być tylko jeden lider. Proszę wybrać ponownie.");
                     return;
                 }
 
-                // Najpierw usuń wszystkich obecnych członków
                 for (User member : currentMembers) {
                     teamDAO.deleteTeamMember(selected.getId(), member.getId());
                 }
 
-                // Dodaj wybranych członków
                 for (UserSelectionModel userModel : selectedUsers) {
                     User user = userModel.getUser();
                     boolean isLeader = userModel.isLeader();
                     teamDAO.insertTeamMember(selected.getId(), user.getId(), isLeader);
                 }
-
-                // Odśwież listę członków
+                
                 loadTeamMembers(selected.getId());
 
                 showInfo("Członkowie zespołu zostali zaktualizowani");

@@ -13,6 +13,7 @@ import pl.rozowi.app.dao.TaskDAO;
 import pl.rozowi.app.models.Project;
 import pl.rozowi.app.models.Task;
 import pl.rozowi.app.util.Session;
+import javafx.beans.property.SimpleIntegerProperty;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -24,6 +25,8 @@ public class ManagerTasksController {
     private TextField filterField;
     @FXML
     private TableView<ProjectRow> projectsTable;
+    @FXML
+    private TableColumn<ProjectRow, Number> colId;
     @FXML
     private TableColumn<ProjectRow, String> colName;
     @FXML
@@ -42,6 +45,7 @@ public class ManagerTasksController {
 
     @FXML
     public void initialize() throws SQLException {
+        colId.setCellValueFactory(c -> new SimpleIntegerProperty(filteredData.indexOf(c.getValue()) + 1));
         colName.setCellValueFactory(c -> c.getValue().nameProperty());
         colDesc.setCellValueFactory(c -> c.getValue().descriptionProperty());
         colTotal.setCellValueFactory(c -> c.getValue().totalTasksProperty());
@@ -51,7 +55,6 @@ public class ManagerTasksController {
 
         loadAll();
 
-        // Dodanie nasłuchiwania na zmiany w polu wyszukiwania
         filterField.textProperty().addListener((observable, oldValue, newValue) -> {
             onFilter();
         });
@@ -60,7 +63,6 @@ public class ManagerTasksController {
     private void loadAll() throws SQLException {
         data.clear();
 
-        // Pobierz tylko projekty przypisane do zalogowanego kierownika
         List<Project> managerProjects = projectDAO.getProjectsForManager(Session.currentUserId);
 
         if (managerProjects.isEmpty()) {
@@ -69,20 +71,16 @@ public class ManagerTasksController {
         }
 
         for (Project p : managerProjects) {
-            // Pobierz zadania dla każdego projektu
             List<Task> tasks = taskDAO.getTasksByProjectId(p.getId());
 
-            // Oblicz liczbę zakończonych zadań
             long done = tasks.stream()
                     .map(Task::getStatus)
                     .filter(s -> s != null && s.trim().equalsIgnoreCase("Zakończone"))
                     .count();
 
-            // Dodaj wiersz projektu z danymi o zadaniach
             data.add(new ProjectRow(p, tasks.size(), (int) done));
         }
 
-        // Ustaw dane w tabeli
         filteredData.setAll(data);
         projectsTable.setItems(filteredData);
     }
@@ -92,10 +90,8 @@ public class ManagerTasksController {
         String searchText = filterField.getText().toLowerCase().trim();
 
         if (searchText.isEmpty()) {
-            // Jeśli pole wyszukiwania jest puste, wyświetl wszystkie projekty
             filteredData.setAll(data);
         } else {
-            // Filtruj projekty według tekstu wyszukiwania
             filteredData.setAll(data.stream()
                     .filter(r ->
                             r.getName().toLowerCase().contains(searchText) ||

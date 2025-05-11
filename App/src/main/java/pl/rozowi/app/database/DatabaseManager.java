@@ -12,18 +12,17 @@ public class DatabaseManager {
 
     static {
         try {
-            Class.forName("org.mariadb.jdbc.Driver"); // sterownik produkcyjny
+            Class.forName("org.mariadb.jdbc.Driver");
         } catch (ClassNotFoundException e) {
             System.err.println("Nie udało się załadować sterownika MariaDB.");
             e.printStackTrace();
         }
     }
 
-    // Pozwala testom nadpisać adres URL
     public static void setTestUrl(String url) {
         testUrl = url;
         try {
-            Class.forName("org.h2.Driver"); // Załaduj sterownik H2 tylko gdy potrzebny
+            Class.forName("org.h2.Driver");
         } catch (ClassNotFoundException e) {
             System.err.println("Nie udało się załadować sterownika H2.");
             e.printStackTrace();

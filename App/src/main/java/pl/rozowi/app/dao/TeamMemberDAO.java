@@ -114,15 +114,12 @@ public class TeamMemberDAO {
             conn.setAutoCommit(false);
 
             try {
-                // Sprawdź, czy użytkownik jest już przypisany do jakiegoś zespołu
                 int currentTeamId = getTeamIdForUser(userId);
 
-                // Jeśli jest przypisany do tego samego zespołu, nic nie rób
                 if (currentTeamId == newTeamId) {
                     return true;
                 }
 
-                // Jeśli jest przypisany do innego zespołu, usuń to przypisanie
                 if (currentTeamId > 0) {
                     try (PreparedStatement deleteStmt = conn.prepareStatement(
                             "DELETE FROM team_members WHERE user_id = ?")) {
@@ -131,12 +128,11 @@ public class TeamMemberDAO {
                     }
                 }
 
-                // Dodaj nowe przypisanie
                 try (PreparedStatement insertStmt = conn.prepareStatement(
                         "INSERT INTO team_members (team_id, user_id, is_leader) VALUES (?, ?, ?)")) {
                     insertStmt.setInt(1, newTeamId);
                     insertStmt.setInt(2, userId);
-                    insertStmt.setBoolean(3, false); // Domyślnie nie jest liderem
+                    insertStmt.setBoolean(3, false);
                     insertStmt.executeUpdate();
                 }
 
@@ -152,5 +148,37 @@ public class TeamMemberDAO {
             ex.printStackTrace();
             return false;
         }
+    }
+
+    public List<Integer> getAllTeamIdsForUser(int userId) {
+        List<Integer> teamIds = new ArrayList<>();
+        String sql = "SELECT team_id FROM team_members WHERE user_id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                teamIds.add(rs.getInt("team_id"));
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return teamIds;
+    }
+
+    public List<Integer> getTeamIdsForTeamLeader(int userId) {
+        List<Integer> teamIds = new ArrayList<>();
+        String sql = "SELECT team_id FROM team_members WHERE user_id = ? AND is_leader = true";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                teamIds.add(rs.getInt("team_id"));
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return teamIds;
     }
 }

@@ -134,7 +134,7 @@ private void openDetails(Task task) {
                 boolean deleted = taskDAO.deleteTask(selectedTask.getId());
 
                 if (deleted) {
-                    loadTasks(); // Odśwież listę zadań
+                    loadTasks();
                     showAlert(Alert.AlertType.INFORMATION, "Sukces", "Zadanie zostało pomyślnie usunięte z systemu");
                 } else {
                     showAlert(Alert.AlertType.ERROR, "Błąd", "Nie udało się usunąć zadania z bazy danych");

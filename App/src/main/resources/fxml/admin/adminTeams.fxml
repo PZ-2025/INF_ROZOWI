@@ -5,18 +5,21 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="pl.rozowi.app.controllers.AdminTeamsController"
-            style="-fx-background-color: #1E1E2F;">
+            styleClass="content-pane">
 
     <top>
-        <VBox spacing="10" style="-fx-padding: 10">
+        <VBox spacing="10" styleClass="content-section">
+            <padding>
+                <javafx.geometry.Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
             <HBox spacing="10">
-                <Button text="Nowy zespół" onAction="#onAddTeam" style="-fx-background-color: #28a745; -fx-text-fill: white;"/>
-                <Button text="Edytuj zespół" onAction="#onEditTeam" style="-fx-background-color: #ffc107; -fx-text-fill: black;"/>
-                <Button text="Przypisz członków" onAction="#onAssignMembers" style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
-                <Button text="Odśwież" onAction="#handleRefresh" style="-fx-background-color: #6c757d; -fx-text-fill: white;"/>
+                <Button text="Nowy zespół" onAction="#onAddTeam" styleClass="primary-button"/>
+                <Button text="Edytuj zespół" onAction="#onEditTeam" styleClass="secondary-button"/>
+                <Button text="Przypisz członków" onAction="#onAssignMembers" styleClass="secondary-button"/>
+                <Button text="Odśwież" onAction="#handleRefresh" styleClass="secondary-button"/>
                 <Pane HBox.hgrow="ALWAYS"/>
-                <TextField fx:id="searchField" promptText="Szukaj zespołu..." style="-fx-pref-width: 200px;"/>
-                <Button text="🔍" onAction="#handleSearch" style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+                <TextField fx:id="searchField" promptText="Szukaj zespołu..." prefWidth="200"/>
+                <Button text="🔍" onAction="#handleSearch" styleClass="primary-button"/>
             </HBox>
         </VBox>
     </top>
@@ -33,8 +36,11 @@
     </left>
 
     <center>
-        <VBox spacing="10" style="-fx-padding:10">
-            <Label text="Członkowie zespołu:" style="-fx-text-fill: white;"/>
+        <VBox spacing="10" styleClass="content-section">
+            <padding>
+                <javafx.geometry.Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label text="Członkowie zespołu:" styleClass="section-header"/>
             <TableView fx:id="membersTable" prefHeight="150">
                 <columns>
                     <TableColumn fx:id="colMemberId" text="ID" prefWidth="60"/>
@@ -43,7 +49,7 @@
                 </columns>
             </TableView>
 
-            <Label text="Zadania zespołu:" style="-fx-text-fill: white;"/>
+            <Label text="Zadania zespołu:" styleClass="section-header"/>
             <TableView fx:id="tasksTable" prefHeight="200">
                 <columns>
                     <TableColumn fx:id="colTaskId" text="ID" prefWidth="50"/>

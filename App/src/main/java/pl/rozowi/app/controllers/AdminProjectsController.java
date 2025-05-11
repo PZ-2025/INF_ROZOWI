@@ -39,7 +39,6 @@ public class AdminProjectsController {
     private TableColumn<Project, LocalDate> colEndDate;
     @FXML
     private TableColumn<Project, String> colManager;
-    // Status column removed as requested
 
     @FXML
     private TextField searchField;
@@ -82,7 +81,6 @@ public class AdminProjectsController {
 
     @FXML
     private void initialize() {
-        // Konfiguracja kolumn tabeli projektów
         colId.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getId()));
         colName.setCellValueFactory(data -> data.getValue().nameProperty());
         colDescription.setCellValueFactory(data -> data.getValue().descriptionProperty());
@@ -95,7 +93,6 @@ public class AdminProjectsController {
             }
 
             try {
-                // Pobierz imię i nazwisko kierownika projektu
                 List<User> managers = userDAO.getAllManagers();
                 for (User manager : managers) {
                     if (manager.getId() == managerId) {
@@ -109,20 +106,13 @@ public class AdminProjectsController {
             }
         });
 
-        // Status column removed as requested
-
-        // Konfiguracja kolumn tabeli zespołów
         colTeamId.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getId()));
         colTeamName.setCellValueFactory(data -> data.getValue().teamNameProperty());
         colTeamLeader.setCellValueFactory(data -> {
-            // Pobierz lidera zespołu
             int teamId = data.getValue().getId();
             try {
-                // Użyj TeamMemberDAO do pobrania wszystkich członków zespołu z flagą is_leader=true
                 List<User> teamMembers = teamDAO.getTeamMembers(teamId);
                 for (User member : teamMembers) {
-                    // Sprawdź, czy użytkownik jest liderem zespołu
-                    // Możemy użyć pomocniczej metody isTeamLeader z klasy TeamMemberDAO
                     if (teamMemberDAO.isTeamLeader(teamId, member.getId())) {
                         return new SimpleStringProperty(member.getName() + " " + member.getLastName());
                     }
@@ -134,7 +124,6 @@ public class AdminProjectsController {
             }
         });
         colMembersCount.setCellValueFactory(data -> {
-            // Pobierz liczbę członków zespołu
             int teamId = data.getValue().getId();
             try {
                 List<User> members = teamDAO.getTeamMembers(teamId);
@@ -145,7 +134,6 @@ public class AdminProjectsController {
             }
         });
 
-        // Konfiguracja kolumn tabeli zadań
         colTaskId.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getId()));
         colTaskTitle.setCellValueFactory(data -> data.getValue().titleProperty());
         colTaskStatus.setCellValueFactory(data -> data.getValue().statusProperty());
@@ -153,7 +141,6 @@ public class AdminProjectsController {
         colTaskDeadline.setCellValueFactory(data -> data.getValue().endDateProperty());
         colTaskAssignee.setCellValueFactory(data -> data.getValue().assignedEmailProperty());
 
-        // Obsługa wyboru projektu - aktualizacja zespołów i zadań
         projectsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 loadProjectTeams(newSelection.getId());
@@ -164,7 +151,6 @@ public class AdminProjectsController {
             }
         });
 
-        // Wczytaj projekty na start
         loadProjects();
     }
 
@@ -180,9 +166,7 @@ public class AdminProjectsController {
 
     private void loadProjectTeams(int projectId) {
         try {
-            // W prawdziwej implementacji tutaj pobieramy zespoły dla projektu
             List<Team> teams = teamDAO.getAllTeams();
-            // Filtrowanie zespołów tylko do tych, które są przypisane do projektu
             List<Team> projectTeamsFiltered = teams.stream()
                 .filter(team -> team.getProjectId() == projectId)
                 .toList();
@@ -273,11 +257,9 @@ public class AdminProjectsController {
             return;
         }
 
-        // Load tasks to show count in the confirmation dialog
         List<Task> tasks = taskDAO.getTasksByProjectId(selectedProject.getId());
         int taskCount = tasks.size();
 
-        // Create a confirmation dialog with warning about tasks
         Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
         confirmDialog.setTitle("Potwierdzenie usunięcia");
         confirmDialog.setHeaderText("Czy na pewno chcesz usunąć projekt?");
@@ -288,18 +270,15 @@ public class AdminProjectsController {
         }
         confirmDialog.setContentText(contentText);
 
-        // Add custom buttons
         ButtonType deleteButtonType = new ButtonType("Usuń", ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelButtonType = new ButtonType("Anuluj", ButtonBar.ButtonData.CANCEL_CLOSE);
         confirmDialog.getButtonTypes().setAll(deleteButtonType, cancelButtonType);
 
         Optional<ButtonType> result = confirmDialog.showAndWait();
         if (result.isPresent() && result.get() == deleteButtonType) {
-            // Use the new delete method from ProjectDAO
             boolean deleted = projectDAO.deleteProject(selectedProject.getId());
 
             if (deleted) {
-                // Remove from the local list
                 allProjects.remove(selectedProject);
                 projectTeams.clear();
                 projectTasks.clear();
@@ -336,7 +315,6 @@ public class AdminProjectsController {
             ComboBox<User> managerComboBox = new ComboBox<>();
             managerComboBox.setItems(FXCollections.observableArrayList(managers));
 
-            // Konwerter dla wyświetlania nazw kierowników
             managerComboBox.setConverter(new javafx.util.StringConverter<User>() {
                 @Override
                 public String toString(User user) {
@@ -349,7 +327,6 @@ public class AdminProjectsController {
                 }
             });
 
-            // Wybierz obecnego kierownika, jeśli istnieje
             int currentManagerId = selectedProject.getManagerId();
             if (currentManagerId > 0) {
                 for (User manager : managers) {
@@ -425,13 +402,11 @@ public class AdminProjectsController {
         DatePicker startDatePicker = new DatePicker();
         DatePicker endDatePicker = new DatePicker();
 
-        // Jeśli edytujemy projekt, to dodajemy możliwość wyboru kierownika
         ComboBox<User> managerComboBox = new ComboBox<>();
         try {
             List<User> managers = userDAO.getAllManagers();
             managerComboBox.setItems(FXCollections.observableArrayList(managers));
 
-            // Konwerter dla wyświetlania nazw kierowników
             managerComboBox.setConverter(new javafx.util.StringConverter<User>() {
                 @Override
                 public String toString(User user) {
@@ -447,14 +422,12 @@ public class AdminProjectsController {
             e.printStackTrace();
         }
 
-        // Jeśli edytujemy istniejący projekt, ustawiamy wartości
         if (project != null) {
             nameField.setText(project.getName());
             descriptionArea.setText(project.getDescription());
             startDatePicker.setValue(project.getStartDate());
             endDatePicker.setValue(project.getEndDate());
 
-            // Wybierz obecnego kierownika, jeśli istnieje
             int currentManagerId = project.getManagerId();
             if (currentManagerId > 0) {
                 for (User manager : managerComboBox.getItems()) {
@@ -479,11 +452,9 @@ public class AdminProjectsController {
 
         dialog.getDialogPane().setContent(grid);
 
-        // Walidacja danych przed zapisem
         Button saveButton = (Button) dialog.getDialogPane().lookupButton(saveButtonType);
         saveButton.setDisable(true);
 
-        // Dodanie listenerów do pól formularza do walidacji
         nameField.textProperty().addListener((observable, oldValue, newValue) -> {
             validateProjectForm(saveButton, nameField, startDatePicker, endDatePicker);
         });
@@ -506,12 +477,11 @@ public class AdminProjectsController {
                 result.setStartDate(startDatePicker.getValue());
                 result.setEndDate(endDatePicker.getValue());
 
-                // Ustaw kierownika projektu
                 User selectedManager = managerComboBox.getValue();
                 if (selectedManager != null) {
                     result.setManagerId(selectedManager.getId());
                 } else {
-                    result.setManagerId(0); // Brak przypisanego kierownika
+                    result.setManagerId(0);
                 }
 
                 return result;

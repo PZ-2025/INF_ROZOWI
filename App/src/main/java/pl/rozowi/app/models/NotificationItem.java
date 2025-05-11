@@ -24,7 +24,6 @@ public class NotificationItem {
         return date;
     }
 
-    // Dodane metody getter, aby móc używać ich w filtrze
     public String getName() {
         return name.get();
     }

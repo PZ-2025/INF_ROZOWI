@@ -42,7 +42,6 @@ public class NotificationsController {
         colDesc.setCellValueFactory(c ->
                 new SimpleStringProperty(c.getValue().getDescription()));
 
-        // Wyświetlanie pogrubione jeśli nieprzeczytane
         tableView.setRowFactory(tv -> new TableRow<>() {
             @Override
             protected void updateItem(Notification item, boolean empty) {
@@ -96,7 +95,6 @@ public class NotificationsController {
             NotificationDetailsController ctrl = loader.getController();
             ctrl.setNotification(n);
 
-            // oznacz jako przeczytane
             if (!n.isRead()) {
                 dao.updateReadStatus(n.getId(), true);
                 n.setRead(true);

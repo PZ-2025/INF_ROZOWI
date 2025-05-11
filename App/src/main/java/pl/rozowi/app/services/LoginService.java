@@ -29,11 +29,10 @@ public class LoginService {
         String hashed = hashPassword(rawPassword);
 
         User user = userDAO.getUserByEmail(email);
-        // Dodatkowa ochrona przed NPE – sprawdzamy, czy hasło usera nie jest null
         if (user != null && user.getPassword() != null && user.getPassword().equals(hashed)) {
             return user;
         }
-        return null; // brak autoryzacji
+        return null;
     }
 
     /**

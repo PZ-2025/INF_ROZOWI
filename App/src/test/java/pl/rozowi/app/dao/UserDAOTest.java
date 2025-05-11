@@ -11,13 +11,12 @@ import java.sql.Statement;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class) // Wymusza wykonywanie testów w określonej kolejności
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class UserDAOTest {
 
     private static UserDAO userDAO;
     private static User testUser;
 
-    // Stałe dla oryginalnego i zaktualizowanego e-maila (pomaga przy czyszczeniu)
     private static final String ORIGINAL_EMAIL = "test.user@example.com";
     private static final String UPDATED_EMAIL = "updated.user@example.com";
 
@@ -45,18 +44,16 @@ class UserDAOTest {
      */
     @BeforeAll
     static void setUpBeforeClass() {
-        // Usunięcie pozostałości z poprzednich uruchomień testów
         cleanUpTestUser(ORIGINAL_EMAIL);
         cleanUpTestUser(UPDATED_EMAIL);
 
         userDAO = new UserDAO();
 
-        // Tworzymy obiekt testowego użytkownika
         testUser = new User();
         testUser.setName("Test");
         testUser.setLastName("User");
         testUser.setEmail(ORIGINAL_EMAIL);
-        testUser.setPassword("hashedpassword"); // Hasło w formacie zgodnym z wymaganiami aplikacji
+        testUser.setPassword("hashedpassword");
         testUser.setRoleId(3);
         testUser.setGroupId(1);
         testUser.setPasswordHint("test hint");
@@ -71,10 +68,9 @@ class UserDAOTest {
         boolean inserted = userDAO.insertUser(testUser);
         assertTrue(inserted, "InsertUser powinno zwrócić true przy prawidłowych danych");
 
-        // Pobieramy użytkownika, aby uzyskać jego ID z bazy danych
         User insertedUser = userDAO.getUserByEmail(testUser.getEmail());
         assertNotNull(insertedUser, "Wstawiony użytkownik powinien być dostępny w bazie");
-        testUser.setId(insertedUser.getId()); // Zapisujemy ID do dalszych testów
+        testUser.setId(insertedUser.getId());
         assertTrue(testUser.getId() > 0, "TestUser powinien mieć ustawione ID po insercie");
     }
 
@@ -86,7 +82,6 @@ class UserDAOTest {
     void testGetUserByEmail_Found() {
         User found = userDAO.getUserByEmail(testUser.getEmail());
         assertNotNull(found, "User powinien zostać znaleziony");
-        // Sprawdzenie zgodności danych
         assertEquals(testUser.getName(), found.getName());
         assertEquals(testUser.getLastName(), found.getLastName());
         assertEquals(testUser.getEmail(), found.getEmail());
@@ -102,10 +97,8 @@ class UserDAOTest {
     void testUpdateUser() throws SQLException {
         assertTrue(testUser.getId() > 0, "TestUser powinien mieć ustawione ID po insercie.");
 
-        // Upewniamy się, że zaktualizowany email nie istnieje już w bazie
         cleanUpTestUser(UPDATED_EMAIL);
 
-        // Wstawiamy wpis do tabeli settings, by spełnić wymagania klucza obcego
         String insertSettingsSql = "INSERT INTO settings (user_id, theme, default_view) VALUES (?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(insertSettingsSql)) {
@@ -121,7 +114,6 @@ class UserDAOTest {
             fail("Nie udało się wstawić rekordu do tabeli settings dla testUser.");
         }
 
-        // Aktualizujemy dane użytkownika
         testUser.setEmail(UPDATED_EMAIL);
         testUser.setPassword("newhashedpassword");
         testUser.setPasswordHint("new hint");
@@ -129,7 +121,6 @@ class UserDAOTest {
         boolean updated = userDAO.updateUser(testUser);
         assertTrue(updated, "UpdateUser powinno zwrócić true przy udanej aktualizacji");
 
-        // Weryfikacja, czy zmiany zostały zapisane
         User updatedUser = userDAO.getUserByEmail(testUser.getEmail());
         assertNotNull(updatedUser, "Po aktualizacji użytkownik powinien zostać znaleziony");
         assertEquals("newhashedpassword", updatedUser.getPassword());
@@ -141,7 +132,6 @@ class UserDAOTest {
      */
     @AfterAll
     static void tearDownAfterClass() {
-        // Tymczasowe wyłączenie ograniczeń kluczy obcych
         try (Connection conn = DatabaseManager.getConnection();
              Statement stmt = conn.createStatement()) {
             stmt.execute("SET FOREIGN_KEY_CHECKS=0;");
@@ -149,7 +139,6 @@ class UserDAOTest {
             e.printStackTrace();
         }
 
-        // Usunięcie rekordu z tabeli settings
         String deleteSettingsSql = "DELETE FROM settings WHERE user_id = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(deleteSettingsSql)) {
@@ -159,7 +148,6 @@ class UserDAOTest {
             ex.printStackTrace();
         }
 
-        // Usunięcie użytkownika testowego (dla obu emaili, na wypadek zmiany)
         String deleteUserSql = "DELETE FROM users WHERE email = ? OR email = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(deleteUserSql)) {
@@ -170,7 +158,6 @@ class UserDAOTest {
             ex.printStackTrace();
         }
 
-        // Przywrócenie ograniczeń kluczy obcych
         try (Connection conn = DatabaseManager.getConnection();
              Statement stmt = conn.createStatement()) {
             stmt.execute("SET FOREIGN_KEY_CHECKS=1;");

@@ -7,7 +7,6 @@
       fx:controller="pl.rozowi.app.controllers.EmployeesController"
       spacing="10" style="-fx-padding:10">
 
-    <!-- Pasek wyszukiwania -->
     <HBox spacing="10">
         <TextField fx:id="searchField"
                    promptText="Filtruj pracowników..."/>
@@ -16,7 +15,6 @@
         <Pane HBox.hgrow="ALWAYS"/>
     </HBox>
 
-    <!-- Tabela pracowników -->
     <TableView fx:id="employeesTable" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="colId"

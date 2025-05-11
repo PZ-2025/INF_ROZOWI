@@ -4,16 +4,19 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import pl.rozowi.app.MainApplication;
 import pl.rozowi.app.models.User;
+import pl.rozowi.app.util.ThemeManager;
 
 import java.io.IOException;
 
-public class TeamLeaderDashboardController {
+public class TeamLeaderDashboardController extends BaseDashboardController {
 
     @FXML
     private Label welcomeLabel;
@@ -22,36 +25,51 @@ public class TeamLeaderDashboardController {
     @FXML
     private AnchorPane mainPane;
 
-
-    public void setUser(User user) throws IOException {
-        welcomeLabel.setText("Witaj, " + user.getName());
-
-        String def = user.getDefaultView();
-        if (def != null) {
-            switch (def) {
-                case "Moje zadania":
-                    goToMyTasks();
-                    break;
-                case "Zadania":
-                    goToTasks();
-                    break;
-                case "Ustawienia":
-                    goToSettings();
-                    break;
-                case "Powiadomienia":
-                    goToNotifications();
-                    break;
-                default:
-                    goToMyTasks();
-                    break;
-            }
-            return;
-        }
-        goToMyTasks();
-    }
-
     @FXML
     private void initialize() {
+    }
+
+    @Override
+    protected void onUserSet(User user) {
+        welcomeLabel.setText("Witaj, " + user.getName());
+
+        try {
+            String def = user.getDefaultView();
+            if (def != null) {
+                switch (def) {
+                    case "Moje zadania":
+                        goToMyTasks();
+                        break;
+                    case "Zadania zespołu":
+                        goToTasks();
+                        break;
+                    case "Pracownicy":
+                        goToEmployees();
+                        break;
+                    case "Raporty":
+                        goToReports();
+                        break;
+                    case "Powiadomienia":
+                        goToNotifications();
+                        break;
+                    case "Ustawienia":
+                        goToSettings();
+                        break;
+                    default:
+                        goToMyTasks();
+                        break;
+                }
+            } else {
+                goToMyTasks(); 
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected Scene getScene() {
+        return mainPane != null ? mainPane.getScene() : null;
     }
 
     @FXML
@@ -69,9 +87,21 @@ public class TeamLeaderDashboardController {
         loadView("/fxml/teamleader/teamLeaderTasks.fxml");
     }
 
+    /**
+     * Zmień tę metodę w klasie TeamLeaderDashboardController.java
+     */
     @FXML
     private void goToReports() throws IOException {
-        loadView("/fxml/teamleader/teamLeaderReports.fxml");
+        try {
+            loadView("/fxml/teamleader/teamLeaderReports.fxml");
+        } catch (Exception e) {
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Błąd");
+            alert.setHeaderText(null);
+            alert.setContentText("Nie można załadować widoku raportów: " + e.getMessage());
+            alert.showAndWait();
+        }
     }
 
     @FXML
@@ -86,6 +116,7 @@ public class TeamLeaderDashboardController {
 
     @FXML
     private void logout() throws IOException {
+        MainApplication.setCurrentUser(null);
         MainApplication.switchScene("/fxml/login.fxml", "TaskApp - Logowanie");
     }
 
@@ -94,9 +125,11 @@ public class TeamLeaderDashboardController {
         FXMLLoader loader = new FXMLLoader(MainApplication.class.getResource(fxmlPath));
         Parent view = loader.load();
 
-        var ctrl = loader.getController();
-        if (ctrl instanceof SettingsController) {
-            ((SettingsController) ctrl).setUser(MainApplication.getCurrentUser());
+        Object controller = loader.getController();
+        if (controller instanceof SettingsController) {
+            ((SettingsController) controller).setUser(currentUser);
+        } else if (controller instanceof UserAwareController) {
+            ((UserAwareController) controller).setUser(currentUser);
         }
 
         mainPane.getChildren().setAll(view);

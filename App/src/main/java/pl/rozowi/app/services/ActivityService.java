@@ -134,7 +134,7 @@ public class ActivityService {
             description = "Użytkownik ID: " + userId + " zmienił swoje hasło";
         }
 
-        activity.setUserId(userId);  // Ustaw użytkownika, którego dotyczy zmiana
+        activity.setUserId(userId);
         activity.setDescription(description);
         return activityDAO.insertTaskActivity(activity);
     }

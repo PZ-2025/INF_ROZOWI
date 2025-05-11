@@ -106,8 +106,8 @@ public class AdminTasksController {
 
     @FXML
     private void initialize() {
-        // Konfiguracja kolumn tabeli zadań
-        colId.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getId()));
+        colId.setCellValueFactory(data -> new SimpleObjectProperty<>(
+                tasksTable.getItems().indexOf(data.getValue()) + 1));
         colTitle.setCellValueFactory(data -> data.getValue().titleProperty());
         colProject.setCellValueFactory(data -> {
             int projectId = data.getValue().getProjectId();
@@ -132,7 +132,6 @@ public class AdminTasksController {
         colEndDate.setCellValueFactory(data -> data.getValue().endDateProperty());
         colAssignee.setCellValueFactory(data -> data.getValue().assignedEmailProperty());
 
-        // Konfiguracja kolumn tabeli aktywności
         colActivityDate.setCellValueFactory(data -> new SimpleStringProperty(
                 data.getValue().getActivityDate() != null ?
                         data.getValue().getActivityDate().toString() : ""));
@@ -155,10 +154,8 @@ public class AdminTasksController {
         colActivityType.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getActivityType()));
         colActivityDesc.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getDescription()));
 
-        // Konfiguracja filtrów
         setupFilters();
 
-        // Obsługa wyboru zadania - aktualizacja szczegółów i aktywności
         tasksTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 displayTaskDetails(newSelection);
@@ -169,13 +166,11 @@ public class AdminTasksController {
             }
         });
 
-        // Wczytaj dane
         loadTasks();
     }
 
     private void setupFilters() {
         try {
-            // Projekty
             List<Project> projects = projectDAO.getAllProjects();
             Project allProjects = new Project();
             allProjects.setId(0);
@@ -199,7 +194,6 @@ public class AdminTasksController {
                 }
             });
 
-            // Zespoły
             List<Team> teams = teamDAO.getAllTeams();
             Team allTeams = new Team();
             allTeams.setId(0);
@@ -223,11 +217,9 @@ public class AdminTasksController {
                 }
             });
 
-            // Statusy
             statusFilterCombo.getItems().addAll("Wszystkie", "Nowe", "W toku", "Zakończone");
             statusFilterCombo.setValue("Wszystkie");
 
-            // Priorytety
             priorityFilterCombo.getItems().addAll("Wszystkie", "LOW", "MEDIUM", "HIGH");
             priorityFilterCombo.setValue("Wszystkie");
         } catch (Exception e) {
@@ -237,11 +229,8 @@ public class AdminTasksController {
 
     private void loadTasks() {
         try {
-            // W rzeczywistej implementacji pobralibyśmy wszystkie zadania
-            // Tu uproszczony proces ładowania zadań bez filtrów
             List<Task> tasks = new ArrayList<>();
 
-            // Na potrzeby testów tworzymy przykładowe zadania ze wszystkich projektów
             List<Project> projects = projectDAO.getAllProjects();
             for (Project project : projects) {
                 List<Task> projectTasks = taskDAO.getTasksByProjectId(project.getId());
@@ -274,11 +263,11 @@ public class AdminTasksController {
             return;
         }
 
-        detailId.setText(String.valueOf(task.getId()));
+        int orderNumber = filteredTasks.indexOf(task) + 1;
+        detailId.setText(String.valueOf(orderNumber));
         detailTitle.setText(task.getTitle());
 
         try {
-            // Pobierz nazwę projektu
             List<Project> projects = projectDAO.getAllProjects();
             for (Project project : projects) {
                 if (project.getId() == task.getProjectId()) {
@@ -298,7 +287,6 @@ public class AdminTasksController {
         detailAssignee.setText(task.getAssignedEmail());
         detailDescription.setText(task.getDescription());
 
-        // Przykładowa data ostatniej aktualizacji
         detailLastUpdate.setText("2025-04-24 12:34:56");
     }
 
@@ -325,13 +313,11 @@ public class AdminTasksController {
                 teamFilterCombo.getValue().getId() == 0 && statusFilterCombo.getValue().equals("Wszystkie") &&
                 priorityFilterCombo.getValue().equals("Wszystkie") && startDateFilter.getValue() == null &&
                 endDateFilter.getValue() == null) {
-            // Brak filtrów - pokaż wszystkie zadania
             filteredTasks.setAll(allTasks);
             tasksTable.setItems(filteredTasks);
             return;
         }
 
-        // Filtruj zadania według kryteriów
         ObservableList<Task> result = FXCollections.observableArrayList();
 
         for (Task task : allTasks) {
@@ -355,7 +341,6 @@ public class AdminTasksController {
             boolean matchesPriority = priorityFilterCombo.getValue().equals("Wszystkie") ||
                     task.getPriority().equals(priorityFilterCombo.getValue());
 
-            // Filtracja dat
             boolean matchesStartDate = true;
             boolean matchesEndDate = true;
 
@@ -364,7 +349,6 @@ public class AdminTasksController {
                     LocalDate taskStartDate = LocalDate.parse(task.getStartDate());
                     matchesStartDate = !taskStartDate.isBefore(startDateFilter.getValue());
                 } catch (Exception e) {
-                    // Ignoruj błędy parsowania daty
                 }
             }
 
@@ -373,11 +357,9 @@ public class AdminTasksController {
                     LocalDate taskEndDate = LocalDate.parse(task.getEndDate());
                     matchesEndDate = !taskEndDate.isAfter(endDateFilter.getValue());
                 } catch (Exception e) {
-                    // Ignoruj błędy parsowania daty
                 }
             }
 
-            // Dodaj zadanie tylko jeśli spełnia wszystkie kryteria filtrowania
             if (matchesSearch && matchesProject && matchesTeam && matchesStatus &&
                     matchesPriority && matchesStartDate && matchesEndDate) {
                 result.add(task);
@@ -390,14 +372,14 @@ public class AdminTasksController {
 
     @FXML
     private void handleApplyFilters() {
-        handleSearch(); // Ta sama logika co wyszukiwanie
+        handleSearch(); 
     }
 
     @FXML
     private void handleClearFilters() {
         searchField.clear();
-        projectFilterCombo.getSelectionModel().selectFirst(); // "Wszystkie projekty"
-        teamFilterCombo.getSelectionModel().selectFirst(); // "Wszystkie zespoły"
+        projectFilterCombo.getSelectionModel().selectFirst(); 
+        teamFilterCombo.getSelectionModel().selectFirst(); 
         statusFilterCombo.setValue("Wszystkie");
         priorityFilterCombo.setValue("Wszystkie");
         startDateFilter.setValue(null);
@@ -415,7 +397,6 @@ public class AdminTasksController {
         result.ifPresent(task -> {
             boolean success = taskDAO.insertTask(task);
             if (success) {
-                // Jeśli zadanie ma przypisanego użytkownika, dodaj wpis w tabeli przypisań
                 if (task.getAssignedTo() > 0) {
                     TaskAssignment assignment = new TaskAssignment();
                     assignment.setTaskId(task.getId());
@@ -445,11 +426,9 @@ public class AdminTasksController {
         result.ifPresent(task -> {
             boolean success = taskDAO.updateTask(task);
             if (success && task.getAssignedTo() > 0) {
-                // Uaktualnij przypisanie
                 taskDAO.assignTask(task.getId(), task.getAssignedTo());
 
                 loadTasks();
-                // Jeśli aktualnie wybrane zadanie zostało zaktualizowane, odśwież szczegóły
                 Task currentSelection = tasksTable.getSelectionModel().getSelectedItem();
                 if (currentSelection != null && currentSelection.getId() == task.getId()) {
                     displayTaskDetails(task);
@@ -477,11 +456,9 @@ public class AdminTasksController {
             Optional<ButtonType> result = confirmDialog.showAndWait();
             if (result.isPresent() && result.get() == ButtonType.OK) {
                 try {
-                    // Wywołanie nowej metody usuwającej zadanie z bazy danych
                     boolean deleted = taskDAO.deleteTask(selectedTask.getId());
 
                     if (deleted) {
-                        // Usunięcie zadania z lokalnych kolekcji
                         allTasks.remove(selectedTask);
                         filteredTasks.remove(selectedTask);
                         taskActivities.clear();
@@ -507,14 +484,12 @@ public class AdminTasksController {
         }
 
         try {
-            // Pobierz użytkowników z zespołu zadania
             List<User> teamMembers = new ArrayList<>();
             if (selectedTask.getTeamId() > 0) {
                 teamMembers = teamDAO.getTeamMembers(selectedTask.getTeamId());
             }
 
             if (teamMembers.isEmpty()) {
-                // Jeśli nie ma członków zespołu, pokaż wszystkich użytkowników
                 teamMembers = userDAO.getAllUsers();
             }
 
@@ -528,7 +503,6 @@ public class AdminTasksController {
             ComboBox<User> userComboBox = new ComboBox<>();
             userComboBox.setItems(FXCollections.observableArrayList(teamMembers));
 
-            // Konwerter dla wyświetlania użytkowników
             userComboBox.setConverter(new StringConverter<User>() {
                 @Override
                 public String toString(User user) {
@@ -541,7 +515,6 @@ public class AdminTasksController {
                 }
             });
 
-            // Wybierz obecnego użytkownika, jeśli istnieje
             int currentAssignedUserId = selectedTask.getAssignedTo();
             if (currentAssignedUserId > 0) {
                 for (User user : teamMembers) {
@@ -569,21 +542,17 @@ public class AdminTasksController {
 
             Optional<User> userResult = dialog.showAndWait();
             userResult.ifPresent(user -> {
-                // Store the old user ID before updating
                 int oldUserId = selectedTask.getAssignedTo();
 
                 boolean success = taskDAO.assignTask(selectedTask.getId(), user.getId());
                 if (success) {
-                    // Aktualizuj dane w tabeli
                     selectedTask.setAssignedTo(user.getId());
                     selectedTask.setAssignedEmail(user.getEmail());
 
-                    loadTasks();  // W rzeczywistej implementacji odświeżmy wszystkie zadania
+                    loadTasks();  
 
-                    // Odśwież widok szczegółów
                     displayTaskDetails(selectedTask);
 
-                    // Log the assignment activity
                     ActivityService.logAssignment(
                         selectedTask.getId(),
                         selectedTask.getTitle(),
@@ -638,18 +607,15 @@ public class AdminTasksController {
 
         Optional<String> statusResult = dialog.showAndWait();
         statusResult.ifPresent(newStatus -> {
-            // Store the old status before updating
             String oldStatus = selectedTask.getStatus();
 
             boolean success = taskDAO.updateTaskStatus(selectedTask.getId(), newStatus);
             if (success) {
-                // Aktualizuj dane w tabeli
                 selectedTask.setStatus(newStatus);
 
                 tasksTable.refresh();
                 displayTaskDetails(selectedTask);
 
-                // Log the status change activity
                 ActivityService.logStatusChange(
                     selectedTask.getId(),
                     selectedTask.getTitle(),
@@ -693,13 +659,11 @@ public class AdminTasksController {
         descriptionArea.setPromptText("Opis zadania");
         descriptionArea.setPrefRowCount(3);
 
-        // ComboBox dla projektu
         ComboBox<Project> projectComboBox = new ComboBox<>();
         try {
             List<Project> projects = projectDAO.getAllProjects();
             projectComboBox.setItems(FXCollections.observableArrayList(projects));
 
-            // Konwerter dla wyświetlania projektów
             projectComboBox.setConverter(new StringConverter<Project>() {
                 @Override
                 public String toString(Project project) {
@@ -715,7 +679,6 @@ public class AdminTasksController {
             e.printStackTrace();
         }
 
-        // ComboBox dla zespołu - będzie aktualizowany po wyborze projektu
         ComboBox<Team> teamComboBox = new ComboBox<>();
         teamComboBox.setConverter(new StringConverter<Team>() {
             @Override
@@ -729,12 +692,10 @@ public class AdminTasksController {
             }
         });
 
-        // Aktualizacja zespołów po wyborze projektu
         projectComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 try {
                     List<Team> teams = teamDAO.getAllTeams();
-                    // Filtrowanie zespołów tylko do tych, które są przypisane do wybranego projektu
                     List<Team> projectTeams = teams.stream()
                             .filter(team -> team.getProjectId() == newVal.getId())
                             .toList();
@@ -746,21 +707,17 @@ public class AdminTasksController {
             }
         });
 
-        // ComboBox dla statusu
         ComboBox<String> statusComboBox = new ComboBox<>();
         statusComboBox.getItems().addAll("Nowe", "W toku", "Zakończone");
         statusComboBox.setValue("Nowe");
 
-        // ComboBox dla priorytetu
         ComboBox<String> priorityComboBox = new ComboBox<>();
         priorityComboBox.getItems().addAll("LOW", "MEDIUM", "HIGH");
         priorityComboBox.setValue("MEDIUM");
 
-        // Pola dat
         DatePicker startDatePicker = new DatePicker();
         DatePicker endDatePicker = new DatePicker();
 
-        // ComboBox dla przypisanego użytkownika - będzie aktualizowany po wyborze zespołu
         ComboBox<User> assigneeComboBox = new ComboBox<>();
         assigneeComboBox.setConverter(new StringConverter<User>() {
             @Override
@@ -774,7 +731,6 @@ public class AdminTasksController {
             }
         });
 
-        // Aktualizacja użytkowników po wyborze zespołu
         teamComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 try {
@@ -786,19 +742,16 @@ public class AdminTasksController {
             }
         });
 
-        // Jeśli edytujemy istniejące zadanie, ustawiamy wartości
         if (task != null) {
             titleField.setText(task.getTitle());
             descriptionArea.setText(task.getDescription());
             statusComboBox.setValue(task.getStatus());
             priorityComboBox.setValue(task.getPriority());
 
-            // Daty wymagają konwersji
             if (task.getStartDate() != null) {
                 try {
                     startDatePicker.setValue(LocalDate.parse(task.getStartDate()));
                 } catch (Exception e) {
-                    // Ignoruj błędy parsowania daty
                 }
             }
 
@@ -806,11 +759,9 @@ public class AdminTasksController {
                 try {
                     endDatePicker.setValue(LocalDate.parse(task.getEndDate()));
                 } catch (Exception e) {
-                    // Ignoruj błędy parsowania daty
                 }
             }
 
-            // Ustawienie projektu
             int projectId = task.getProjectId();
             if (projectId > 0) {
                 for (Project project : projectComboBox.getItems()) {
@@ -821,7 +772,6 @@ public class AdminTasksController {
                 }
             }
 
-            // Ustawienie zespołu
             int teamId = task.getTeamId();
             if (teamId > 0) {
                 try {
@@ -837,7 +787,6 @@ public class AdminTasksController {
                 }
             }
 
-            // Ustawienie przypisanego użytkownika
             int assignedTo = task.getAssignedTo();
             if (assignedTo > 0) {
                 try {
@@ -853,12 +802,10 @@ public class AdminTasksController {
                 }
             }
         } else {
-            // Dla nowego zadania, ustawiamy domyślne daty
             startDatePicker.setValue(LocalDate.now());
             endDatePicker.setValue(LocalDate.now().plusWeeks(2));
         }
 
-        // Dodanie elementów do siatki
         grid.add(new Label("Tytuł:"), 0, 0);
         grid.add(titleField, 1, 0);
         grid.add(new Label("Projekt:"), 0, 1);
@@ -880,11 +827,9 @@ public class AdminTasksController {
 
         dialog.getDialogPane().setContent(grid);
 
-        // Walidacja formularza
         Button saveButton = (Button) dialog.getDialogPane().lookupButton(saveButtonType);
         saveButton.setDisable(true);
 
-        // Dodanie listenerów do pól formularza
         titleField.textProperty().addListener((observable, oldValue, newValue) -> {
             validateTaskForm(saveButton, titleField, projectComboBox, teamComboBox,
                             startDatePicker, endDatePicker);

@@ -39,7 +39,6 @@
         <DatePicker fx:id="endDatePicker" onAction="#handleDateFilter"/>
     </HBox>
 
-    <!-- Tabela logów systemowych -->
     <TableView fx:id="logsTable" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="colTimestamp" text="Czas" prefWidth="150"/>
@@ -50,7 +49,6 @@
         </columns>
     </TableView>
 
-    <!-- Panel szczegółów logu -->
     <TitledPane text="Szczegóły logu" expanded="false">
         <VBox spacing="10">
             <GridPane hgap="15" vgap="10">

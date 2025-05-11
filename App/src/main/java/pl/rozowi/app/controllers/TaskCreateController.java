@@ -41,14 +41,11 @@ public class TaskCreateController {
 
     @FXML
     private void initialize() {
-        // Set up priority dropdown
         comboPriority.getItems().setAll("LOW", "MEDIUM", "HIGH");
         comboPriority.setValue("MEDIUM");
 
-        // Load available projects based on user role
         loadAvailableProjects();
 
-        // Set up project selection to populate team dropdown
         comboProject.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 loadTeamsForProject(newVal.getId());
@@ -58,7 +55,6 @@ public class TaskCreateController {
             }
         });
 
-        // Set up team selection to populate assignee dropdown
         comboTeam.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 loadMembersForTeam(newVal.getId());
@@ -67,7 +63,6 @@ public class TaskCreateController {
             }
         });
 
-        // Set up converters for displaying objects in dropdowns
         setupConverters();
     }
 
@@ -76,22 +71,17 @@ public class TaskCreateController {
             List<Project> projects;
             User currentUser = MainApplication.getCurrentUser();
 
-            // Filter projects based on user role
             if (currentUser != null) {
                 int roleId = currentUser.getRoleId();
 
                 if (roleId == 1) {
-                    // Admin can see all projects
                     projects = projectDAO.getAllProjects();
                 } else if (roleId == 2) {
-                    // Manager can see only their projects
                     projects = projectDAO.getProjectsForManager(currentUser.getId());
                 } else if (roleId == 3) {
-                    // Team Leader can see projects where they are a team leader
                     int teamId = teamMemberDAO.getTeamIdForUser(currentUser.getId());
                     Team team = null;
 
-                    // Find the team
                     for (Team t : teamDAO.getAllTeams()) {
                         if (t.getId() == teamId) {
                             team = t;
@@ -103,7 +93,6 @@ public class TaskCreateController {
                         int projectId = team.getProjectId();
                         Project project = null;
 
-                        // Find the specific project
                         for (Project p : projectDAO.getAllProjects()) {
                             if (p.getId() == projectId) {
                                 project = p;
@@ -113,7 +102,6 @@ public class TaskCreateController {
 
                         projects = project != null ? Collections.singletonList(project) : new ArrayList<>();
 
-                        // For Team Leader, auto-select the project and team
                         if (!projects.isEmpty()) {
                             comboProject.getItems().setAll(projects);
                             comboProject.setValue(projects.get(0));
@@ -136,7 +124,6 @@ public class TaskCreateController {
                         projects = new ArrayList<>();
                     }
                 } else {
-                    // Regular users can't create tasks
                     projects = new ArrayList<>();
                 }
             } else {
@@ -145,7 +132,6 @@ public class TaskCreateController {
 
             comboProject.getItems().setAll(projects);
 
-            // If only one project, auto-select it
             if (projects.size() == 1) {
                 comboProject.setValue(projects.get(0));
             }
@@ -158,7 +144,6 @@ public class TaskCreateController {
         try {
             List<Team> projectTeams = new ArrayList<>();
 
-            // Get all teams and filter by project
             for (Team team : teamDAO.getAllTeams()) {
                 if (team.getProjectId() == projectId) {
                     projectTeams.add(team);
@@ -167,7 +152,6 @@ public class TaskCreateController {
 
             comboTeam.getItems().setAll(projectTeams);
 
-            // If only one team, auto-select it
             if (projectTeams.size() == 1) {
                 comboTeam.setValue(projectTeams.get(0));
             }
@@ -186,7 +170,6 @@ public class TaskCreateController {
     }
 
     private void setupConverters() {
-        // Project converter
         comboProject.setConverter(new StringConverter<>() {
             @Override
             public String toString(Project p) {
@@ -199,7 +182,6 @@ public class TaskCreateController {
             }
         });
 
-        // Team converter
         comboTeam.setConverter(new StringConverter<>() {
             @Override
             public String toString(Team t) {
@@ -212,7 +194,6 @@ public class TaskCreateController {
             }
         });
 
-        // User converter
         comboAssignee.setConverter(new StringConverter<>() {
             @Override
             public String toString(User u) {
@@ -236,7 +217,6 @@ public class TaskCreateController {
         User user = comboAssignee.getValue();
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-        // Validate form fields
         if (proj == null || team == null || title.isEmpty() || desc.isEmpty()
                 || pri == null || user == null
                 || dpStartDate == null || dpStartDate.getValue() == null
@@ -256,15 +236,11 @@ public class TaskCreateController {
         t.setEndDate(dpEndDate.getValue().format(fmt));
         t.setTeamName(team.getTeamName());
 
-        // Don't set assigned fields on the task object as they might not exist in DB schema
-
-        // Save task
         if (!taskDAO.insertTask(t)) {
             showError("Error", "Failed to create task!");
             return;
         }
 
-        // Create task_assignments record manually with direct SQL
         boolean assignmentSuccess = false;
         try (java.sql.Connection conn = pl.rozowi.app.database.DatabaseManager.getConnection();
              java.sql.PreparedStatement stmt = conn.prepareStatement(
@@ -281,8 +257,7 @@ public class TaskCreateController {
             showError("Assignment Error", "Task created but assignment failed: " + e.getMessage());
             e.printStackTrace();
         }
-
-        // Log task creation activity
+        
         ActivityService.logTaskCreation(t.getId(), t.getTitle(), user.getId());
 
         showInfo("Task Created", "Task has been created successfully!");

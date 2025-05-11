@@ -50,35 +50,38 @@ public class MyTasksController {
             Stage stage = new Stage();
             stage.setScene(new Scene(root));
             stage.setTitle("Szczegóły zadania");
-            stage.initModality(Modality.APPLICATION_MODAL); // Okno modalne
+            stage.initModality(Modality.APPLICATION_MODAL);
             stage.showAndWait();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void loadTasks() {
-        List<Task> tasks = taskDAO.getTasksForUser(Session.currentUserId);
-        myTasks = FXCollections.observableArrayList(tasks);
+private void loadTasks() {
+    List<Task> tasks = taskDAO.getTasksForUser(Session.currentUserId);
+    myTasks = FXCollections.observableArrayList(tasks);
 
-        tasksList.setCellFactory(lv -> new ListCell<Task>() {
-            @Override
-            protected void updateItem(Task task, boolean empty) {
-                super.updateItem(task, empty);
-                if (empty || task == null) {
-                    setText(null);
-                } else {
-                    setText("[" + task.getStatus() + "] " + task.getTitle() + " - " + task.getDescription());
-                }
+    tasksList.setCellFactory(lv -> new ListCell<Task>() {
+        @Override
+        protected void updateItem(Task task, boolean empty) {
+            super.updateItem(task, empty);
+            if (empty || task == null) {
+                setText(null);
+            } else {
+                String teamInfo = (task.getTeamName() != null && !task.getTeamName().isEmpty())
+                        ? " (Drużyna: " + task.getTeamName() + ")"
+                        : "";
+                setText("[" + task.getStatus() + "] " + task.getTitle() + " - " +
+                        task.getDescription() + teamInfo);
             }
-        });
+        }
+    });
 
-        tasksList.setItems(myTasks);
-    }
+    tasksList.setItems(myTasks);
+}
 
     @FXML
     private void handleRefresh() {
         loadTasks();
     }
 }
-

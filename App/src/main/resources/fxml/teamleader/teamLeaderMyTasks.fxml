@@ -2,10 +2,10 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.control.*?>
 <VBox xmlns:fx="http://javafx.com/fxml" alignment="CENTER" spacing="15"
-      style="-fx-padding: 20px; -fx-background-color: #1E1E2F;"
+      style="-fx-padding: 20px;"
+      styleClass="dashboard-container"
       fx:controller="pl.rozowi.app.controllers.MyTasksController">
-    <Label text="Moje Zadania (Team Leader)" style="-fx-font-size: 24px; -fx-text-fill: white;"/>
+    <Label text="Moje Zadania (Team Leader)" styleClass="header-label"/>
     <ListView fx:id="tasksList" style="-fx-pref-width: 100%; -fx-pref-height: 300px;"/>
-    <Button text="Odśwież" onAction="#handleRefresh"/>
+    <Button text="Odśwież" onAction="#handleRefresh" styleClass="primary-button"/>
 </VBox>
-

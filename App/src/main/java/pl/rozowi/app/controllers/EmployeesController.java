@@ -46,7 +46,11 @@ public class EmployeesController {
 
     @FXML
     private void initialize() throws SQLException {
-        colId.setCellValueFactory(c -> new SimpleIntegerProperty(c.getValue().getId()));
+        colId.setCellValueFactory(c -> {
+            int index = allEmployees.indexOf(c.getValue()) + 1;
+            return new SimpleIntegerProperty(index);
+        });
+
         colName.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getName()));
         colLastName.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getLastName()));
         colEmail.setCellValueFactory(c -> new SimpleStringProperty(c.getValue().getEmail()));
@@ -54,7 +58,6 @@ public class EmployeesController {
 
         loadEmployees();
 
-        // filtracja
         FilteredList<User> filtered = new FilteredList<>(allEmployees, u -> true);
         employeesTable.setItems(filtered);
         searchField.textProperty().addListener((obs, oldVal, newVal) -> {
@@ -79,17 +82,16 @@ public class EmployeesController {
         int role = current.getRoleId();
         List<User> users;
         switch (role) {
-            case 3: // Team Leader
+            case 3:
                 int teamId = Integer.parseInt(Session.currentUserTeam);
                 users = teamMemberDAO.getTeamMembers(teamId);
-                // Filter out the current user (team leader) from the list
                 int currentUserId = current.getId();
                 users = users.stream()
                         .filter(user -> user.getId() != currentUserId)
                         .collect(Collectors.toList());
                 break;
-            case 2: // Manager
-            case 1: // Admin
+            case 2: 
+            case 1:
                 users = userDAO.getAllUsers();
                 break;
             default:

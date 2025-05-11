@@ -21,7 +21,6 @@ public class AdminRolesController {
     @FXML
     private Label selectedRoleLabel;
 
-    // Uprawnienia administracyjne
     @FXML
     private CheckBox permViewUsers;
     @FXML
@@ -35,7 +34,6 @@ public class AdminRolesController {
     @FXML
     private CheckBox permEditRoles;
 
-    // Uprawnienia projektów
     @FXML
     private CheckBox permViewProjects;
     @FXML
@@ -47,7 +45,6 @@ public class AdminRolesController {
     @FXML
     private CheckBox permAssignProjects;
 
-    // Uprawnienia zespołów
     @FXML
     private CheckBox permViewTeams;
     @FXML
@@ -59,7 +56,6 @@ public class AdminRolesController {
     @FXML
     private CheckBox permAssignTeamMembers;
 
-    // Uprawnienia zadań
     @FXML
     private CheckBox permViewTasks;
     @FXML
@@ -77,13 +73,10 @@ public class AdminRolesController {
 
     @FXML
     private void initialize() {
-        // Konfiguracja widoku ról
         configureRolesListView();
 
-        // Dezaktywacja pól uprawnień do momentu wyboru roli
         setPermissionsDisabled(true);
 
-        // Wczytanie ról
         loadRoles();
     }
 
@@ -114,12 +107,7 @@ public class AdminRolesController {
     }
 
     private void loadRoles() {
-        // Wczytaj role z bazy danych
         try {
-            // Tu powinna być logika pobierania ról z bazy
-            // List<Role> roles = roleDAO.getAllRoles();
-
-            // Tymczasowe przykładowe dane
             Role adminRole = new Role();
             adminRole.setId(1);
             adminRole.setRoleName("Administrator");
@@ -148,26 +136,22 @@ public class AdminRolesController {
     }
 
     private void loadPermissions(Role role) {
-        // Resetuj wszystkie uprawnienia
+
         resetPermissions();
 
         if (role == null || role.getPermissions() == null) {
             return;
         }
 
-        // Przykład prostego parsowania uprawnień
         String[] permissions = role.getPermissions().split(",");
 
-        // Specjalna obsługa dla roli ADMIN z wszystkimi uprawnieniami
         if (role.getPermissions().equals("ALL")) {
             setAllPermissions(true);
             return;
         }
 
-        // Parsowanie i ustawianie uprawnień
         for (String perm : permissions) {
             switch (perm.trim()) {
-                // Uprawnienia administracyjne
                 case "VIEW_USERS" -> permViewUsers.setSelected(true);
                 case "EDIT_USERS" -> permEditUsers.setSelected(true);
                 case "DELETE_USERS" -> permDeleteUsers.setSelected(true);
@@ -175,21 +159,18 @@ public class AdminRolesController {
                 case "VIEW_ROLES" -> permViewRoles.setSelected(true);
                 case "EDIT_ROLES" -> permEditRoles.setSelected(true);
 
-                // Uprawnienia projektów
                 case "VIEW_PROJECTS" -> permViewProjects.setSelected(true);
                 case "CREATE_PROJECTS" -> permCreateProjects.setSelected(true);
                 case "EDIT_PROJECTS" -> permEditProjects.setSelected(true);
                 case "DELETE_PROJECTS" -> permDeleteProjects.setSelected(true);
                 case "ASSIGN_PROJECTS" -> permAssignProjects.setSelected(true);
 
-                // Uprawnienia zespołów
                 case "VIEW_TEAMS" -> permViewTeams.setSelected(true);
                 case "CREATE_TEAMS" -> permCreateTeams.setSelected(true);
                 case "EDIT_TEAMS" -> permEditTeams.setSelected(true);
                 case "DELETE_TEAMS" -> permDeleteTeams.setSelected(true);
                 case "ASSIGN_TEAM_MEMBERS" -> permAssignTeamMembers.setSelected(true);
 
-                // Uprawnienia zadań
                 case "VIEW_TASKS" -> permViewTasks.setSelected(true);
                 case "CREATE_TASKS" -> permCreateTasks.setSelected(true);
                 case "EDIT_TASKS" -> permEditTasks.setSelected(true);
@@ -200,7 +181,6 @@ public class AdminRolesController {
     }
 
     private void resetPermissions() {
-        // Resetuj wszystkie uprawnienia
         permViewUsers.setSelected(false);
         permEditUsers.setSelected(false);
         permDeleteUsers.setSelected(false);
@@ -287,10 +267,6 @@ public class AdminRolesController {
         Optional<Role> result = dialog.showAndWait();
 
         result.ifPresent(role -> {
-            // Dodaj rolę do bazy
-            // boolean success = roleDAO.insertRole(role);
-
-            // Tymczasowa symulacja dodania
             allRoles.add(role);
             rolesListView.setItems(allRoles);
             showInfo("Dodano nową rolę");
@@ -309,16 +285,11 @@ public class AdminRolesController {
         Optional<Role> result = dialog.showAndWait();
 
         result.ifPresent(role -> {
-            // Aktualizuj rolę w bazie
-            // boolean success = roleDAO.updateRole(role);
-
-            // Tymczasowa symulacja aktualizacji
             int index = allRoles.indexOf(selectedRole);
             if (index >= 0) {
                 allRoles.set(index, role);
                 rolesListView.refresh();
 
-                // Jeśli aktualizujemy aktualnie wybraną rolę, zaktualizuj etykietę
                 if (selectedRole.equals(currentRole)) {
                     selectedRoleLabel.setText(role.getRoleName());
                     currentRole = role;
@@ -349,14 +320,9 @@ public class AdminRolesController {
 
         Optional<ButtonType> result = confirmDialog.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            // Usuń rolę z bazy
-            // boolean success = roleDAO.deleteRole(selectedRole.getId());
-
-            // Tymczasowa symulacja usunięcia
             allRoles.remove(selectedRole);
 
             if (currentRole != null && currentRole.equals(selectedRole)) {
-                // Jeśli usuwamy aktualnie wybraną rolę, zresetuj panel
                 selectedRoleLabel.setText("[Wybierz rolę]");
                 resetPermissions();
                 setPermissionsDisabled(true);
@@ -376,7 +342,6 @@ public class AdminRolesController {
 
         StringBuilder permissions = new StringBuilder();
 
-        // Zbieranie zaznaczonych uprawnień
         if (permViewUsers.isSelected()) permissions.append("VIEW_USERS,");
         if (permEditUsers.isSelected()) permissions.append("EDIT_USERS,");
         if (permDeleteUsers.isSelected()) permissions.append("DELETE_USERS,");
@@ -402,17 +367,12 @@ public class AdminRolesController {
         if (permDeleteTasks.isSelected()) permissions.append("DELETE_TASKS,");
         if (permAssignTasks.isSelected()) permissions.append("ASSIGN_TASKS,");
 
-        // Ustawianie dla ALL jeśli wszystkie uprawnienia są zaznaczone
         boolean allSelected = areAllPermissionsSelected();
         String permissionsStr = allSelected ? "ALL" :
                                (permissions.length() > 0 ? permissions.substring(0, permissions.length() - 1) : "");
 
         currentRole.setPermissions(permissionsStr);
 
-        // Aktualizuj rolę w bazie
-        // boolean success = roleDAO.updateRolePermissions(currentRole.getId(), permissionsStr);
-
-        // Tymczasowa symulacja aktualizacji
         int index = allRoles.indexOf(currentRole);
         if (index >= 0) {
             allRoles.set(index, currentRole);
@@ -456,7 +416,6 @@ public class AdminRolesController {
 
         dialog.getDialogPane().setContent(grid);
 
-        // Walidacja
         Button saveButton = (Button) dialog.getDialogPane().lookupButton(saveButtonType);
         saveButton.setDisable(true);
 
@@ -472,10 +431,8 @@ public class AdminRolesController {
                 result.setRoleName(nameField.getText());
 
                 if (role == null) {
-                    // Dla nowej roli ustawiamy minimalny zestaw uprawnień
                     result.setPermissions("VIEW_TASKS");
 
-                    // Tymczasowa symulacja ustawienia ID
                     result.setId(allRoles.size() + 1);
                 }
 

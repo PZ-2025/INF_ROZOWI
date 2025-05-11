@@ -73,7 +73,6 @@ public class AdminUsersController {
     private final SettingsDAO settingsDAO = new SettingsDAO();
     private final PasswordChangeService passwordService = new PasswordChangeService();
 
-    // Mapy z nazwami ról i grup pobierane z bazy danych
     private Map<Integer, String> groupNames = new HashMap<>();
     private Map<Integer, String> roleNames = new HashMap<>();
 
@@ -81,10 +80,8 @@ public class AdminUsersController {
 
     @FXML
     private void initialize() {
-        // Inicjalizacja map ról i grup z bazy danych
         loadRolesAndGroups();
 
-        // Konfiguracja kolumn
         colId.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getId()));
         colName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
         colLastName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getLastName()));
@@ -94,7 +91,6 @@ public class AdminUsersController {
             return new SimpleStringProperty(groupNames.getOrDefault(groupId, "Brak grupy"));
         });
 
-        // Konfiguracja kolumny roli - używa map z bazy danych
         colRole.setCellValueFactory(data -> {
             int roleId = data.getValue().getRoleId();
             return new SimpleStringProperty(roleNames.getOrDefault(roleId, String.valueOf(roleId)));
@@ -114,14 +110,12 @@ public class AdminUsersController {
             return new SimpleStringProperty(teamName);
         });
 
-        // Obsługa kliknięcia na wiersz
         usersTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 showUserDetails(newSelection);
             }
         });
 
-        // Wczytaj dane
         loadUsers();
     }
 
@@ -130,20 +124,16 @@ public class AdminUsersController {
      */
     private void loadRolesAndGroups() {
         try {
-            // Pobierz role z bazy
             roleNames = userDAO.getAllRolesMap();
             if (roleNames.isEmpty()) {
-                // Awaryjnie, jeśli nie udało się pobrać z bazy - używamy wartości domyślnych
                 roleNames.put(1, "Administrator");
                 roleNames.put(2, "Kierownik");
                 roleNames.put(3, "Team Leader");
                 roleNames.put(4, "Pracownik");
             }
 
-            // Pobierz grupy z bazy
             groupNames = userDAO.getAllGroupsMap();
             if (groupNames.isEmpty()) {
-                // Awaryjnie, jeśli nie udało się pobrać z bazy - używamy wartości domyślnych
                 groupNames.put(1, "Deweloperzy");
                 groupNames.put(2, "Testerzy");
                 groupNames.put(3, "Projektanci");
@@ -177,11 +167,9 @@ public class AdminUsersController {
         detailName.setText(user.getName() + " " + user.getLastName());
         detailEmail.setText(user.getEmail());
 
-        // Pobierz nazwę roli z mapy
         detailRole.setText(roleNames.getOrDefault(user.getRoleId(), "Nieznana"));
         detailGroup.setText(groupNames.getOrDefault(user.getGroupId(), "Brak grupy"));
 
-        // Pobierz nazwę zespołu
         try {
             int teamId = teamMemberDAO.getTeamIdForUser(user.getId());
             String teamName = "Brak przypisania";
@@ -194,7 +182,6 @@ public class AdminUsersController {
             e.printStackTrace();
         }
 
-        // Pobierz datę ostatniej zmiany hasła z tabeli settings
         try {
             Settings userSettings = settingsDAO.getSettingsByUserId(user.getId());
             if (userSettings != null && userSettings.getLastPasswordChange() != null) {
@@ -238,17 +225,13 @@ public class AdminUsersController {
             User user = pair.user;
             Team selectedTeam = pair.team;
 
-            // Hash hasła
             user.setPassword(passwordService.hashPassword("DefaultPass123!"));
 
-            // Dodaj użytkownika do bazy
             boolean success = userDAO.insertUser(user);
             if (success) {
-                // Pobierz ID nowego użytkownika, aby utworzyć relację z zespołem
                 User addedUser = userDAO.getUserByEmail(user.getEmail());
                 if (addedUser != null && selectedTeam != null) {
                     try {
-                        // Dodanie relacji użytkownik-zespół
                         teamMemberDAO.insertTeamMember(selectedTeam.getId(), addedUser.getId(), false);
                     } catch (SQLException e) {
                         showError("Użytkownik został dodany, ale wystąpił błąd przy przypisywaniu zespołu: " + e.getMessage());
@@ -271,7 +254,6 @@ public class AdminUsersController {
             return;
         }
 
-        // Pobierz pełne dane użytkownika, łącznie z hasłem
         User fullUserData = userDAO.getUserById(selectedUser.getId());
         if (fullUserData == null) {
             showError("Nie można pobrać pełnych danych użytkownika");
@@ -285,13 +267,10 @@ public class AdminUsersController {
             User updatedUser = pair.user;
             Team selectedTeam = pair.team;
 
-            // Zachowanie oryginalnego hasła
             updatedUser.setPassword(fullUserData.getPassword());
 
-            // Aktualizuj użytkownika w bazie
             boolean success = userDAO.updateUser(updatedUser);
 
-            // Aktualizuj przypisanie do zespołu, jeśli zostało zmienione
             if (success && selectedTeam != null) {
                 teamMemberDAO.updateUserTeam(updatedUser.getId(), selectedTeam.getId());
             }
@@ -335,13 +314,12 @@ public class AdminUsersController {
         Optional<ButtonType> result = confirmDialog.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
-                // Najpierw usuń powiązania użytkownika z zespołami
+
                 int teamId = teamMemberDAO.getTeamIdForUser(selectedUser.getId());
                 if (teamId > 0) {
                     teamMemberDAO.deleteTeamMember(teamId, selectedUser.getId());
                 }
 
-                // Następnie usuń użytkownika
                 boolean deleted = userDAO.deleteUser(selectedUser.getId());
                 if (deleted) {
                     allUsers.remove(selectedUser);
@@ -364,7 +342,6 @@ public class AdminUsersController {
             return;
         }
 
-        // Pobierz pełne dane użytkownika, łącznie z hasłem
         User fullUserData = userDAO.getUserById(selectedUser.getId());
         if (fullUserData == null) {
             showError("Nie można pobrać pełnych danych użytkownika");
@@ -378,22 +355,17 @@ public class AdminUsersController {
 
         Optional<ButtonType> result = confirmDialog.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            // Generowanie nowego standardowego hasła i hashowanie
             String newPassword = "ResetPass123!";
             String hashedPassword = passwordService.hashPassword(newPassword);
 
-            // Skopiuj dane z pełnego obiektu użytkownika
             fullUserData.setPassword(hashedPassword);
 
-            // Aktualizacja w bazie
             boolean success = userDAO.updateUser(fullUserData);
 
-            // Aktualizuj datę ostatniej zmiany hasła
             if (success) {
                 settingsDAO.updateLastPasswordChange(fullUserData.getId());
                 showInfo("Hasło zostało zresetowane do: " + newPassword);
 
-                // Odśwież widok
                 User refreshedUser = userDAO.getUserById(fullUserData.getId());
                 if (refreshedUser != null) {
                     showUserDetails(refreshedUser);
@@ -412,14 +384,12 @@ public class AdminUsersController {
             return;
         }
 
-        // Pobierz pełne dane użytkownika
         User fullUserData = userDAO.getUserById(selectedUser.getId());
         if (fullUserData == null) {
             showError("Nie można pobrać pełnych danych użytkownika");
             return;
         }
 
-        // Tworzenie dialogu wyboru roli
         Dialog<Integer> dialog = new Dialog<>();
         dialog.setTitle("Zmiana roli");
         dialog.setHeaderText("Wybierz nową rolę dla użytkownika:\n" + selectedUser.getName() + " " + selectedUser.getLastName());
@@ -427,15 +397,12 @@ public class AdminUsersController {
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
-        // Przygotuj ComboBox z rolami
         ComboBox<String> roleComboBox = new ComboBox<>();
 
-        // Dodaj role z mapy ról
         for (Map.Entry<Integer, String> entry : roleNames.entrySet()) {
             roleComboBox.getItems().add(entry.getValue());
         }
 
-        // Ustaw domyślną wartość na obecną rolę
         int currentRoleId = selectedUser.getRoleId();
         String currentRoleName = roleNames.getOrDefault(currentRoleId, "Nieznana");
         roleComboBox.setValue(currentRoleName);
@@ -447,26 +414,23 @@ public class AdminUsersController {
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == ButtonType.OK) {
                 String selectedRole = roleComboBox.getValue();
-                // Znajdź ID wybranej roli
                 for (Map.Entry<Integer, String> entry : roleNames.entrySet()) {
                     if (entry.getValue().equals(selectedRole)) {
                         return entry.getKey();
                     }
                 }
-                return currentRoleId; // Jeśli nie znaleziono, zwróć obecne ID
+                return currentRoleId;
             }
             return null;
         });
 
         Optional<Integer> newRoleId = dialog.showAndWait();
         newRoleId.ifPresent(roleId -> {
-            // Aktualizuj rolę użytkownika
             fullUserData.setRoleId(roleId);
             boolean success = userDAO.updateUser(fullUserData);
             if (success) {
-                // Zaktualizuj również widok lokalny
                 selectedUser.setRoleId(roleId);
-                loadUsers(); // Odśwież całą listę
+                loadUsers();
                 showInfo("Rola użytkownika została zmieniona");
             } else {
                 showError("Błąd podczas zmiany roli użytkownika");
@@ -482,14 +446,12 @@ public class AdminUsersController {
             return;
         }
 
-        // Pobierz pełne dane użytkownika
         User fullUserData = userDAO.getUserById(selectedUser.getId());
         if (fullUserData == null) {
             showError("Nie można pobrać pełnych danych użytkownika");
             return;
         }
 
-        // Tworzenie dialogu wyboru grupy
         Dialog<Integer> dialog = new Dialog<>();
         dialog.setTitle("Zmiana grupy");
         dialog.setHeaderText("Wybierz nową grupę dla użytkownika:\n" + selectedUser.getName() + " " + selectedUser.getLastName());
@@ -497,15 +459,12 @@ public class AdminUsersController {
         DialogPane dialogPane = dialog.getDialogPane();
         dialogPane.getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
-        // Przygotuj ComboBox z grupami
         ComboBox<String> groupComboBox = new ComboBox<>();
 
-        // Dodaj grupy z mapy grup
         for (Map.Entry<Integer, String> entry : groupNames.entrySet()) {
             groupComboBox.getItems().add(entry.getValue());
         }
 
-        // Ustaw domyślną wartość na obecną grupę
         int currentGroupId = selectedUser.getGroupId();
         String currentGroupName = groupNames.getOrDefault(currentGroupId, "Brak grupy");
         groupComboBox.setValue(currentGroupName);
@@ -517,26 +476,23 @@ public class AdminUsersController {
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == ButtonType.OK) {
                 String selectedGroup = groupComboBox.getValue();
-                // Znajdź ID wybranej grupy
                 for (Map.Entry<Integer, String> entry : groupNames.entrySet()) {
                     if (entry.getValue().equals(selectedGroup)) {
                         return entry.getKey();
                     }
                 }
-                return currentGroupId; // Jeśli nie znaleziono, zwróć obecne ID
+                return currentGroupId;
             }
             return null;
         });
 
         Optional<Integer> newGroupId = dialog.showAndWait();
         newGroupId.ifPresent(groupId -> {
-            // Aktualizuj grupę użytkownika
             fullUserData.setGroupId(groupId);
             boolean success = userDAO.updateUser(fullUserData);
             if (success) {
-                // Zaktualizuj również widok lokalny
                 selectedUser.setGroupId(groupId);
-                loadUsers(); // Odśwież całą listę
+                loadUsers();
                 showInfo("Grupa użytkownika została zmieniona");
             } else {
                 showError("Błąd podczas zmiany grupy użytkownika");
@@ -551,16 +507,13 @@ public class AdminUsersController {
     }
 
     private Dialog<UserTeamPair> createUserDialog(User user) {
-        // Tworzenie nowego dialogu
         Dialog<UserTeamPair> dialog = new Dialog<>();
         dialog.setTitle(user == null ? "Dodaj nowego użytkownika" : "Edytuj użytkownika");
         dialog.setHeaderText(user == null ? "Wprowadź dane nowego użytkownika" : "Edytuj dane użytkownika");
 
-        // Dodanie przycisków
         ButtonType saveButtonType = new ButtonType("Zapisz", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
 
-        // Tworzenie pól formularza
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
@@ -572,27 +525,24 @@ public class AdminUsersController {
         TextField emailField = new TextField();
         emailField.setPromptText("Email");
 
-        // Kombo dla roli - używamy dynamicznie pobranych ról
+
         ComboBox<String> roleComboBox = new ComboBox<>();
         for (Map.Entry<Integer, String> entry : roleNames.entrySet()) {
             roleComboBox.getItems().add(entry.getValue());
         }
-        roleComboBox.setValue(roleNames.getOrDefault(4, "Pracownik")); // Domyślnie pracownik
+        roleComboBox.setValue(roleNames.getOrDefault(4, "Pracownik"));
 
-        // Kombo dla grupy - używamy dynamicznie pobranych grup
         ComboBox<String> groupComboBox = new ComboBox<>();
         for (Map.Entry<Integer, String> entry : groupNames.entrySet()) {
             groupComboBox.getItems().add(entry.getValue());
         }
-        groupComboBox.setValue(groupNames.getOrDefault(1, "Deweloperzy")); // Domyślnie deweloperzy
+        groupComboBox.setValue(groupNames.getOrDefault(1, "Deweloperzy"));
 
-        // Kombo dla zespołu
         ComboBox<Team> teamComboBox = new ComboBox<>();
         try {
             List<Team> teams = teamDAO.getAllTeams();
             teamComboBox.setItems(FXCollections.observableArrayList(teams));
 
-            // Konwerter dla teamComboBox
             teamComboBox.setConverter(new javafx.util.StringConverter<Team>() {
                 @Override
                 public String toString(Team team) {
@@ -608,23 +558,19 @@ public class AdminUsersController {
             e.printStackTrace();
         }
 
-        // Jeśli edytujemy użytkownika, ustawiamy wartości pól
         if (user != null) {
             nameField.setText(user.getName());
             lastNameField.setText(user.getLastName());
             emailField.setText(user.getEmail());
 
-            // Wybierz odpowiednią rolę
             int roleId = user.getRoleId();
             String roleName = roleNames.getOrDefault(roleId, "Pracownik");
             roleComboBox.setValue(roleName);
 
-            // Wybierz odpowiednią grupę
             int groupId = user.getGroupId();
             String groupName = groupNames.getOrDefault(groupId, "Deweloperzy");
             groupComboBox.setValue(groupName);
 
-            // Próba znalezienia i ustawienia zespołu
             try {
                 int teamId = teamMemberDAO.getTeamIdForUser(user.getId());
                 if (teamId > 0) {
@@ -640,7 +586,6 @@ public class AdminUsersController {
             }
         }
 
-        // Dodanie pól do formularza
         grid.add(new Label("Imię:"), 0, 0);
         grid.add(nameField, 1, 0);
         grid.add(new Label("Nazwisko:"), 0, 1);
@@ -656,14 +601,11 @@ public class AdminUsersController {
 
         dialog.getDialogPane().setContent(grid);
 
-        // Ustawienie fokusa
         Platform.runLater(nameField::requestFocus);
 
-        // Walidacja danych przed zapisem
         Node saveButton = dialog.getDialogPane().lookupButton(saveButtonType);
         saveButton.setDisable(true);
 
-        // Dodanie listenerów do pól formularza do walidacji
         nameField.textProperty().addListener((observable, oldValue, newValue) -> {
             validateForm(saveButton, nameField, lastNameField, emailField);
         });
@@ -676,7 +618,6 @@ public class AdminUsersController {
             validateForm(saveButton, nameField, lastNameField, emailField);
         });
 
-        // Konwersja wyniku dialogu
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == saveButtonType) {
                 User result = user != null ? user : new User();
@@ -684,7 +625,6 @@ public class AdminUsersController {
                 result.setLastName(lastNameField.getText());
                 result.setEmail(emailField.getText());
 
-                // Znajdź ID roli na podstawie wybranej nazwy
                 String selectedRole = roleComboBox.getValue();
                 for (Map.Entry<Integer, String> entry : roleNames.entrySet()) {
                     if (entry.getValue().equals(selectedRole)) {
@@ -693,7 +633,6 @@ public class AdminUsersController {
                     }
                 }
 
-                // Znajdź ID grupy na podstawie wybranej nazwy
                 String selectedGroup = groupComboBox.getValue();
                 for (Map.Entry<Integer, String> entry : groupNames.entrySet()) {
                     if (entry.getValue().equals(selectedGroup)) {

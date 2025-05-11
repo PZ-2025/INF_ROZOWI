@@ -21,37 +21,31 @@ public class RegisterService {
      */
     public RegistrationResult register(String firstName, String lastName, String email,
                                        String password, String confirmPassword) {
-        // 1. Walidacja w stylu "imię z wielkiej litery"
         if (!isCapitalized(firstName)) {
             return RegistrationResult.fail("Imię musi zaczynać się od wielkiej litery!");
         }
         if (!isCapitalized(lastName)) {
             return RegistrationResult.fail("Nazwisko musi zaczynać się od wielkiej litery!");
         }
-        // 2. Walidacja email
         if (!isValidEmail(email)) {
             return RegistrationResult.fail("Email musi zawierać znak '@' z co najmniej dwoma znakami przed i po nim!");
         }
-        // 3. Hasło musi zawierać znak specjalny
         if (!hasSpecialChar(password)) {
             return RegistrationResult.fail("Hasło musi zawierać przynajmniej jeden znak specjalny!");
         }
-        // 4. Password == confirmPassword
         if (!password.equals(confirmPassword)) {
             return RegistrationResult.fail("Hasła nie są takie same!");
         }
 
-        // 5. Tworzymy encję User
         User newUser = new User();
         newUser.setName(firstName);
         newUser.setLastName(lastName);
         newUser.setEmail(email);
         newUser.setPassword(hashPassword(password));
-        newUser.setRoleId(3);   // Domyślna rola
-        newUser.setGroupId(1);  // Domyślny team
+        newUser.setRoleId(3);  
+        newUser.setGroupId(1); 
         newUser.setPasswordHint("");
 
-        // 6. Wstawiamy usera do bazy
         boolean inserted = userDAO.insertUser(newUser);
         if (!inserted) {
             return RegistrationResult.fail("Rejestracja nie powiodła się! Sprawdź, czy email nie jest już zajęty.");

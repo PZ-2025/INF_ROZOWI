@@ -52,13 +52,10 @@ public class TaskEditController {
      */
     @FXML
     private void initialize() {
-        // Set up status options
         statusComboBox.getItems().addAll("Nowe", "W toku", "Zakończone");
 
-        // Set up priority options
         priorityComboBox.getItems().addAll("LOW", "MEDIUM", "HIGH");
 
-        // Set up converters for team and assignee dropdowns
         setupConverters();
     }
 
@@ -70,13 +67,11 @@ public class TaskEditController {
     public void setTask(Task task) {
         this.currentTask = task;
 
-        // Populate fields with current values
         titleField.setText(task.getTitle());
         descriptionArea.setText(task.getDescription());
         statusComboBox.setValue(task.getStatus());
         priorityComboBox.setValue(task.getPriority());
 
-        // Parse dates
         if (task.getStartDate() != null && !task.getStartDate().isEmpty()) {
             try {
                 startDatePicker.setValue(LocalDate.parse(task.getStartDate()));
@@ -93,10 +88,9 @@ public class TaskEditController {
             }
         }
 
-        // Load teams
         loadTeams(task.getProjectId(), task.getTeamId());
 
-        // Load team members for assignee dropdown
+
         if (task.getTeamId() > 0) {
             loadTeamMembers(task.getTeamId(), task.getAssignedTo());
         }
@@ -108,7 +102,6 @@ public class TaskEditController {
     private void loadTeams(int projectId, int currentTeamId) {
         try {
             List<Team> teams = teamDAO.getAllTeams();
-            // Filter teams by project
             teamComboBox.getItems().clear();
             for (Team team : teams) {
                 if (team.getProjectId() == projectId) {
@@ -119,7 +112,6 @@ public class TaskEditController {
                 }
             }
 
-            // Add listener to update members when team changes
             teamComboBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
                 if (newVal != null) {
                     loadTeamMembers(newVal.getId(), 0);
@@ -139,7 +131,6 @@ public class TaskEditController {
             assigneeComboBox.getItems().clear();
             assigneeComboBox.getItems().addAll(members);
 
-            // Select current assignee if present
             if (currentAssigneeId > 0) {
                 for (User user : members) {
                     if (user.getId() == currentAssigneeId) {
@@ -157,7 +148,6 @@ public class TaskEditController {
      * Sets up string converters for dropdown controls.
      */
     private void setupConverters() {
-        // Team converter
         teamComboBox.setConverter(new StringConverter<Team>() {
             @Override
             public String toString(Team team) {
@@ -166,11 +156,10 @@ public class TaskEditController {
 
             @Override
             public Team fromString(String string) {
-                return null; // Not needed for our use case
+                return null; 
             }
         });
 
-        // User/Assignee converter
         assigneeComboBox.setConverter(new StringConverter<User>() {
             @Override
             public String toString(User user) {
@@ -179,7 +168,7 @@ public class TaskEditController {
 
             @Override
             public User fromString(String string) {
-                return null; // Not needed for our use case
+                return null; 
             }
         });
     }
@@ -190,18 +179,15 @@ public class TaskEditController {
      */
     @FXML
     private void handleSave() {
-        // Validate form fields
         if (!validateForm()) {
             return;
         }
 
-        // Update task with values from form
         currentTask.setTitle(titleField.getText().trim());
         currentTask.setDescription(descriptionArea.getText().trim());
         currentTask.setStatus(statusComboBox.getValue());
         currentTask.setPriority(priorityComboBox.getValue());
 
-        // Format dates for DB storage
         if (startDatePicker.getValue() != null) {
             currentTask.setStartDate(startDatePicker.getValue().format(dateFormatter));
         }
@@ -210,17 +196,14 @@ public class TaskEditController {
             currentTask.setEndDate(endDatePicker.getValue().format(dateFormatter));
         }
 
-        // Update team if changed
         Team selectedTeam = teamComboBox.getValue();
         if (selectedTeam != null) {
             currentTask.setTeamId(selectedTeam.getId());
             currentTask.setTeamName(selectedTeam.getTeamName());
         }
 
-        // Save task to database
         boolean success = taskDAO.updateTask(currentTask);
 
-        // Handle assignee changes if needed
         User selectedUser = assigneeComboBox.getValue();
         if (selectedUser != null && (currentTask.getAssignedTo() != selectedUser.getId())) {
             boolean assignSuccess = taskDAO.assignTask(currentTask.getId(), selectedUser.getId());
@@ -255,25 +238,21 @@ public class TaskEditController {
      * @return true if all fields are valid, false otherwise
      */
     private boolean validateForm() {
-        // Title is required
         if (titleField.getText().trim().isEmpty()) {
             showWarning("Please enter a title for the task");
             return false;
         }
 
-        // Status is required
         if (statusComboBox.getValue() == null) {
             showWarning("Please select a status for the task");
             return false;
         }
 
-        // Priority is required
         if (priorityComboBox.getValue() == null) {
             showWarning("Please select a priority for the task");
             return false;
         }
 
-        // Dates validation
         if (startDatePicker.getValue() == null) {
             showWarning("Please select a start date for the task");
             return false;
@@ -289,7 +268,6 @@ public class TaskEditController {
             return false;
         }
 
-        // Team is required
         if (teamComboBox.getValue() == null) {
             showWarning("Please select a team for the task");
             return false;

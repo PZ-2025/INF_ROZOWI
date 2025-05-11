@@ -22,7 +22,6 @@
             <TableColumn fx:id="colDesc" text="Opis" prefWidth="300"/>
             <TableColumn fx:id="colStart" text="Data startu" prefWidth="120"/>
             <TableColumn fx:id="colEnd" text="Data końca" prefWidth="120"/>
-            <!-- Status column removed as requested -->
         </columns>
     </TableView>
 

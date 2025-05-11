@@ -120,7 +120,7 @@ public class ProjectDAO {
             conn.setAutoCommit(false);
 
             try {
-                // W pierwszej kolejności pobierzmy listę zadań z tego projektu
+
                 List<Integer> taskIds = new ArrayList<>();
                 try (PreparedStatement stmt = conn.prepareStatement("SELECT id FROM tasks WHERE project_id = ?")) {
                     stmt.setInt(1, projectId);
@@ -130,7 +130,6 @@ public class ProjectDAO {
                     }
                 }
 
-                // Pobierzmy również listę zespołów z tego projektu
                 List<Integer> teamIds = new ArrayList<>();
                 try (PreparedStatement stmt = conn.prepareStatement("SELECT id FROM teams WHERE project_id = ?")) {
                     stmt.setInt(1, projectId);
@@ -140,9 +139,6 @@ public class ProjectDAO {
                     }
                 }
 
-                // Teraz usuwajmy powiązane dane
-
-                // 1. Sprawdzamy, czy tabela task_assignments istnieje
                 boolean taskAssignmentsExists = false;
                 try (PreparedStatement stmt = conn.prepareStatement(
                         "SHOW TABLES LIKE 'task_assignments'")) {
@@ -150,9 +146,7 @@ public class ProjectDAO {
                     taskAssignmentsExists = rs.next();
                 }
 
-                // Usuwanie przypisań zadań
                 if (taskAssignmentsExists && !taskIds.isEmpty()) {
-                    // Przygotowanie zapytania z odpowiednią liczbą znaków zapytania
                     StringBuilder questionMarks = new StringBuilder();
                     for (int i = 0; i < taskIds.size(); i++) {
                         if (i > 0) {
@@ -170,7 +164,6 @@ public class ProjectDAO {
                     }
                 }
 
-                // 2. Usuwanie aktywności zadań - najpierw sprawdzamy, która tabela istnieje
                 boolean taskActivityExists = false;
                 boolean taskActivitiesExists = false;
 
@@ -216,13 +209,11 @@ public class ProjectDAO {
                     }
                 }
 
-                // 3. Usuwanie powiadomień związanych z zadaniami
-                // Musimy sprawdzić, czy kolumna task_id istnieje w tabeli notifications
                 boolean notificationHasTaskId = false;
                 try (PreparedStatement stmt = conn.prepareStatement(
                         "SHOW COLUMNS FROM notifications LIKE 'task_id'")) {
                     ResultSet rs = stmt.executeQuery();
-                    notificationHasTaskId = rs.next(); // Jeśli istnieje, zwróci true
+                    notificationHasTaskId = rs.next(); 
                 }
 
                 if (notificationHasTaskId && !taskIds.isEmpty()) {
@@ -243,13 +234,11 @@ public class ProjectDAO {
                     }
                 }
 
-                // 4. Usuwanie wszystkich zadań z tego projektu
                 try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM tasks WHERE project_id = ?")) {
                     stmt.setInt(1, projectId);
                     stmt.executeUpdate();
                 }
 
-                // 5. Sprawdźmy, czy tabela team_members istnieje
                 boolean teamMembersExists = false;
                 try (PreparedStatement stmt = conn.prepareStatement(
                         "SHOW TABLES LIKE 'team_members'")) {
@@ -257,7 +246,6 @@ public class ProjectDAO {
                     teamMembersExists = rs.next();
                 }
 
-                // Usuwanie członków zespołów powiązanych z projektem
                 if (teamMembersExists && !teamIds.isEmpty()) {
                     StringBuilder questionMarks = new StringBuilder();
                     for (int i = 0; i < teamIds.size(); i++) {
@@ -276,13 +264,11 @@ public class ProjectDAO {
                     }
                 }
 
-                // 6. Usuwanie zespołów z projektu
                 try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM teams WHERE project_id = ?")) {
                     stmt.setInt(1, projectId);
                     stmt.executeUpdate();
                 }
 
-                // 7. Na końcu usuwamy sam projekt
                 try (PreparedStatement stmt = conn.prepareStatement("DELETE FROM projects WHERE id = ?")) {
                     stmt.setInt(1, projectId);
                     int affectedRows = stmt.executeUpdate();
@@ -301,5 +287,28 @@ public class ProjectDAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public Project getProjectById(int projectId) {
+        String sql = "SELECT id, project_name, description, start_date, end_date, manager_id FROM projects WHERE id = ?";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, projectId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Project p = new Project();
+                    p.setId(rs.getInt("id"));
+                    p.setProjectName(rs.getString("project_name"));
+                    p.setDescription(rs.getString("description"));
+                    p.setStartDate(LocalDate.parse(rs.getString("start_date")));
+                    p.setEndDate(LocalDate.parse(rs.getString("end_date")));
+                    p.setManagerId(rs.getInt("manager_id"));
+                    return p;
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return null;
     }
 }

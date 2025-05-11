@@ -36,6 +36,8 @@ public class AdminActivitiesController {
     private TableColumn<ActivityEntry, String> colActivityType;
     @FXML
     private TableColumn<ActivityEntry, String> colDescription;
+    @FXML
+    private TableColumn<ActivityEntry, String> colId;
 
     @FXML
     private TextField searchField;
@@ -64,20 +66,17 @@ public class AdminActivitiesController {
     private ObservableList<ActivityEntry> allActivities = FXCollections.observableArrayList();
     private FilteredList<ActivityEntry> filteredActivities;
 
-    // Cache to improve performance
     private Map<Integer, String> userNameCache = new HashMap<>();
     private Map<Integer, String> taskTitleCache = new HashMap<>();
 
     @FXML
     private void initialize() {
-        // Set up table columns
         colTimestamp.setCellValueFactory(data -> data.getValue().timestampProperty());
         colUser.setCellValueFactory(data -> data.getValue().userProperty());
         colTaskTitle.setCellValueFactory(data -> data.getValue().taskProperty());
         colActivityType.setCellValueFactory(data -> data.getValue().typeProperty());
         colDescription.setCellValueFactory(data -> data.getValue().descriptionProperty());
 
-        // Set up activity type coloring
         colActivityType.setCellFactory(column -> new TableCell<>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -104,22 +103,22 @@ public class AdminActivitiesController {
                 }
             }
         });
+        colId.setCellValueFactory(cellData -> {
+            int index = activitiesTable.getItems().indexOf(cellData.getValue()) + 1;
+            return new SimpleStringProperty(String.valueOf(index));
+        });
 
-        // Set up activity type filter options
         activityTypeCombo.getItems().addAll(
             "Wszystkie", "CREATE", "UPDATE", "STATUS", "ASSIGN", "COMMENT",
             "PASSWORD", "LOGIN", "LOGOUT", "USER_MANAGEMENT", "TEAM_MANAGEMENT"
         );
         activityTypeCombo.setValue("Wszystkie");
 
-        // Load all activities
         loadActivities();
 
-        // Configure filtered list
         filteredActivities = new FilteredList<>(allActivities, p -> true);
         activitiesTable.setItems(filteredActivities);
 
-        // Handle row selection to show details
         activitiesTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 displayActivityDetails(newSelection);
@@ -128,21 +127,17 @@ public class AdminActivitiesController {
             }
         });
 
-        // Configure search and filters
         setupFilters();
     }
 
     private void loadActivities() {
         try {
-            // Load activities from database
             List<TaskActivity> activities = taskActivityDAO.getAllActivities();
 
-            // Convert to EnhancedTaskActivity objects
             List<EnhancedTaskActivity> enhancedActivities = new ArrayList<>();
             for (TaskActivity activity : activities) {
                 EnhancedTaskActivity enhanced = new EnhancedTaskActivity(activity);
 
-                // Populate user info
                 User user = userDAO.getUserById(activity.getUserId());
                 if (user != null) {
                     enhanced.setUserName(user.getName());
@@ -150,7 +145,6 @@ public class AdminActivitiesController {
                     enhanced.setUserEmail(user.getEmail());
                 }
 
-                // Get task title for tasks (not system events)
                 if (activity.getTaskId() > 0) {
                     String title = getTaskTitle(activity.getTaskId());
                     enhanced.setTaskTitle(title);
@@ -159,7 +153,6 @@ public class AdminActivitiesController {
                 enhancedActivities.add(enhanced);
             }
 
-            // Convert to ActivityEntry objects for display
             for (EnhancedTaskActivity enhanced : enhancedActivities) {
                 ActivityEntry entry = new ActivityEntry(
                     enhanced.getId(),
@@ -184,7 +177,6 @@ public class AdminActivitiesController {
     }
 
     private String getUserName(int userId) {
-        // Check cache first
         if (userNameCache.containsKey(userId)) {
             return userNameCache.get(userId);
         }
@@ -204,14 +196,11 @@ public class AdminActivitiesController {
     }
 
     private String getTaskTitle(int taskId) {
-        // Check cache first
         if (taskTitleCache.containsKey(taskId)) {
             return taskTitleCache.get(taskId);
         }
 
         try {
-            // In a real implementation, we'd have a method to get a single task by ID
-            // This is a workaround
             List<pl.rozowi.app.models.Task> tasks = taskDAO.getTasksByProjectId(-1);
             for (pl.rozowi.app.models.Task task : tasks) {
                 if (task.getId() == taskId) {
@@ -228,7 +217,6 @@ public class AdminActivitiesController {
     }
 
     private void setupFilters() {
-        // Add listeners to filter controls
         searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
         activityTypeCombo.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
         startDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
@@ -248,7 +236,6 @@ public class AdminActivitiesController {
                                    activity.getDescription().toLowerCase().contains(searchText) ||
                                    activity.getType().toLowerCase().contains(searchText);
 
-            // Fix for activity type filter - handle all potential matches
             boolean matchesType = "Wszystkie".equals(activityType) ||
                                  activity.getType().equalsIgnoreCase(activityType) ||
                                  mapTypeToPolish(activity.getType()).equalsIgnoreCase(activityType) ||
@@ -260,7 +247,6 @@ public class AdminActivitiesController {
         });
     }
 
-    // Helper methods to map between English and Polish type names
     private String mapTypeToPolish(String englishType) {
         return switch (englishType.toUpperCase()) {
             case "CREATE" -> "UTWORZENIE";
@@ -299,7 +285,6 @@ public class AdminActivitiesController {
         }
 
         try {
-            // Parse timestamp string to get date part
             LocalDate date = LocalDate.parse(timestampStr.substring(0, 10));
 
             boolean afterStartDate = startDate == null || !date.isBefore(startDate);
@@ -307,7 +292,7 @@ public class AdminActivitiesController {
 
             return afterStartDate && beforeEndDate;
         } catch (Exception e) {
-            return true; // In case of parsing error, include the activity
+            return true;
         }
     }
 
@@ -318,7 +303,6 @@ public class AdminActivitiesController {
         detailType.setText(activity.getType());
         detailDescription.setText(activity.getDescription());
 
-        // Apply styling to activity type
         switch (activity.getType().toUpperCase()) {
             case "CREATE", "UTWORZENIE" -> detailType.setStyle("-fx-text-fill: #28a745; -fx-font-weight: bold;");
             case "UPDATE", "AKTUALIZACJA" -> detailType.setStyle("-fx-text-fill: #17a2b8; -fx-font-weight: bold;");
@@ -374,7 +358,6 @@ public class AdminActivitiesController {
             return;
         }
 
-        // Create file chooser for saving the export
         javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
         fileChooser.setTitle("Eksport aktywności");
         fileChooser.getExtensionFilters().addAll(
@@ -382,21 +365,17 @@ public class AdminActivitiesController {
             new javafx.stage.FileChooser.ExtensionFilter("Pliki CSV", "*.csv")
         );
 
-        // Set default filename with timestamp
         java.time.LocalDateTime now = java.time.LocalDateTime.now();
         java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
         fileChooser.setInitialFileName("aktywnosci_export_" + now.format(formatter) + ".csv");
 
-        // Show save dialog
         javafx.stage.Stage stage = (javafx.stage.Stage) activitiesTable.getScene().getWindow();
         java.io.File file = fileChooser.showSaveDialog(stage);
 
         if (file != null) {
             try (java.io.FileWriter writer = new java.io.FileWriter(file)) {
-                // Write header
                 writer.write("Data i czas|Użytkownik|Zadanie|Typ aktywności|Opis\n");
 
-                // Write data
                 for (ActivityEntry activity : filteredActivities) {
                     writer.write(String.format("%s|%s|%s|%s|%s\n",
                         activity.getTimestamp(),
@@ -415,7 +394,6 @@ public class AdminActivitiesController {
         }
     }
 
-    // Add these helper methods if they don't already exist in your class
     private void showInfo(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
@@ -440,9 +418,6 @@ public class AdminActivitiesController {
         alert.showAndWait();
     }
 
-    /**
-     * Helper class representing an activity entry in the system
-     */
     public static class ActivityEntry {
         private final int id;
         private final int taskId;
@@ -463,7 +438,6 @@ public class AdminActivitiesController {
             this.type = activityType != null ? activityType : "INNE";
             this.description = description != null ? description : "";
 
-            // Format timestamp
             if (timestamp != null) {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 this.timestamp = dateFormat.format(timestamp);
@@ -481,7 +455,6 @@ public class AdminActivitiesController {
         public String getDescription() { return description; }
         public String getTimestamp() { return timestamp; }
 
-        // Properties for JavaFX TableView binding
         public SimpleStringProperty taskProperty() { return new SimpleStringProperty(task); }
         public SimpleStringProperty userProperty() { return new SimpleStringProperty(user); }
         public SimpleStringProperty typeProperty() { return new SimpleStringProperty(type); }

@@ -1,19 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.control.*?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
 
-<AnchorPane xmlns:fx="http://javafx.com/fxml"
-            fx:controller="pl.rozowi.app.controllers.ReportsController"
-            style="-fx-background-color: #1E1E2F;">
-    <HBox layoutX="20" layoutY="20" spacing="10">
-        <Label text="Raporty (Team Leader)" style="-fx-font-size: 20px; -fx-text-fill: white;"/>
-        <Region fx:id="spacer" HBox.hgrow="ALWAYS"/>
-        <Button fx:id="generateButton" text="Generuj" style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pl.rozowi.app.controllers.TeamLeaderReportsController"
+      spacing="15" styleClass="dashboard-container">
+
+    <Label text="Raporty - Team Leader" styleClass="page-title"/>
+
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Typ raportu:" styleClass="label-white"/>
+        <ComboBox fx:id="reportTypeComboBox" prefWidth="200"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="generateButton" text="Generuj raport"
+                styleClass="primary-button"
+                onAction="#handleGenerateReport"/>
+        <Button fx:id="saveAsPdfButton" text="Zapisz jako PDF"
+                styleClass="success-button"
+                onAction="#handleSaveAsPdf"/>
     </HBox>
-    <TextArea fx:id="reportsArea" layoutX="20" layoutY="60"
-              style="-fx-pref-width: 600; -fx-pref-height: 400;"
-              promptText="Tu wstaw raporty..."/>
-</AnchorPane>
+
+    <TextArea fx:id="reportsArea" wrapText="true" VBox.vgrow="ALWAYS"
+              styleClass="code-area"/>
+
+    <VBox spacing="5" styleClass="filter-section">
+        <Label text="Instrukcja:" styleClass="section-header"/>
+        <Label text="1. Wybierz rodzaj raportu z listy rozwijanej." styleClass="label-white"/>
+        <Label text="2. Kliknij 'Generuj raport' aby zobaczyć podgląd." styleClass="label-white"/>
+        <Label text="3. Użyj przycisku 'Zapisz jako PDF' aby zapisać raport na dysku." styleClass="label-white"/>
+        <padding>
+            <Insets top="5" right="10" bottom="5" left="10"/>
+        </padding>
+    </VBox>
+</VBox>

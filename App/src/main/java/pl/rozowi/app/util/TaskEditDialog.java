@@ -25,21 +25,17 @@ public class TaskEditDialog {
      */
     public static boolean showEditDialog(Task task) {
         try {
-            // Load the FXML
             FXMLLoader loader = new FXMLLoader(MainApplication.class.getResource("/fxml/taskEdit.fxml"));
             Parent root = loader.load();
 
-            // Get the controller and set the task
             TaskEditController controller = loader.getController();
             controller.setTask(task);
 
-            // Create and configure the stage
             Stage stage = new Stage();
             stage.setTitle("Edit Task");
             stage.initModality(Modality.APPLICATION_MODAL);
             stage.setScene(new Scene(root));
 
-            // Show the dialog and wait for it to be closed
             stage.showAndWait();
 
             return true;

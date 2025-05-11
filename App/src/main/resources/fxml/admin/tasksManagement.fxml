@@ -6,8 +6,7 @@
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       alignment="CENTER" spacing="15"
-      style="-fx-padding: 20px; -fx-background-color: #1E1E2F;">
+      styleClass="content-pane">
 
-    <Label text="Zarządzanie Zadaniami (Admin)"
-           style="-fx-font-size: 24px; -fx-text-fill: white;"/>
+    <Label text="Zarządzanie Zadaniami (Admin)" styleClass="page-title"/>
 </VBox>

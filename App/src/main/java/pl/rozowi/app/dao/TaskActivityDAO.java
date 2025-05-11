@@ -150,10 +150,6 @@ public class TaskActivityDAO {
                 activity.setActivityType(rs.getString("activity_type"));
                 activity.setDescription(rs.getString("description"));
                 activity.setActivityDate(rs.getTimestamp("created_at"));
-
-                // Możemy również dodać dodatkowe pola do TaskActivity, aby przechowywać te informacje
-                // Można to zrobić poprzez rozszerzenie klasy TaskActivity lub użycie mapy dodatkowych właściwości
-
                 activities.add(activity);
             }
         } catch (SQLException ex) {
@@ -186,7 +182,6 @@ public class TaskActivityDAO {
 
         List<Object> params = new ArrayList<>();
 
-        // Dodaj warunki filtrowania
         if (activityType != null && !activityType.isEmpty()) {
             sqlBuilder.append("AND ta.activity_type = ? ");
             params.add(activityType);
@@ -217,7 +212,6 @@ public class TaskActivityDAO {
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sqlBuilder.toString())) {
 
-            // Ustaw parametry zapytania
             for (int i = 0; i < params.size(); i++) {
                 stmt.setObject(i + 1, params.get(i));
             }
@@ -261,7 +255,6 @@ public class TaskActivityDAO {
             while (rs.next()) {
                 EnhancedTaskActivity activity = new EnhancedTaskActivity();
 
-                // Base TaskActivity properties
                 activity.setId(rs.getInt("id"));
                 activity.setTaskId(rs.getInt("task_id"));
                 activity.setUserId(rs.getInt("user_id"));
@@ -269,7 +262,6 @@ public class TaskActivityDAO {
                 activity.setDescription(rs.getString("description"));
                 activity.setActivityDate(rs.getTimestamp("created_at"));
 
-                // Enhanced properties
                 activity.setTaskTitle(rs.getString("task_title"));
                 activity.setUserName(rs.getString("user_name"));
                 activity.setUserLastName(rs.getString("user_last_name"));
@@ -306,7 +298,6 @@ public class TaskActivityDAO {
 
         List<Object> params = new ArrayList<>();
 
-        // Add filter conditions
         if (activityType != null && !activityType.isEmpty() && !activityType.equals("Wszystkie")) {
             sqlBuilder.append("AND ta.activity_type = ? ");
             params.add(activityType);
@@ -332,7 +323,6 @@ public class TaskActivityDAO {
             params.add(taskId);
         }
 
-        // Text search across multiple fields
         if (searchText != null && !searchText.isEmpty()) {
             sqlBuilder.append("AND (LOWER(ta.description) LIKE ? OR LOWER(t.title) LIKE ? " +
                              "OR LOWER(u.name) LIKE ? OR LOWER(u.last_name) LIKE ? OR LOWER(u.email) LIKE ?) ");
@@ -349,7 +339,6 @@ public class TaskActivityDAO {
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sqlBuilder.toString())) {
 
-            // Set query parameters
             for (int i = 0; i < params.size(); i++) {
                 stmt.setObject(i + 1, params.get(i));
             }
@@ -358,7 +347,6 @@ public class TaskActivityDAO {
                 while (rs.next()) {
                     EnhancedTaskActivity activity = new EnhancedTaskActivity();
 
-                    // Base TaskActivity properties
                     activity.setId(rs.getInt("id"));
                     activity.setTaskId(rs.getInt("task_id"));
                     activity.setUserId(rs.getInt("user_id"));
@@ -366,7 +354,6 @@ public class TaskActivityDAO {
                     activity.setDescription(rs.getString("description"));
                     activity.setActivityDate(rs.getTimestamp("created_at"));
 
-                    // Enhanced properties
                     activity.setTaskTitle(rs.getString("task_title"));
                     activity.setUserName(rs.getString("user_name"));
                     activity.setUserLastName(rs.getString("user_last_name"));

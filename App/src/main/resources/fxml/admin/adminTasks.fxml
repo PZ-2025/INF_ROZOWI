@@ -8,58 +8,45 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 
-
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="pl.rozowi.app.controllers.AdminTasksController"
-      spacing="15" style="-fx-padding: 10px; -fx-background-color: #1E1E2F;">
+      spacing="15" styleClass="content-pane">
 
     <HBox alignment="CENTER_LEFT" spacing="15">
-        <Label text="Zarządzanie Zadaniami"
-               style="-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        <Label text="Zarządzanie Zadaniami" styleClass="page-title"/>
         <Pane HBox.hgrow="ALWAYS" />
         <TextField fx:id="searchField" promptText="Szukaj zadania..." prefWidth="250"/>
-        <Button fx:id="searchButton" text="🔍" onAction="#handleSearch"
-                style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+        <Button fx:id="searchButton" text="🔍" onAction="#handleSearch" styleClass="primary-button"/>
     </HBox>
 
     <HBox spacing="10">
-        <Button text="Dodaj zadanie" onAction="#handleAddTask"
-                style="-fx-background-color: #28a745; -fx-text-fill: white;"/>
-        <Button text="Edytuj" onAction="#handleEditTask"
-                style="-fx-background-color: #ffc107; -fx-text-fill: black;"/>
-        <Button text="Usuń" onAction="#handleDeleteTask"
-                style="-fx-background-color: #dc3545; -fx-text-fill: white;"/>
-        <Button text="Przypisz użytkownika" onAction="#handleAssignUser"
-                style="-fx-background-color: #17a2b8; -fx-text-fill: white;"/>
-        <Button text="Zmień status" onAction="#handleChangeStatus"
-                style="-fx-background-color: #6c757d; -fx-text-fill: white;"/>
-        <Button text="Odśwież" onAction="#handleRefresh"
-                style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+        <Button text="Dodaj zadanie" onAction="#handleAddTask" styleClass="primary-button"/>
+        <Button text="Edytuj" onAction="#handleEditTask" styleClass="secondary-button"/>
+        <Button text="Usuń" onAction="#handleDeleteTask" styleClass="secondary-button"/>
+        <Button text="Przypisz użytkownika" onAction="#handleAssignUser" styleClass="secondary-button"/>
+        <Button text="Zmień status" onAction="#handleChangeStatus" styleClass="secondary-button"/>
+        <Button text="Odśwież" onAction="#handleRefresh" styleClass="primary-button"/>
     </HBox>
 
-    <!-- Filtrowanie zaawansowane -->
     <TitledPane text="Filtry zaawansowane" expanded="false">
-        <VBox spacing="10">
+        <VBox spacing="10" styleClass="filter-section">
             <HBox spacing="15">
                 <ComboBox fx:id="projectFilterCombo" promptText="Projekt" prefWidth="200"/>
                 <ComboBox fx:id="teamFilterCombo" promptText="Zespół" prefWidth="200"/>
                 <ComboBox fx:id="statusFilterCombo" promptText="Status" prefWidth="150"/>
                 <ComboBox fx:id="priorityFilterCombo" promptText="Priorytet" prefWidth="150"/>
-                <Button text="Zastosuj filtry" onAction="#handleApplyFilters"
-                        style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
-                <Button text="Wyczyść filtry" onAction="#handleClearFilters"
-                        style="-fx-background-color: #6c757d; -fx-text-fill: white;"/>
+                <Button text="Zastosuj filtry" onAction="#handleApplyFilters" styleClass="primary-button"/>
+                <Button text="Wyczyść filtry" onAction="#handleClearFilters" styleClass="secondary-button"/>
             </HBox>
             <HBox spacing="15">
-                <Label text="Termin od:" style="-fx-text-fill: white;"/>
+                <Label text="Termin od:"/>
                 <DatePicker fx:id="startDateFilter"/>
-                <Label text="do:" style="-fx-text-fill: white;"/>
+                <Label text="do:"/>
                 <DatePicker fx:id="endDateFilter"/>
             </HBox>
         </VBox>
     </TitledPane>
 
-    <!-- Tabela zadań -->
     <TableView fx:id="tasksTable" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
@@ -74,9 +61,8 @@
         </columns>
     </TableView>
 
-    <!-- Panel szczegółów zadania - poprawiona wersja -->
     <TitledPane text="Szczegóły zadania" expanded="false">
-        <VBox spacing="10">
+        <VBox spacing="10" styleClass="task-details-grid">
             <GridPane hgap="15" vgap="10">
                 <columnConstraints>
                     <ColumnConstraints minWidth="150" />
@@ -85,38 +71,38 @@
                     <ColumnConstraints minWidth="300" />
                 </columnConstraints>
 
-                <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
-                <Label fx:id="detailId" text="-" GridPane.rowIndex="0" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
+                <Label text="ID:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <Label fx:id="detailId" text="-" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-                <Label text="Tytuł:" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
-                <Label fx:id="detailTitle" text="-" GridPane.rowIndex="1" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
+                <Label text="Tytuł:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <Label fx:id="detailTitle" text="-" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-                <Label text="Projekt:" GridPane.rowIndex="2" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
-                <Label fx:id="detailProject" text="-" GridPane.rowIndex="2" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
+                <Label text="Projekt:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <Label fx:id="detailProject" text="-" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
-                <Label text="Zespół:" GridPane.rowIndex="3" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
-                <Label fx:id="detailTeam" text="-" GridPane.rowIndex="3" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
+                <Label text="Zespół:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <Label fx:id="detailTeam" text="-" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
-                <Label text="Status:" GridPane.rowIndex="4" GridPane.columnIndex="0" style="-fx-text-fill: black;"/>
-                <Label fx:id="detailStatus" text="-" GridPane.rowIndex="4" GridPane.columnIndex="1" style="-fx-text-fill: black;"/>
+                <Label text="Status:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <Label fx:id="detailStatus" text="-" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
 
-                <Label text="Priorytet:" GridPane.rowIndex="0" GridPane.columnIndex="2" style="-fx-text-fill: black;"/>
-                <Label fx:id="detailPriority" text="-" GridPane.rowIndex="0" GridPane.columnIndex="3" style="-fx-text-fill: black;"/>
+                <Label text="Priorytet:" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+                <Label fx:id="detailPriority" text="-" GridPane.rowIndex="0" GridPane.columnIndex="3"/>
 
-                <Label text="Data rozpoczęcia:" GridPane.rowIndex="1" GridPane.columnIndex="2" style="-fx-text-fill: black;"/>
-                <Label fx:id="detailStartDate" text="-" GridPane.rowIndex="1" GridPane.columnIndex="3" style="-fx-text-fill: black;"/>
+                <Label text="Data rozpoczęcia:" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+                <Label fx:id="detailStartDate" text="-" GridPane.rowIndex="1" GridPane.columnIndex="3"/>
 
-                <Label text="Data zakończenia:" GridPane.rowIndex="2" GridPane.columnIndex="2" style="-fx-text-fill: black;"/>
-                <Label fx:id="detailEndDate" text="-" GridPane.rowIndex="2" GridPane.columnIndex="3" style="-fx-text-fill: black;"/>
+                <Label text="Data zakończenia:" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+                <Label fx:id="detailEndDate" text="-" GridPane.rowIndex="2" GridPane.columnIndex="3"/>
 
-                <Label text="Przypisane do:" GridPane.rowIndex="3" GridPane.columnIndex="2" style="-fx-text-fill: black;"/>
-                <Label fx:id="detailAssignee" text="-" GridPane.rowIndex="3" GridPane.columnIndex="3" style="-fx-text-fill: black;"/>
+                <Label text="Przypisane do:" GridPane.rowIndex="3" GridPane.columnIndex="2"/>
+                <Label fx:id="detailAssignee" text="-" GridPane.rowIndex="3" GridPane.columnIndex="3"/>
 
-                <Label text="Ostatnia aktualizacja:" GridPane.rowIndex="4" GridPane.columnIndex="2" style="-fx-text-fill: black;"/>
-                <Label fx:id="detailLastUpdate" text="-" GridPane.rowIndex="4" GridPane.columnIndex="3" style="-fx-text-fill: black;"/>
+                <Label text="Ostatnia aktualizacja:" GridPane.rowIndex="4" GridPane.columnIndex="2"/>
+                <Label fx:id="detailLastUpdate" text="-" GridPane.rowIndex="4" GridPane.columnIndex="3"/>
             </GridPane>
 
-            <Label text="Opis zadania:" style="-fx-text-fill: black;"/>
+            <Label text="Opis zadania:"/>
             <TextArea fx:id="detailDescription" wrapText="true" editable="false" prefRowCount="4"/>
 
             <TitledPane text="Historia aktywności" expanded="false">

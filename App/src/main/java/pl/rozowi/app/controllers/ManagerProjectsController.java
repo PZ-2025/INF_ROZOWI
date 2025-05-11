@@ -31,7 +31,6 @@ public class ManagerProjectsController {
     private TableColumn<Project, LocalDate> colStart;
     @FXML
     private TableColumn<Project, LocalDate> colEnd;
-    // Status column removed as requested
 
     private final ProjectDAO projectDAO = new ProjectDAO();
     private final TaskDAO taskDAO = new TaskDAO();
@@ -39,7 +38,6 @@ public class ManagerProjectsController {
 
     @FXML
     public void initialize() {
-        // Zmieniono - zamiast rzeczywistego ID, wyświetlamy numer porządkowy (indeks + 1)
         colId.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(
                 projectsTable.getItems().indexOf(data.getValue()) + 1));
 
@@ -47,7 +45,6 @@ public class ManagerProjectsController {
         colDesc.setCellValueFactory(c -> c.getValue().descriptionProperty());
         colStart.setCellValueFactory(c -> c.getValue().startDateProperty());
         colEnd.setCellValueFactory(c -> c.getValue().endDateProperty());
-        // Status column removed as requested
 
         loadAll();
     }
@@ -95,16 +92,13 @@ public class ManagerProjectsController {
             return;
         }
 
-        // Load tasks to show count in the confirmation dialog
         List<Task> tasks = taskDAO.getTasksByProjectId(selectedProject.getId());
         int taskCount = tasks.size();
 
-        // Create a confirmation dialog with warning about tasks
         Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
         confirmDialog.setTitle("Potwierdzenie usunięcia");
         confirmDialog.setHeaderText("Czy na pewno chcesz usunąć projekt?");
 
-        // Wyświetl numer porządkowy zamiast ID w komunikacie
         int projectIndex = projectsTable.getItems().indexOf(selectedProject) + 1;
         String contentText = "Projekt #" + projectIndex + ": " + selectedProject.getName();
 
@@ -113,18 +107,15 @@ public class ManagerProjectsController {
         }
         confirmDialog.setContentText(contentText);
 
-        // Add custom buttons
         ButtonType deleteButtonType = new ButtonType("Usuń", ButtonBar.ButtonData.OK_DONE);
         ButtonType cancelButtonType = new ButtonType("Anuluj", ButtonBar.ButtonData.CANCEL_CLOSE);
         confirmDialog.getButtonTypes().setAll(deleteButtonType, cancelButtonType);
 
         Optional<ButtonType> result = confirmDialog.showAndWait();
         if (result.isPresent() && result.get() == deleteButtonType) {
-            // Use the new delete method from ProjectDAO
             boolean deleted = projectDAO.deleteProject(selectedProject.getId());
 
             if (deleted) {
-                // Remove from the local list
                 data.remove(selectedProject);
                 showInfo("Projekt został usunięty wraz ze wszystkimi powiązanymi elementami");
             } else {
@@ -186,21 +177,17 @@ public class ManagerProjectsController {
                 dpStart.setValue(p.getStartDate());
                 dpEnd.setValue(p.getEndDate());
             } else {
-                // Default start and end dates for a new project
                 dpStart.setValue(LocalDate.now());
                 dpEnd.setValue(LocalDate.now().plusMonths(1));
             }
 
-            // Validation
             Button okButton = (Button) getDialogPane().lookupButton(ButtonType.OK);
             okButton.setDisable(true);
 
-            // Listeners to enable/disable OK button based on validation
             nameField.textProperty().addListener((obs, oldVal, newVal) -> validateForm(okButton));
             dpStart.valueProperty().addListener((obs, oldVal, newVal) -> validateForm(okButton));
             dpEnd.valueProperty().addListener((obs, oldVal, newVal) -> validateForm(okButton));
 
-            // Initial validation
             validateForm(okButton);
 
             setResultConverter(btn -> {

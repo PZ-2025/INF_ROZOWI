@@ -8,8 +8,8 @@ module pl.rozowi.app {
     requires java.desktop;
     requires task.app.reports;
 
-    // Pozostałe wymagania modułu
     opens pl.rozowi.app.controllers to javafx.fxml;
     exports pl.rozowi.app;
     opens pl.rozowi.app.util to javafx.fxml;
+    opens pl.rozowi.app.services to javafx.fxml;
 }

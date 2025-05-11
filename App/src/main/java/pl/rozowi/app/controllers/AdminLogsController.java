@@ -65,14 +65,12 @@ public class AdminLogsController {
 
     @FXML
     private void initialize() {
-        // Konfiguracja kolumn tabeli
         colTimestamp.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTimestamp()));
         colLevel.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getLevel()));
         colSource.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getSource()));
         colUser.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getUser()));
         colMessage.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getMessage()));
 
-        // Zaawansowane formatowanie komórki poziomu
         colLevel.setCellFactory(column -> new TableCell<LogEntry, String>() {
             @Override
             protected void updateItem(String item, boolean empty) {
@@ -83,7 +81,6 @@ public class AdminLogsController {
                 } else {
                     setText(item);
 
-                    // Kolorowanie w zależności od poziomu
                     switch (item) {
                         case "ERROR" -> setStyle("-fx-text-fill: #dc3545; -fx-font-weight: bold;");
                         case "WARNING" -> setStyle("-fx-text-fill: #ffc107; -fx-font-weight: bold;");
@@ -95,11 +92,9 @@ public class AdminLogsController {
             }
         });
 
-        // Ustaw poziomy logów w filtrze
         logLevelCombo.getItems().addAll("Wszystkie", "ERROR", "WARNING", "INFO", "DEBUG");
         logLevelCombo.setValue("Wszystkie");
 
-        // Obsługa wyboru logu w tabeli
         logsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
             if (newSelection != null) {
                 displayLogDetails(newSelection);
@@ -108,12 +103,10 @@ public class AdminLogsController {
             }
         });
 
-        // Wczytaj przykładowe logi
         loadSampleLogs();
     }
 
     private void loadSampleLogs() {
-        // W rzeczywistej implementacji, pobierz logi z bazy danych lub pliku
         List<LogEntry> logs = generateSampleLogs(100);
         allLogs.setAll(logs);
         filteredLogs.setAll(logs);
@@ -150,11 +143,9 @@ public class AdminLogsController {
             String user = users[random.nextInt(users.length)];
             String message = messages[random.nextInt(messages.length)];
 
-            // Generuj losową datę z ostatniego tygodnia
             LocalDateTime dateTime = LocalDateTime.now().minusDays(random.nextInt(7)).minusHours(random.nextInt(24)).minusMinutes(random.nextInt(60));
             String timestamp = dateTime.format(formatter);
 
-            // Tworzenie szczegółów dla szczegółowego widoku
             String ip = "192.168.1." + (random.nextInt(254) + 1);
             String session = "SESSION_" + random.nextInt(10000);
             String stackTrace = level.equals("ERROR") ? generateStackTrace() : "";
@@ -163,7 +154,6 @@ public class AdminLogsController {
             logs.add(logEntry);
         }
 
-        // Sortuj od najnowszych do najstarszych
         logs.sort((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()));
 
         return logs;
@@ -211,7 +201,6 @@ public class AdminLogsController {
         detailMessage.setText(logEntry.getMessage());
         detailStackTrace.setText(logEntry.getStackTrace());
 
-        // Kolorowanie etykiety poziomu
         switch (logEntry.getLevel()) {
             case "ERROR" -> detailLevel.setStyle("-fx-text-fill: #dc3545; -fx-font-weight: bold;");
             case "WARNING" -> detailLevel.setStyle("-fx-text-fill: #ffc107; -fx-font-weight: bold;");
@@ -238,7 +227,6 @@ public class AdminLogsController {
         String searchText = searchField.getText().toLowerCase().trim();
         if (searchText.isEmpty() && logLevelCombo.getValue().equals("Wszystkie") &&
             startDatePicker.getValue() == null && endDatePicker.getValue() == null) {
-            // Brak filtrów, pokaż wszystkie logi
             filteredLogs.setAll(allLogs);
             logsTable.setItems(filteredLogs);
             return;
@@ -281,18 +269,18 @@ public class AdminLogsController {
 
             return afterStartDate && beforeEndDate;
         } catch (Exception e) {
-            return true; // W razie błędu parsowania, nie filtruj tego logu
+            return true;
         }
     }
 
     @FXML
     private void handleFilterByLevel() {
-        handleSearch(); // Ta sama logika co wyszukiwanie
+        handleSearch();
     }
 
     @FXML
     private void handleDateFilter() {
-        handleSearch(); // Ta sama logika co wyszukiwanie
+        handleSearch();
     }
 
     @FXML
@@ -321,21 +309,17 @@ public class AdminLogsController {
             new FileChooser.ExtensionFilter("Pliki CSV", "*.csv")
         );
 
-        // Ustaw domyślną nazwę pliku
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
         fileChooser.setInitialFileName("logs_export_" + now.format(formatter) + ".txt");
 
-        // Pokaż dialog
         Stage stage = (Stage) logsTable.getScene().getWindow();
         File file = fileChooser.showSaveDialog(stage);
 
         if (file != null) {
             try (FileWriter writer = new FileWriter(file)) {
-                // Nagłówek
                 writer.write("Timestamp|Level|Source|User|Message|IP|Session|StackTrace\n");
 
-                // Dane
                 for (LogEntry log : filteredLogs) {
                     writer.write(String.format("%s|%s|%s|%s|%s|%s|%s|%s\n",
                             log.getTimestamp(),
@@ -372,7 +356,6 @@ public class AdminLogsController {
         alert.showAndWait();
     }
 
-    // Klasa wewnętrzna reprezentująca wpis logu
     public static class LogEntry {
         private final String timestamp;
         private final String level;

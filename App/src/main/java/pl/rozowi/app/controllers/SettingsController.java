@@ -12,6 +12,7 @@ import pl.rozowi.app.dao.UserDAO;
 import pl.rozowi.app.models.User;
 import pl.rozowi.app.services.PasswordChangeService;
 import pl.rozowi.app.services.ActivityService;
+import pl.rozowi.app.util.ThemeManager;
 
 import java.io.IOException;
 
@@ -40,10 +41,71 @@ public class SettingsController {
         this.currentUser = user;
         emailField.setText(user.getEmail());
         passwordHintField.setText(user.getPasswordHint() != null ? user.getPasswordHint() : "");
+
         themeComboBox.getItems().setAll("Light", "Dark");
-        themeComboBox.setValue(user.getTheme());
-        defaultViewComboBox.getItems().setAll("Moje zadania", "Zadania");
-        defaultViewComboBox.setValue(user.getDefaultView());
+        themeComboBox.setValue(user.getTheme() != null ? user.getTheme() : "Light");
+
+        defaultViewComboBox.getItems().clear();
+
+        switch (user.getRoleId()) {
+            case 1:
+                defaultViewComboBox.getItems().addAll(
+                        "Użytkownicy",
+                        "Zespoły",
+                        "Projekty",
+                        "Zadania",
+                        "Raporty",
+                        "Aktywność",
+                        "System",
+                        "Ustawienia"
+                );
+                break;
+            case 2:
+                defaultViewComboBox.getItems().addAll(
+                        "Pracownicy",
+                        "Projekty",
+                        "Monitor",
+                        "Zespoły",
+                        "Raporty",
+                        "Ustawienia"
+                );
+                break;
+            case 3:
+                defaultViewComboBox.getItems().addAll(
+                        "Moje zadania",
+                        "Zadania zespołu",
+                        "Pracownicy",
+                        "Raporty",
+                        "Powiadomienia",
+                        "Ustawienia"
+                );
+                break;
+            case 4:
+                defaultViewComboBox.getItems().addAll(
+                        "Moje zadania",
+                        "Zadania",
+                        "Powiadomienia",
+                        "Ustawienia"
+                );
+                break;
+        }
+
+        if (user.getDefaultView() != null && defaultViewComboBox.getItems().contains(user.getDefaultView())) {
+            defaultViewComboBox.setValue(user.getDefaultView());
+        } else {
+            if (!defaultViewComboBox.getItems().isEmpty()) {
+                defaultViewComboBox.setValue(defaultViewComboBox.getItems().get(0));
+            }
+        }
+
+        themeComboBox.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null && !newVal.equals(oldVal)) {
+                Scene currentScene = themeComboBox.getScene();
+                if (currentScene != null) {
+                    ThemeManager.changeTheme(currentScene, newVal);
+                }
+            }
+        });
     }
 
     @FXML
@@ -65,21 +127,18 @@ public class SettingsController {
         String newTheme = themeComboBox.getValue();
         String newDefaultView = defaultViewComboBox.getValue();
 
-        // Walidacja emaila
         if (!newEmail.equals(currentUser.getEmail()) && !isValidEmail(newEmail)) {
             showAlert(Alert.AlertType.ERROR, "Błąd", "Niepoprawny adres e-mail!");
             return;
         }
 
-        // Hashowanie nowego hasła
         if (!newPassword.isEmpty() || !confirmPassword.isEmpty()) {
             try {
                 String hashed = passwordService.validateAndHashPassword(newPassword, confirmPassword);
                 currentUser.setPassword(hashed);
                 if (!newPassword.isEmpty()) {
-                    // Logowanie wydarzenia zmiany hasła
                     ActivityService.logPasswordChange(currentUser.getId(), false);
-}
+                }
             } catch (IllegalArgumentException ex) {
                 showAlert(Alert.AlertType.ERROR, "Błąd", ex.getMessage());
                 return;
@@ -89,13 +148,11 @@ public class SettingsController {
             }
         }
 
-        // Ustaw nowe wartości
         currentUser.setEmail(newEmail);
         currentUser.setTheme(newTheme);
         currentUser.setDefaultView(newDefaultView);
         currentUser.setPasswordHint(newHint);
 
-        // Zapis
         boolean success = userDAO.updateUser(currentUser);
         if (!success) {
             showAlert(Alert.AlertType.ERROR, "Błąd", "Nie udało się zapisać zmian!");
@@ -104,7 +161,8 @@ public class SettingsController {
 
         showAlert(Alert.AlertType.INFORMATION, "Sukces", "Zmiany zapisane pomyślnie!");
 
-        // Przekierowanie według roli
+        MainApplication.setCurrentUser(currentUser);
+
         try {
             Stage stage = (Stage) saveSettingsButton.getScene().getWindow();
             switch (currentUser.getRoleId()) {
@@ -119,7 +177,11 @@ public class SettingsController {
                     TeamLeaderDashboardController ctrl =
                             loader.getController();
                     ctrl.setUser(currentUser);
-                    stage.setScene(new Scene(root));
+
+                    Scene scene = new Scene(root);
+                    ThemeManager.applyTheme(scene, currentUser);
+
+                    stage.setScene(scene);
                     stage.setTitle("TaskApp - Team Leader");
                 }
                 case 4 -> {
@@ -129,7 +191,11 @@ public class SettingsController {
                     UserDashboardController ctrl =
                             loader.getController();
                     ctrl.setUser(currentUser);
-                    stage.setScene(new Scene(root));
+
+                    Scene scene = new Scene(root);
+                    ThemeManager.applyTheme(scene, currentUser);
+
+                    stage.setScene(scene);
                     stage.setTitle("TaskApp - User");
                 }
                 default -> MainApplication.switchScene(

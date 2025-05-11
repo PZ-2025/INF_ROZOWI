@@ -6,34 +6,25 @@
 <?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
 
-
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="pl.rozowi.app.controllers.AdminProjectsController"
-      spacing="15" style="-fx-padding: 10px; -fx-background-color: #1E1E2F;">
+      spacing="15" styleClass="content-pane">
 
     <HBox alignment="CENTER_LEFT" spacing="15">
-        <Label text="Zarządzanie Projektami"
-               style="-fx-font-size: 24px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        <Label text="Zarządzanie Projektami" styleClass="page-title"/>
         <Pane HBox.hgrow="ALWAYS" />
         <TextField fx:id="searchField" promptText="Szukaj projektu..." prefWidth="250"/>
-        <Button fx:id="searchButton" text="🔍" onAction="#handleSearch"
-                style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+        <Button fx:id="searchButton" text="🔍" onAction="#handleSearch" styleClass="primary-button"/>
     </HBox>
 
     <HBox spacing="10">
-        <Button text="Dodaj projekt" onAction="#handleAddProject"
-                style="-fx-background-color: #28a745; -fx-text-fill: white;"/>
-        <Button text="Edytuj" onAction="#handleEditProject"
-                style="-fx-background-color: #ffc107; -fx-text-fill: black;"/>
-        <Button text="Usuń" onAction="#handleDeleteProject"
-                style="-fx-background-color: #dc3545; -fx-text-fill: white;"/>
-        <Button text="Przypisz kierownika" onAction="#handleAssignManager"
-                style="-fx-background-color: #17a2b8; -fx-text-fill: white;"/>
-        <Button text="Odśwież" onAction="#handleRefresh"
-                style="-fx-background-color: #007BFF; -fx-text-fill: white;"/>
+        <Button text="Dodaj projekt" onAction="#handleAddProject" styleClass="primary-button"/>
+        <Button text="Edytuj" onAction="#handleEditProject" styleClass="secondary-button"/>
+        <Button text="Usuń" onAction="#handleDeleteProject" styleClass="secondary-button"/>
+        <Button text="Przypisz kierownika" onAction="#handleAssignManager" styleClass="secondary-button"/>
+        <Button text="Odśwież" onAction="#handleRefresh" styleClass="primary-button"/>
     </HBox>
 
-    <!-- Tabela projektów -->
     <TableView fx:id="projectsTable" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="colId" text="ID" prefWidth="50"/>
@@ -46,9 +37,8 @@
         </columns>
     </TableView>
 
-    <!-- Panel szczegółów projektu -->
     <TitledPane text="Zespoły przypisane do projektu" expanded="false">
-        <VBox spacing="10">
+        <VBox spacing="10" styleClass="task-details-grid">
             <TableView fx:id="teamsTable" prefHeight="200">
                 <columns>
                     <TableColumn fx:id="colTeamId" text="ID" prefWidth="50"/>
@@ -61,7 +51,7 @@
     </TitledPane>
 
     <TitledPane text="Zadania w projekcie" expanded="false">
-        <VBox spacing="10">
+        <VBox spacing="10" styleClass="task-details-grid">
             <TableView fx:id="tasksTable" prefHeight="200">
                 <columns>
                     <TableColumn fx:id="colTaskId" text="ID" prefWidth="50"/>

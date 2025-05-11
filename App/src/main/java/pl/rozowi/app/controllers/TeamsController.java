@@ -21,13 +21,11 @@ public class TeamsController {
 
     @FXML
     private void initialize() {
-        // Tutaj ustawiasz cellValueFactory itp.
     }
 
     @FXML
     private void handleSearch() {
         String filter = searchField.getText();
         System.out.println("Szukaj zespołu: " + filter);
-        // Tutaj możesz zaimplementować logikę wyszukiwania w bazie
     }
 }

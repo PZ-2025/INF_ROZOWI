@@ -55,11 +55,9 @@ public class SettingsDAO {
      * @return true if the operation was successful, false otherwise
      */
     public boolean updateLastPasswordChange(int userId) {
-        // First check if settings record exists for this user
         Settings existingSettings = getSettingsByUserId(userId);
 
         if (existingSettings != null) {
-            // Update existing record
             String sql = "UPDATE settings SET last_password_change = CURRENT_TIMESTAMP WHERE user_id = ?";
 
             try (Connection conn = DatabaseManager.getConnection();
@@ -73,7 +71,6 @@ public class SettingsDAO {
                 return false;
             }
         } else {
-            // Insert new record
             String sql = "INSERT INTO settings (user_id, last_password_change) VALUES (?, CURRENT_TIMESTAMP)";
 
             try (Connection conn = DatabaseManager.getConnection();
@@ -180,6 +177,23 @@ public class SettingsDAO {
             return affected > 0;
         } catch (SQLException ex) {
             LOGGER.log(Level.SEVERE, "Error deleting settings for user ID: " + userId, ex);
+            return false;
+        }
+    }
+
+    public boolean updateDefaultView(int userId, String defaultView) {
+        String sql = "UPDATE settings SET default_view = ? WHERE user_id = ?";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, defaultView);
+            stmt.setInt(2, userId);
+            return stmt.executeUpdate() > 0;
+
+        } catch (SQLException ex) {
+            Logger.getLogger(SettingsDAO.class.getName())
+                    .log(Level.SEVERE, "Błąd aktualizacji widoku domyślnego", ex);
             return false;
         }
     }

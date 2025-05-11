@@ -11,5 +11,4 @@
     <Label text="Konfiguracja Systemu (Admin)"
            style="-fx-font-size: 24px; -fx-text-fill: white;"/>
 
-    <!-- pola do zmiany różnych ustawień systemu -->
 </VBox>

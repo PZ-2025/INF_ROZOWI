@@ -4,16 +4,18 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import pl.rozowi.app.MainApplication;
 import pl.rozowi.app.models.User;
+import pl.rozowi.app.util.ThemeManager;
 
 import java.io.IOException;
 
-public class AdminDashboardController {
+public class AdminDashboardController extends BaseDashboardController {
 
     @FXML
     private Label welcomeLabel;
@@ -22,12 +24,9 @@ public class AdminDashboardController {
     @FXML
     private AnchorPane mainPane;
 
-    private User currentUser;
-
     @FXML
     private void initialize() {
         try {
-            // Domyślnie pokazujemy zarządzanie użytkownikami
             goToUsers();
         } catch (IOException e) {
             e.printStackTrace();
@@ -35,14 +34,14 @@ public class AdminDashboardController {
         }
     }
 
-    public void setUser(User user) {
-        this.currentUser = user;
+    @Override
+    protected void onUserSet(User user) {
         welcomeLabel.setText("Witaj, " + user.getName());
 
-        // Jeśli użytkownik ma ustawiony domyślny widok, przełączamy na niego
-        if (user.getDefaultView() != null && !user.getDefaultView().isEmpty()) {
-            try {
-                switch (user.getDefaultView()) {
+        try {
+            String def = user.getDefaultView();
+            if (def != null) {
+                switch (def) {
                     case "Użytkownicy":
                         goToUsers();
                         break;
@@ -61,18 +60,27 @@ public class AdminDashboardController {
                     case "Aktywność":
                         goToActivities();
                         break;
+                    case "System":
+                        goToSystem();
+                        break;
                     case "Ustawienia":
                         goToSettings();
                         break;
                     default:
-                        goToUsers();
+                        goToUsers(); 
                         break;
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-                showError("Błąd podczas ładowania domyślnego widoku");
+            } else {
+                goToUsers(); 
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
+
+    @Override
+    protected Scene getScene() {
+        return mainPane != null ? mainPane.getScene() : null;
     }
 
     @FXML
@@ -117,6 +125,7 @@ public class AdminDashboardController {
 
     @FXML
     private void logout() throws IOException {
+        MainApplication.setCurrentUser(null);
         MainApplication.switchScene("/fxml/login.fxml", "TaskApp - Logowanie");
     }
 
@@ -124,23 +133,21 @@ public class AdminDashboardController {
         FXMLLoader loader = new FXMLLoader(MainApplication.class.getResource(fxmlPath));
         Parent view = loader.load();
 
-        // Sprawdzamy, czy kontroler implementuje interfejs wymagający informacji o użytkowniku
         Object controller = loader.getController();
         if (controller instanceof SettingsController) {
             ((SettingsController) controller).setUser(currentUser);
+        } else if (controller instanceof UserAwareController) {
+            ((UserAwareController) controller).setUser(currentUser);
         }
 
-        // Wyczyszczenie panelu i dodanie nowego widoku
         mainPane.getChildren().clear();
         mainPane.getChildren().add(view);
 
-        // Dopasowanie widoku do panelu
         AnchorPane.setTopAnchor(view, 0.0);
         AnchorPane.setBottomAnchor(view, 0.0);
         AnchorPane.setLeftAnchor(view, 0.0);
         AnchorPane.setRightAnchor(view, 0.0);
-
-        // Dostosowanie rozmiaru okna
+        
         Platform.runLater(() -> {
             Stage stage = (Stage) mainPane.getScene().getWindow();
             stage.sizeToScene();

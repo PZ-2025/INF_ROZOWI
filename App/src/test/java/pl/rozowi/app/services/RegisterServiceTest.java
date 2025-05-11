@@ -31,20 +31,16 @@ class RegisterServiceTest {
      */
     @Test
     void testRegister_success() {
-        // given
         String firstName = "Adam";
         String lastName = "Kowalski";
         String email = "ab@cd";
         String password = "pass@123";
         String confirm = "pass@123";
 
-        // Symulujemy powodzenie inserta w bazie
         when(userDaoMock.insertUser(any(User.class))).thenReturn(true);
 
-        // when
         RegistrationResult result = registerService.register(firstName, lastName, email, password, confirm);
 
-        // then
         assertTrue(result.isSuccess(), "Rejestracja powinna się udać przy poprawnych danych");
         verify(userDaoMock, times(1)).insertUser(any(User.class));
     }
@@ -54,7 +50,7 @@ class RegisterServiceTest {
      */
     @Test
     void testRegister_failWrongCaseForFirstName() {
-        String firstName = "adam"; // z małej litery
+        String firstName = "adam";
         String lastName = "Kowalski";
         String email = "ab@cd";
         String password = "pass@123";
@@ -74,7 +70,7 @@ class RegisterServiceTest {
     void testRegister_failEmailRegex() {
         String firstName = "Adam";
         String lastName = "Kowalski";
-        String email = "a@"; // za krótko po @
+        String email = "a@";
         String password = "xyz@";
         String confirm = "xyz@";
 
@@ -94,7 +90,7 @@ class RegisterServiceTest {
         String lastName = "Kowalski";
         String email = "ab@cd";
         String password = "pass@123";
-        String confirm = "pass@999"; // inne hasło
+        String confirm = "pass@999";
 
         RegistrationResult result = registerService.register(firstName, lastName, email, password, confirm);
 

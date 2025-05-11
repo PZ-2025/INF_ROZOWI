@@ -237,10 +237,8 @@ public class UserDAO {
      * Usuwa użytkownika z bazy danych
      */
     public boolean deleteUser(int userId) {
-        // Najpierw usuń powiązane rekordy z settings
         String sqlSettings = "DELETE FROM settings WHERE user_id = ?";
 
-        // Następnie usuń samego użytkownika
         String sqlUser = "DELETE FROM users WHERE id = ?";
 
         try (Connection conn = DatabaseManager.getConnection()) {
@@ -267,5 +265,37 @@ public class UserDAO {
             LOGGER.log(Level.SEVERE, "Error deleting user", ex);
         }
         return false;
+    }
+
+    public List<String> getAllGroupNames() {
+        List<String> groups = new ArrayList<>();
+        String sql = "SELECT DISTINCT group_name FROM groups ORDER BY group_name";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                groups.add(rs.getString("group_name"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return groups;
+    }
+
+    public List<Integer> getUsersByGroupName(String groupName) {
+        List<Integer> userIds = new ArrayList<>();
+        String sql = "SELECT id FROM users WHERE group_id = " +
+                "(SELECT id FROM groups WHERE group_name = ?)";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, groupName);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                userIds.add(rs.getInt("id"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return userIds;
     }
 }

@@ -41,7 +41,6 @@ public class TaskDAO {
                     t.setEndDate(rs.getString("end_date"));
                     t.setTeamName(rs.getString("team_name"));
 
-                    // Set assigned user info
                     String email = rs.getString("assigned_email");
                     if (email != null) {
                         t.setAssignedEmail(email);
@@ -89,7 +88,6 @@ public class TaskDAO {
                     t.setEndDate(rs.getString("end_date"));
                     t.setTeamName(rs.getString("team_name"));
 
-                    // Set assigned user info
                     String email = rs.getString("assigned_email");
                     if (email != null) {
                         t.setAssignedEmail(email);
@@ -139,7 +137,6 @@ public class TaskDAO {
                     task.setEndDate(rs.getString("end_date"));
                     task.setTeamName(rs.getString("team_name"));
 
-                    // Set assigned user info
                     String email = rs.getString("assigned_email");
                     if (email != null) {
                         task.setAssignedEmail(email);
@@ -231,11 +228,8 @@ public class TaskDAO {
                 task.setEndDate(rs.getString("end_date"));
                 task.setTeamName(rs.getString("team_name"));
 
-                // Set the assignee to be the same user
                 task.setAssignedTo(userId);
 
-                // We would need another query to get the email, but we already know the tasks are assigned to this user
-                // This method can be enhanced if needed to get the email as well
                 tasks.add(task);
             }
         } catch (SQLException ex) {
@@ -293,7 +287,6 @@ public class TaskDAO {
                 task.setEndDate(rs.getString("end_date"));
                 task.setTeamName(rs.getString("team_name"));
 
-                // Set assigned user info
                 String email = rs.getString("assigned_email");
                 if (email != null) {
                     task.setAssignedEmail(email);
@@ -392,14 +385,12 @@ public class TaskDAO {
         try (Connection conn = DatabaseManager.getConnection()) {
             conn.setAutoCommit(false);
             try {
-                // First delete any existing assignments for this task
                 try (PreparedStatement delStmt = conn.prepareStatement(
                         "DELETE FROM task_assignments WHERE task_id = ?")) {
                     delStmt.setInt(1, taskId);
                     delStmt.executeUpdate();
                 }
 
-                // Then insert the new assignment
                 try (PreparedStatement insStmt = conn.prepareStatement(
                         "INSERT INTO task_assignments (task_id, user_id) VALUES (?, ?)")) {
                     insStmt.setInt(1, taskId);
@@ -407,16 +398,13 @@ public class TaskDAO {
                     insStmt.executeUpdate();
                 }
 
-                // If we got here, commit the transaction
                 conn.commit();
                 return true;
             } catch (SQLException ex) {
-                // If anything goes wrong, roll back
                 conn.rollback();
                 ex.printStackTrace();
                 return false;
             } finally {
-                // Restore auto-commit state
                 conn.setAutoCommit(true);
             }
         } catch (SQLException ex) {
@@ -435,27 +423,23 @@ public class TaskDAO {
         try (Connection conn = DatabaseManager.getConnection()) {
             conn.setAutoCommit(false);
             try {
-                // 1. Delete task assignments
                 try (PreparedStatement stmt = conn.prepareStatement(
                         "DELETE FROM task_assignments WHERE task_id = ?")) {
                     stmt.setInt(1, taskId);
                     stmt.executeUpdate();
                 }
 
-                // 2. Delete task activities
                 try (PreparedStatement stmt = conn.prepareStatement(
                         "DELETE FROM task_activities WHERE task_id = ?")) {
                     stmt.setInt(1, taskId);
                     stmt.executeUpdate();
                 }
 
-                // 3. Delete notifications related to task if exists
                 try {
                     PreparedStatement checkStmt = conn.prepareStatement(
                             "SHOW COLUMNS FROM notifications LIKE 'task_id'");
                     ResultSet rs = checkStmt.executeQuery();
                     if (rs.next()) {
-                        // Column exists, delete related notifications
                         try (PreparedStatement stmt = conn.prepareStatement(
                                 "DELETE FROM notifications WHERE task_id = ?")) {
                             stmt.setInt(1, taskId);
@@ -465,26 +449,21 @@ public class TaskDAO {
                     rs.close();
                     checkStmt.close();
                 } catch (SQLException ex) {
-                    // Ignore errors checking for column existence
                 }
 
-                // 4. Finally delete the task itself
                 try (PreparedStatement stmt = conn.prepareStatement(
                         "DELETE FROM tasks WHERE id = ?")) {
                     stmt.setInt(1, taskId);
                     int affected = stmt.executeUpdate();
 
-                    // Commit transaction if we got here
                     conn.commit();
                     return affected > 0;
                 }
             } catch (SQLException ex) {
-                // If anything goes wrong, roll back
                 conn.rollback();
                 ex.printStackTrace();
                 return false;
             } finally {
-                // Restore auto-commit state
                 conn.setAutoCommit(true);
             }
         } catch (SQLException ex) {
