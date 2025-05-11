@@ -54,7 +54,7 @@ public class TaskEditController {
     private void initialize() {
         statusComboBox.getItems().addAll("Nowe", "W toku", "Zakończone");
 
-        priorityComboBox.getItems().addAll("LOW", "MEDIUM", "HIGH");
+        priorityComboBox.getItems().addAll("Niskie", "Średnie", "Wysokie");
 
         setupConverters();
     }

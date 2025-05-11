@@ -41,8 +41,8 @@ public class TaskCreateController {
 
     @FXML
     private void initialize() {
-        comboPriority.getItems().setAll("LOW", "MEDIUM", "HIGH");
-        comboPriority.setValue("MEDIUM");
+        comboPriority.getItems().setAll("Niskie", "Średnie", "Wysokie");
+        comboPriority.setValue("Średnie");
 
         loadAvailableProjects();
 

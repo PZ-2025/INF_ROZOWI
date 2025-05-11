@@ -83,7 +83,7 @@ CREATE TABLE `tasks` (
   `title` varchar(100) NOT NULL,
   `description` text DEFAULT NULL,
   `status` varchar(20) DEFAULT 'TO_DO',
-  `priority` varchar(20) DEFAULT 'MEDIUM',
+  `priority` varchar(20) DEFAULT 'Średnie',
   `start_date` date DEFAULT NULL,
   `end_date` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

@@ -220,7 +220,7 @@ public class AdminTasksController {
             statusFilterCombo.getItems().addAll("Wszystkie", "Nowe", "W toku", "Zakończone");
             statusFilterCombo.setValue("Wszystkie");
 
-            priorityFilterCombo.getItems().addAll("Wszystkie", "LOW", "MEDIUM", "HIGH");
+            priorityFilterCombo.getItems().addAll("Wszystkie", "Niskie", "Średnie", "Wysokie");
             priorityFilterCombo.setValue("Wszystkie");
         } catch (Exception e) {
             showError("Błąd konfiguracji filtrów", e.getMessage());
@@ -712,8 +712,8 @@ public class AdminTasksController {
         statusComboBox.setValue("Nowe");
 
         ComboBox<String> priorityComboBox = new ComboBox<>();
-        priorityComboBox.getItems().addAll("LOW", "MEDIUM", "HIGH");
-        priorityComboBox.setValue("MEDIUM");
+        priorityComboBox.getItems().addAll("Niskie", "Średnie", "Wysokie");
+        priorityComboBox.setValue("Średnie");
 
         DatePicker startDatePicker = new DatePicker();
         DatePicker endDatePicker = new DatePicker();
