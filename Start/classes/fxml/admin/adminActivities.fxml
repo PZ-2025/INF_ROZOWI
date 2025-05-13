@@ -24,12 +24,6 @@
         <Button text="Eksportuj" onAction="#handleExportActivities" styleClass="primary-button"/>
         <Button text="Wyczyść filtry" onAction="#handleClearFilters" styleClass="secondary-button"/>
         <Pane HBox.hgrow="ALWAYS" />
-        <Label text="Typ aktywności:"/>
-        <ComboBox fx:id="activityTypeCombo" prefWidth="120"/>
-        <Label text="Od:"/>
-        <DatePicker fx:id="startDatePicker"/>
-        <Label text="Do:"/>
-        <DatePicker fx:id="endDatePicker"/>
     </HBox>
 
     <TableView fx:id="activitiesTable" VBox.vgrow="ALWAYS">
@@ -38,7 +32,6 @@
             <TableColumn fx:id="colTimestamp" text="Data i czas" prefWidth="150"/>
             <TableColumn fx:id="colUser" text="Użytkownik" prefWidth="180"/>
             <TableColumn fx:id="colTaskTitle" text="Zadanie" prefWidth="150"/>
-            <TableColumn fx:id="colActivityType" text="Typ aktywności" prefWidth="120"/>
             <TableColumn fx:id="colDescription" text="Opis" prefWidth="300"/>
         </columns>
         <columnResizePolicy>
@@ -65,8 +58,6 @@
                 <Label text="Zadanie:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
                 <Label fx:id="detailTask" text="-" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-                <Label text="Typ aktywności:" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
-                <Label fx:id="detailType" text="-" GridPane.rowIndex="1" GridPane.columnIndex="3"/>
             </GridPane>
 
             <Label text="Szczegółowy opis:"/>

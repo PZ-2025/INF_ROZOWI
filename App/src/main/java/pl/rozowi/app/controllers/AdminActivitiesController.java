@@ -33,20 +33,12 @@ public class AdminActivitiesController {
     @FXML
     private TableColumn<ActivityEntry, String> colTaskTitle;
     @FXML
-    private TableColumn<ActivityEntry, String> colActivityType;
-    @FXML
     private TableColumn<ActivityEntry, String> colDescription;
     @FXML
     private TableColumn<ActivityEntry, String> colId;
 
     @FXML
     private TextField searchField;
-    @FXML
-    private ComboBox<String> activityTypeCombo;
-    @FXML
-    private DatePicker startDatePicker;
-    @FXML
-    private DatePicker endDatePicker;
 
     @FXML
     private Label detailTimestamp;
@@ -74,45 +66,12 @@ public class AdminActivitiesController {
         colTimestamp.setCellValueFactory(data -> data.getValue().timestampProperty());
         colUser.setCellValueFactory(data -> data.getValue().userProperty());
         colTaskTitle.setCellValueFactory(data -> data.getValue().taskProperty());
-        colActivityType.setCellValueFactory(data -> data.getValue().typeProperty());
         colDescription.setCellValueFactory(data -> data.getValue().descriptionProperty());
 
-        colActivityType.setCellFactory(column -> new TableCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null) {
-                    setText(null);
-                    setStyle("");
-                } else {
-                    setText(item);
-
-                    switch (item.toUpperCase()) {
-                        case "CREATE", "UTWORZENIE" -> setStyle("-fx-text-fill: #28a745; -fx-font-weight: bold;");
-                        case "UPDATE", "AKTUALIZACJA" -> setStyle("-fx-text-fill: #17a2b8; -fx-font-weight: bold;");
-                        case "STATUS", "ZMIANA STATUSU" -> setStyle("-fx-text-fill: #ffc107; -fx-font-weight: bold;");
-                        case "ASSIGN", "PRZYPISANIE" -> setStyle("-fx-text-fill: #6f42c1; -fx-font-weight: bold;");
-                        case "COMMENT", "KOMENTARZ" -> setStyle("-fx-text-fill: #007bff; -fx-font-weight: bold;");
-                        case "PASSWORD", "ZMIANA HASŁA" -> setStyle("-fx-text-fill: #dc3545; -fx-font-weight: bold;");
-                        case "LOGIN" -> setStyle("-fx-text-fill: #28a745; -fx-font-weight: bold;");
-                        case "LOGOUT" -> setStyle("-fx-text-fill: #6c757d; -fx-font-weight: bold;");
-                        case "USER_MANAGEMENT" -> setStyle("-fx-text-fill: #fd7e14; -fx-font-weight: bold;");
-                        case "TEAM_MANAGEMENT" -> setStyle("-fx-text-fill: #20c997; -fx-font-weight: bold;");
-                        default -> setStyle("");
-                    }
-                }
-            }
-        });
         colId.setCellValueFactory(cellData -> {
             int index = activitiesTable.getItems().indexOf(cellData.getValue()) + 1;
             return new SimpleStringProperty(String.valueOf(index));
         });
-
-        activityTypeCombo.getItems().addAll(
-            "Wszystkie", "CREATE", "UPDATE", "STATUS", "ASSIGN", "COMMENT",
-            "PASSWORD", "LOGIN", "LOGOUT", "USER_MANAGEMENT", "TEAM_MANAGEMENT"
-        );
-        activityTypeCombo.setValue("Wszystkie");
 
         loadActivities();
 
@@ -155,14 +114,14 @@ public class AdminActivitiesController {
 
             for (EnhancedTaskActivity enhanced : enhancedActivities) {
                 ActivityEntry entry = new ActivityEntry(
-                    enhanced.getId(),
-                    enhanced.getTaskId(),
-                    enhanced.getTaskTitleOrDefault(),
-                    enhanced.getUserId(),
-                    enhanced.getUserDisplayString(),
-                    enhanced.getActivityType(),
-                    enhanced.getDescription(),
-                    enhanced.getActivityDate()
+                        enhanced.getId(),
+                        enhanced.getTaskId(),
+                        enhanced.getTaskTitleOrDefault(),
+                        enhanced.getUserId(),
+                        enhanced.getUserDisplayString(),
+                        enhanced.getActivityType(),
+                        enhanced.getDescription(),
+                        enhanced.getActivityDate()
                 );
                 allActivities.add(entry);
             }
@@ -218,32 +177,19 @@ public class AdminActivitiesController {
 
     private void setupFilters() {
         searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
-        activityTypeCombo.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
-        startDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
-        endDatePicker.valueProperty().addListener((obs, oldVal, newVal) -> applyFilters());
     }
 
     private void applyFilters() {
         String searchText = searchField.getText().toLowerCase().trim();
-        String activityType = activityTypeCombo.getValue();
-        LocalDate startDate = startDatePicker.getValue();
-        LocalDate endDate = endDatePicker.getValue();
 
         filteredActivities.setPredicate(activity -> {
             boolean matchesSearch = searchText.isEmpty() ||
-                                   activity.getUser().toLowerCase().contains(searchText) ||
-                                   activity.getTask().toLowerCase().contains(searchText) ||
-                                   activity.getDescription().toLowerCase().contains(searchText) ||
-                                   activity.getType().toLowerCase().contains(searchText);
+                    activity.getUser().toLowerCase().contains(searchText) ||
+                    activity.getTask().toLowerCase().contains(searchText) ||
+                    activity.getDescription().toLowerCase().contains(searchText) ||
+                    activity.getType().toLowerCase().contains(searchText);
 
-            boolean matchesType = "Wszystkie".equals(activityType) ||
-                                 activity.getType().equalsIgnoreCase(activityType) ||
-                                 mapTypeToPolish(activity.getType()).equalsIgnoreCase(activityType) ||
-                                 mapTypeToEnglish(activity.getType()).equalsIgnoreCase(activityType);
-
-            boolean matchesDateRange = isInDateRange(activity.getTimestamp(), startDate, endDate);
-
-            return matchesSearch && matchesType && matchesDateRange;
+            return matchesSearch;
         });
     }
 
@@ -279,52 +225,39 @@ public class AdminActivitiesController {
         };
     }
 
-    private boolean isInDateRange(String timestampStr, LocalDate startDate, LocalDate endDate) {
-        if (timestampStr == null || timestampStr.isEmpty() || (startDate == null && endDate == null)) {
-            return true;
-        }
-
-        try {
-            LocalDate date = LocalDate.parse(timestampStr.substring(0, 10));
-
-            boolean afterStartDate = startDate == null || !date.isBefore(startDate);
-            boolean beforeEndDate = endDate == null || !date.isAfter(endDate);
-
-            return afterStartDate && beforeEndDate;
-        } catch (Exception e) {
-            return true;
-        }
-    }
-
     private void displayActivityDetails(ActivityEntry activity) {
         detailTimestamp.setText(activity.getTimestamp());
         detailUser.setText(activity.getUser());
         detailTask.setText(activity.getTask());
-        detailType.setText(activity.getType());
-        detailDescription.setText(activity.getDescription());
+        if (detailType != null) {
+            detailType.setText(activity.getType());
 
-        switch (activity.getType().toUpperCase()) {
-            case "CREATE", "UTWORZENIE" -> detailType.setStyle("-fx-text-fill: #28a745; -fx-font-weight: bold;");
-            case "UPDATE", "AKTUALIZACJA" -> detailType.setStyle("-fx-text-fill: #17a2b8; -fx-font-weight: bold;");
-            case "STATUS", "ZMIANA STATUSU" -> detailType.setStyle("-fx-text-fill: #ffc107; -fx-font-weight: bold;");
-            case "ASSIGN", "PRZYPISANIE" -> detailType.setStyle("-fx-text-fill: #6f42c1; -fx-font-weight: bold;");
-            case "COMMENT", "KOMENTARZ" -> detailType.setStyle("-fx-text-fill: #007bff; -fx-font-weight: bold;");
-            case "PASSWORD", "ZMIANA HASŁA" -> detailType.setStyle("-fx-text-fill: #dc3545; -fx-font-weight: bold;");
-            case "LOGIN" -> detailType.setStyle("-fx-text-fill: #28a745; -fx-font-weight: bold;");
-            case "LOGOUT" -> detailType.setStyle("-fx-text-fill: #6c757d; -fx-font-weight: bold;");
-            case "USER_MANAGEMENT" -> detailType.setStyle("-fx-text-fill: #fd7e14; -fx-font-weight: bold;");
-            case "TEAM_MANAGEMENT" -> detailType.setStyle("-fx-text-fill: #20c997; -fx-font-weight: bold;");
-            default -> detailType.setStyle("-fx-font-weight: bold;");
+            switch (activity.getType().toUpperCase()) {
+                case "CREATE", "UTWORZENIE" -> detailType.setStyle("-fx-text-fill: #28a745; -fx-font-weight: bold;");
+                case "UPDATE", "AKTUALIZACJA" -> detailType.setStyle("-fx-text-fill: #17a2b8; -fx-font-weight: bold;");
+                case "STATUS", "ZMIANA STATUSU" -> detailType.setStyle("-fx-text-fill: #ffc107; -fx-font-weight: bold;");
+                case "ASSIGN", "PRZYPISANIE" -> detailType.setStyle("-fx-text-fill: #6f42c1; -fx-font-weight: bold;");
+                case "COMMENT", "KOMENTARZ" -> detailType.setStyle("-fx-text-fill: #007bff; -fx-font-weight: bold;");
+                case "PASSWORD", "ZMIANA HASŁA" -> detailType.setStyle("-fx-text-fill: #dc3545; -fx-font-weight: bold;");
+                case "LOGIN" -> detailType.setStyle("-fx-text-fill: #28a745; -fx-font-weight: bold;");
+                case "LOGOUT" -> detailType.setStyle("-fx-text-fill: #6c757d; -fx-font-weight: bold;");
+                case "USER_MANAGEMENT" -> detailType.setStyle("-fx-text-fill: #fd7e14; -fx-font-weight: bold;");
+                case "TEAM_MANAGEMENT" -> detailType.setStyle("-fx-text-fill: #20c997; -fx-font-weight: bold;");
+                default -> detailType.setStyle("-fx-font-weight: bold;");
+            }
         }
+        detailDescription.setText(activity.getDescription());
     }
 
     private void clearActivityDetails() {
         detailTimestamp.setText("-");
         detailUser.setText("-");
         detailTask.setText("-");
-        detailType.setText("-");
+        if (detailType != null) {
+            detailType.setText("-");
+            detailType.setStyle("");
+        }
         detailDescription.setText("");
-        detailType.setStyle("");
     }
 
     @FXML
@@ -335,9 +268,6 @@ public class AdminActivitiesController {
     @FXML
     private void handleClearFilters() {
         searchField.clear();
-        activityTypeCombo.setValue("Wszystkie");
-        startDatePicker.setValue(null);
-        endDatePicker.setValue(null);
         filteredActivities.setPredicate(p -> true);
     }
 
@@ -361,8 +291,8 @@ public class AdminActivitiesController {
         javafx.stage.FileChooser fileChooser = new javafx.stage.FileChooser();
         fileChooser.setTitle("Eksport aktywności");
         fileChooser.getExtensionFilters().addAll(
-            new javafx.stage.FileChooser.ExtensionFilter("Pliki tekstowe", "*.txt"),
-            new javafx.stage.FileChooser.ExtensionFilter("Pliki CSV", "*.csv")
+                new javafx.stage.FileChooser.ExtensionFilter("Pliki tekstowe", "*.txt"),
+                new javafx.stage.FileChooser.ExtensionFilter("Pliki CSV", "*.csv")
         );
 
         java.time.LocalDateTime now = java.time.LocalDateTime.now();
@@ -378,11 +308,11 @@ public class AdminActivitiesController {
 
                 for (ActivityEntry activity : filteredActivities) {
                     writer.write(String.format("%s|%s|%s|%s|%s\n",
-                        activity.getTimestamp(),
-                        activity.getUser(),
-                        activity.getTask(),
-                        activity.getType(),
-                        activity.getDescription().replace("\n", " ").replace("|", ",")
+                            activity.getTimestamp(),
+                            activity.getUser(),
+                            activity.getTask(),
+                            activity.getType(),
+                            activity.getDescription().replace("\n", " ").replace("|", ",")
                     ));
                 }
 
@@ -429,7 +359,7 @@ public class AdminActivitiesController {
         private final String timestamp;
 
         public ActivityEntry(int id, int taskId, String taskTitle, int userId, String userName,
-                            String activityType, String description, Timestamp timestamp) {
+                             String activityType, String description, Timestamp timestamp) {
             this.id = id;
             this.taskId = taskId;
             this.task = (taskTitle != null && !taskTitle.isEmpty()) ? taskTitle : "Zadanie ID: " + taskId;

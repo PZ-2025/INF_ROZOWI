@@ -69,9 +69,9 @@ public class TeamDAO {
                 User u = new User();
                 u.setId(rs.getInt("id"));
                 u.setName(rs.getString("name"));
-                u.setLastName(rs.getString("last_name")); 
+                u.setLastName(rs.getString("last_name"));
                 u.setEmail(rs.getString("email"));
-                u.setRoleId(rs.getInt("role_id")); 
+                u.setRoleId(rs.getInt("role_id"));
                 members.add(u);
             }
         } catch (SQLException e) {
@@ -141,12 +141,7 @@ public class TeamDAO {
         }
         return "–";
     }
-    /**
-     * Pobiera zespoły dla projektów, którymi zarządza dany kierownik
-     * @param managerId identyfikator kierownika
-     * @return lista zespołów przypisanych do projektów kierownika
-     * @throws SQLException w przypadku błędu bazy danych
-     */
+
     public List<Team> getTeamsForManager(int managerId) throws SQLException {
         List<Team> teams = new ArrayList<>();
         String sql = "SELECT t.* FROM teams t " +
@@ -168,6 +163,7 @@ public class TeamDAO {
         }
         return teams;
     }
+
     public Team getTeamById(int teamId) throws SQLException {
         String sql = "SELECT id, team_name, project_id FROM teams WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();
@@ -185,4 +181,45 @@ public class TeamDAO {
         return null;
     }
 
+    public List<Integer> getTeamsByLeaderId(int leaderId) throws SQLException {
+        List<Integer> teamIds = new ArrayList<>();
+        String sql = "SELECT t.id FROM teams t " +
+                "JOIN team_members tm ON t.id = tm.team_id " +
+                "WHERE tm.user_id = ? AND tm.is_leader = true";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, leaderId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                teamIds.add(rs.getInt("id"));
+            }
+        }
+
+        return teamIds;
+    }
+
+    public List<Team> getTeamsByLeaderIdAsList(int leaderId) throws SQLException {
+        List<Team> teams = new ArrayList<>();
+        String sql = "SELECT t.id, t.team_name, t.project_id FROM teams t " +
+                "JOIN team_members tm ON t.id = tm.team_id " +
+                "WHERE tm.user_id = ? AND tm.is_leader = true";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, leaderId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Team team = new Team();
+                team.setId(rs.getInt("id"));
+                team.setTeamName(rs.getString("team_name"));
+                team.setProjectId(rs.getInt("project_id"));
+                teams.add(team);
+            }
+        }
+
+        return teams;
+    }
 }

@@ -151,17 +151,14 @@ public class TeamLeaderReportsController {
                 return;
             }
 
-            List<Integer> teamIds = teamMemberDAO.getTeamIdsForTeamLeader(currentUser.getId());
-            List<Team> teams = new ArrayList<>();
+            List<Team> teamsLedByUser = teamDAO.getTeamsByLeaderIdAsList(currentUser.getId());
 
-            for (Integer teamId : teamIds) {
-                Team team = teamDAO.getTeamById(teamId);
-                if (team != null) {
-                    teams.add(team);
-                }
+            if (teamsLedByUser.isEmpty()) {
+                teamsListView.setItems(FXCollections.observableArrayList());
+                return;
             }
 
-            selectedTeams.setAll(teams);
+            selectedTeams.setAll(teamsLedByUser);
 
             teamsListView.setCellFactory(param -> new ListCell<>() {
                 private final CheckBox checkBox = new CheckBox();
@@ -187,15 +184,15 @@ public class TeamLeaderReportsController {
                 }
             });
 
-            teamsListView.setItems(FXCollections.observableArrayList(teams));
+            teamsListView.setItems(FXCollections.observableArrayList(teamsLedByUser));
 
             groupsComboBox.getItems().add("Wszystkie grupy");
             groupsComboBox.getItems().addAll(userDAO.getAllGroupNames());
             groupsComboBox.getSelectionModel().selectFirst();
 
             List<User> teamMembers = new ArrayList<>();
-            for (Integer teamId : teamIds) {
-                List<User> members = teamDAO.getTeamMembers(teamId);
+            for (Team team : teamsLedByUser) {
+                List<User> members = teamDAO.getTeamMembers(team.getId());
                 members = members.stream()
                         .filter(user -> user.getRoleId() == 4)
                         .collect(Collectors.toList());
@@ -350,7 +347,7 @@ public class TeamLeaderReportsController {
     }
 
     private void generateTeamMembersReport(int teamLeaderId, Map<String, Object> filterOptions) throws SQLException {
-        List<Integer> teamIds = teamMemberDAO.getTeamIdsForTeamLeader(teamLeaderId);
+        List<Team> teamsByLeader = teamDAO.getTeamsByLeaderIdAsList(teamLeaderId);
         List<Team> teamsToShow = new ArrayList<>();
         String selectedGroup = (String) filterOptions.get("selectedGroup");
         User selectedUser = (User) filterOptions.get("selectedUser");
@@ -359,19 +356,13 @@ public class TeamLeaderReportsController {
         List<Team> selectedTeams = (List<Team>) filterOptions.get("selectedTeams");
 
         if (selectedTeams != null && !selectedTeams.isEmpty()) {
-            for (Integer teamId : teamIds) {
-                Team team = teamDAO.getTeamById(teamId);
-                if (team != null && selectedTeams.stream().anyMatch(t -> t.getId() == team.getId())) {
-                    teamsToShow.add(team);
+            for (Team leaderTeam : teamsByLeader) {
+                if (selectedTeams.stream().anyMatch(t -> t.getId() == leaderTeam.getId())) {
+                    teamsToShow.add(leaderTeam);
                 }
             }
         } else {
-            for (Integer teamId : teamIds) {
-                Team team = teamDAO.getTeamById(teamId);
-                if (team != null) {
-                    teamsToShow.add(team);
-                }
-            }
+            teamsToShow.addAll(teamsByLeader);
         }
 
         StringBuilder report = new StringBuilder();
@@ -462,7 +453,7 @@ public class TeamLeaderReportsController {
     }
 
     private void generateTeamTasksReport(int teamLeaderId, Map<String, Object> filterOptions) throws SQLException {
-        List<Integer> teamIds = teamMemberDAO.getTeamIdsForTeamLeader(teamLeaderId);
+        List<Team> teamsByLeader = teamDAO.getTeamsByLeaderIdAsList(teamLeaderId);
         List<Team> teamsToShow = new ArrayList<>();
         boolean showTasks = (boolean) filterOptions.get("showTasks");
         boolean showStatistics = (boolean) filterOptions.get("showStatistics");
@@ -471,19 +462,13 @@ public class TeamLeaderReportsController {
         List<Team> selectedTeams = (List<Team>) filterOptions.get("selectedTeams");
 
         if (selectedTeams != null && !selectedTeams.isEmpty()) {
-            for (Integer teamId : teamIds) {
-                Team team = teamDAO.getTeamById(teamId);
-                if (team != null && selectedTeams.stream().anyMatch(t -> t.getId() == team.getId())) {
-                    teamsToShow.add(team);
+            for (Team leaderTeam : teamsByLeader) {
+                if (selectedTeams.stream().anyMatch(t -> t.getId() == leaderTeam.getId())) {
+                    teamsToShow.add(leaderTeam);
                 }
             }
         } else {
-            for (Integer teamId : teamIds) {
-                Team team = teamDAO.getTeamById(teamId);
-                if (team != null) {
-                    teamsToShow.add(team);
-                }
-            }
+            teamsToShow.addAll(teamsByLeader);
         }
 
         StringBuilder report = new StringBuilder();

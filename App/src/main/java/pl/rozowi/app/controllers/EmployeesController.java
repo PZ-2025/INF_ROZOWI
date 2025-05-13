@@ -11,11 +11,15 @@ import pl.rozowi.app.MainApplication;
 import pl.rozowi.app.dao.TeamDAO;
 import pl.rozowi.app.dao.TeamMemberDAO;
 import pl.rozowi.app.dao.UserDAO;
+import pl.rozowi.app.models.Team;
 import pl.rozowi.app.models.User;
 import pl.rozowi.app.util.Session;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class EmployeesController {
@@ -65,6 +69,8 @@ public class EmployeesController {
             filtered.setPredicate(user -> {
                 if (lower.isEmpty()) return true;
                 return String.valueOf(user.getId()).contains(lower)
+                        || user.getName().toLowerCase().contains(lower)
+                        || user.getLastName().toLowerCase().contains(lower)
                         || user.getEmail().toLowerCase().contains(lower)
                         || user.getTeamName().toLowerCase().contains(lower);
             });
@@ -80,20 +86,50 @@ public class EmployeesController {
         }
 
         int role = current.getRoleId();
-        List<User> users;
+        List<User> users = new ArrayList<>();
+
         switch (role) {
             case 3:
-                int teamId = Integer.parseInt(Session.currentUserTeam);
-                users = teamMemberDAO.getTeamMembers(teamId);
+                List<Integer> teamIds = teamDAO.getTeamsByLeaderId(current.getId());
+
+                Set<Integer> processedUserIds = new HashSet<>();
+
+                for (Integer teamId : teamIds) {
+                    List<User> teamMembers = teamDAO.getTeamMembers(teamId);
+
+                    for (User user : teamMembers) {
+                        if (!processedUserIds.contains(user.getId())) {
+                            processedUserIds.add(user.getId());
+                            users.add(user);
+                        }
+                    }
+                }
+
                 int currentUserId = current.getId();
                 users = users.stream()
                         .filter(user -> user.getId() != currentUserId)
                         .collect(Collectors.toList());
                 break;
-            case 2: 
+
+            case 2:
+                List<Team> managerTeams = teamDAO.getTeamsForManager(current.getId());
+                Set<Integer> managersUserIds = new HashSet<>();
+
+                for (Team team : managerTeams) {
+                    List<User> teamMembers = teamDAO.getTeamMembers(team.getId());
+                    for (User user : teamMembers) {
+                        if (!managersUserIds.contains(user.getId())) {
+                            managersUserIds.add(user.getId());
+                            users.add(user);
+                        }
+                    }
+                }
+                break;
+
             case 1:
                 users = userDAO.getAllUsers();
                 break;
+
             default:
                 users = List.of();
         }
