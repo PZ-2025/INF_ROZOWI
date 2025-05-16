@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.control.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            xmlns="http://javafx.com/javafx"
+            fx:controller="pl.rozowi.app.controllers.ManagerDashboardController"
+            prefWidth="1440" prefHeight="900"
+            styleClass="dashboard-container">
+
+    <left>
+        <VBox spacing="15" styleClass="sidebar-container" alignment="TOP_CENTER">
+            <ImageView fx:id="logoImageView" fitHeight="100" fitWidth="100">
+                <image>
+                    <Image url="@../../images/logo.png"/>
+                </image>
+            </ImageView>
+            <Label fx:id="welcomeLabel" text="Panel Kierownika" styleClass="sidebar-label"/>
+            <Button fx:id="employeesButton" text="Pracownicy" onAction="#goToEmployees" styleClass="sidebar-button"/>
+            <Button fx:id="projectsButton" text="Projekty" onAction="#goToProjects" styleClass="sidebar-button"/>
+            <Button fx:id="tasksButton" text="Monitor" onAction="#goToTasks" styleClass="sidebar-button"/>
+            <Button fx:id="teamsButton" text="Zespoły" onAction="#goToTeams" styleClass="sidebar-button"/>
+            <Button fx:id="reportsButton" text="Raporty" onAction="#goToReports" styleClass="sidebar-button"/>
+            <Region VBox.vgrow="ALWAYS"/>
+            <Button fx:id="settingsButton" text="Ustawienia" onAction="#goToSettings" styleClass="sidebar-button"/>
+            <Button fx:id="logoutButton" text="Wyloguj" onAction="#logout" styleClass="sidebar-logout-button"/>
+        </VBox>
+    </left>
+
+    <center>
+        <AnchorPane fx:id="mainPane" styleClass="content-pane"/>
+    </center>
+</BorderPane>

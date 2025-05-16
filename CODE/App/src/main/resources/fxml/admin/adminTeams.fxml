@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            fx:controller="pl.rozowi.app.controllers.AdminTeamsController"
+            styleClass="content-pane">
+
+    <top>
+        <VBox spacing="10" styleClass="content-section">
+            <padding>
+                <javafx.geometry.Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <HBox spacing="10">
+                <Button text="Nowy zespół" onAction="#onAddTeam" styleClass="primary-button"/>
+                <Button text="Edytuj zespół" onAction="#onEditTeam" styleClass="secondary-button"/>
+                <Button text="Przypisz członków" onAction="#onAssignMembers" styleClass="secondary-button"/>
+                <Button text="Odśwież" onAction="#handleRefresh" styleClass="secondary-button"/>
+                <Pane HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="searchField" promptText="Szukaj zespołu..." prefWidth="200"/>
+                <Button text="🔍" onAction="#handleSearch" styleClass="primary-button"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <left>
+        <TableView fx:id="teamsTable" prefWidth="350">
+            <columns>
+                <TableColumn fx:id="colId" text="ID" prefWidth="60"/>
+                <TableColumn fx:id="colName" text="Nazwa zespołu" prefWidth="150"/>
+                <TableColumn fx:id="colProjectName" text="Projekt" prefWidth="120"/>
+                <TableColumn fx:id="colMembersCount" text="Liczba członków" prefWidth="120"/>
+            </columns>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+            </columnResizePolicy>
+        </TableView>
+    </left>
+
+    <center>
+        <VBox spacing="10" styleClass="content-section">
+            <padding>
+                <javafx.geometry.Insets top="10" right="10" bottom="10" left="10"/>
+            </padding>
+            <Label text="Członkowie zespołu:" styleClass="section-header"/>
+            <TableView fx:id="membersTable" prefHeight="150">
+                <columns>
+                    <TableColumn fx:id="colMemberId" text="ID" prefWidth="60"/>
+                    <TableColumn fx:id="colMemberEmail" text="Email" prefWidth="250"/>
+                    <TableColumn fx:id="colMemberRole" text="Rola" prefWidth="150"/>
+                </columns>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                </columnResizePolicy>
+            </TableView>
+
+            <Label text="Zadania zespołu:" styleClass="section-header"/>
+            <TableView fx:id="tasksTable" prefHeight="200">
+                <columns>
+                    <TableColumn fx:id="colTaskId" text="ID" prefWidth="50"/>
+                    <TableColumn fx:id="colTaskTitle" text="Tytuł" prefWidth="200"/>
+                    <TableColumn fx:id="colTaskStatus" text="Status" prefWidth="100"/>
+                    <TableColumn fx:id="colTaskPriority" text="Priorytet" prefWidth="100"/>
+                    <TableColumn fx:id="colTaskAssignee" text="Wykonawca" prefWidth="180"/>
+                </columns>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                </columnResizePolicy>
+            </TableView>
+        </VBox>
+    </center>
+
+</BorderPane>
