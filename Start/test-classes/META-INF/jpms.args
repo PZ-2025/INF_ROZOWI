@@ -1,4 +1,0 @@
---patch-module
-pl.rozowi.app=_
---add-reads
-pl.rozowi.app=ALL-UNNAMED
