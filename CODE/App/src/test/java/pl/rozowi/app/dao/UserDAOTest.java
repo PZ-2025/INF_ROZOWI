@@ -1,168 +1,362 @@
 package pl.rozowi.app.dao;
 
-import org.junit.jupiter.api.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.MockitoAnnotations;
 import pl.rozowi.app.database.DatabaseManager;
 import pl.rozowi.app.models.User;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class UserDAOTest {
+/**
+ * Testy jednostkowe dla klasy UserDAO z wykorzystaniem Mockito.
+ * Klasa testuje operacje na użytkownikach w bazie danych,
+ * stosując mocki do symulacji zachowania warstwy bazy danych.
+ */
+public class UserDAOTest {
 
-    private static UserDAO userDAO;
-    private static User testUser;
+    @Mock private Connection mockConnection;
+    @Mock private PreparedStatement mockPreparedStatement;
+    @Mock private ResultSet mockResultSet;
 
-    private static final String ORIGINAL_EMAIL = "test.user@example.com";
-    private static final String UPDATED_EMAIL = "updated.user@example.com";
-
-    /**
-     * Pomocnicza metoda do czyszczenia użytkownika testowego z bazy.
-     * Usuwa zarówno użytkownika, jak i powiązane ustawienia (foreign key).
-     */
-    private static void cleanUpTestUser(String email) {
-        String deleteSettingsSql = "DELETE FROM settings WHERE user_id IN (SELECT id FROM users WHERE email = ?)";
-        String deleteUserSql = "DELETE FROM users WHERE email = ?";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement psSettings = conn.prepareStatement(deleteSettingsSql);
-             PreparedStatement psUser = conn.prepareStatement(deleteUserSql)) {
-            psSettings.setString(1, email);
-            psUser.setString(1, email);
-            psSettings.executeUpdate();
-            psUser.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+    private MockedStatic<DatabaseManager> dbMock;
+    private UserDAO userDAO;
 
     /**
-     * Uruchamiane raz przed wszystkimi testami – czyści dane i przygotowuje użytkownika testowego.
+     * Inicjalizacja środowiska testowego przed każdym testem.
+     * Tworzy i konfiguruje mocki dla połączenia z bazą danych,
+     * preparedStatements i resultSets. Inicjalizuje też
+     * statyczny mock klasy DatabaseManager.
      */
-    @BeforeAll
-    static void setUpBeforeClass() {
-        cleanUpTestUser(ORIGINAL_EMAIL);
-        cleanUpTestUser(UPDATED_EMAIL);
+    @Before
+    public void setUp() throws SQLException {
+        MockitoAnnotations.initMocks(this);
+
+        dbMock = mockStatic(DatabaseManager.class);
+        dbMock.when(DatabaseManager::getConnection).thenReturn(mockConnection);
+
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStatement);
+        when(mockPreparedStatement.executeQuery()).thenReturn(mockResultSet);
+        when(mockPreparedStatement.executeUpdate()).thenReturn(1);
 
         userDAO = new UserDAO();
-
-        testUser = new User();
-        testUser.setName("Test");
-        testUser.setLastName("User");
-        testUser.setEmail(ORIGINAL_EMAIL);
-        testUser.setPassword("hashedpassword");
-        testUser.setRoleId(3);
-        testUser.setGroupId(1);
-        testUser.setPasswordHint("test hint");
     }
 
     /**
-     * Testuje poprawność dodania użytkownika do bazy danych.
+     * Czyszczenie zasobów po każdym teście.
+     * Zamyka statyczny mock DatabaseManager, aby uniknąć wycieków pamięci.
+     */
+    @After
+    public void tearDown() {
+        dbMock.close();
+    }
+
+    /**
+     * Test sprawdzający metodę getUserById dla istniejącego użytkownika.
+     * Weryfikuje, czy metoda poprawnie pobiera dane z bazy
+     * i tworzy z nich obiekt User.
      */
     @Test
-    @Order(1)
-    void testInsertUser() {
-        boolean inserted = userDAO.insertUser(testUser);
-        assertTrue(inserted, "InsertUser powinno zwrócić true przy prawidłowych danych");
+    public void testGetUserById_userExists() throws SQLException {
+        int userId = 1;
+        when(mockResultSet.next()).thenReturn(true).thenReturn(false);
+        when(mockResultSet.getInt("id")).thenReturn(userId);
+        when(mockResultSet.getString("name")).thenReturn("John");
+        when(mockResultSet.getString("last_name")).thenReturn("Doe");
+        when(mockResultSet.getString("email")).thenReturn("john@doe.com");
+        when(mockResultSet.getString("password")).thenReturn("pw");
+        when(mockResultSet.getInt("role_id")).thenReturn(3);
+        when(mockResultSet.getInt("group_id")).thenReturn(2);
+        when(mockResultSet.getString("password_hint")).thenReturn("hint");
 
-        User insertedUser = userDAO.getUserByEmail(testUser.getEmail());
-        assertNotNull(insertedUser, "Wstawiony użytkownik powinien być dostępny w bazie");
-        testUser.setId(insertedUser.getId());
-        assertTrue(testUser.getId() > 0, "TestUser powinien mieć ustawione ID po insercie");
+        User u = userDAO.getUserById(userId);
+
+        assertNotNull(u);
+        assertEquals(userId, u.getId());
+        assertEquals("John", u.getName());
+        assertEquals("Doe", u.getLastName());
+        assertEquals("john@doe.com", u.getEmail());
+        assertEquals("pw", u.getPassword());
+        assertEquals(3, u.getRoleId());
+        assertEquals(2, u.getGroupId());
+
+        verify(mockPreparedStatement).setInt(1, userId);
+        verify(mockPreparedStatement).executeQuery();
     }
 
     /**
-     * Testuje poprawność pobierania użytkownika na podstawie e-maila.
+     * Test sprawdzający metodę getUserById dla nieistniejącego użytkownika.
+     * Weryfikuje, czy metoda poprawnie zwraca null w przypadku
+     * braku użytkownika o podanym ID.
      */
     @Test
-    @Order(2)
-    void testGetUserByEmail_Found() {
-        User found = userDAO.getUserByEmail(testUser.getEmail());
-        assertNotNull(found, "User powinien zostać znaleziony");
-        assertEquals(testUser.getName(), found.getName());
-        assertEquals(testUser.getLastName(), found.getLastName());
-        assertEquals(testUser.getEmail(), found.getEmail());
-        assertEquals(testUser.getRoleId(), found.getRoleId());
-        assertEquals(testUser.getGroupId(), found.getGroupId());
+    public void testGetUserById_userDoesNotExist() throws SQLException {
+        when(mockResultSet.next()).thenReturn(false);
+
+        User u = userDAO.getUserById(999);
+        assertNull(u);
+
+        verify(mockPreparedStatement).setInt(1, 999);
+        verify(mockPreparedStatement).executeQuery();
     }
 
     /**
-     * Testuje aktualizację danych użytkownika w bazie (email, hasło, podpowiedź hasła).
+     * Test sprawdzający metodę getUserByEmail dla istniejącego użytkownika.
+     * Weryfikuje, czy metoda poprawnie pobiera dane z bazy
+     * i tworzy z nich obiekt User na podstawie adresu email.
      */
     @Test
-    @Order(3)
-    void testUpdateUser() throws SQLException {
-        assertTrue(testUser.getId() > 0, "TestUser powinien mieć ustawione ID po insercie.");
+    public void testGetUserByEmail_userExists() throws SQLException {
+        String email = "foo@bar.com";
+        when(mockResultSet.next()).thenReturn(true).thenReturn(false);
+        when(mockResultSet.getInt("id")).thenReturn(5);
+        when(mockResultSet.getString("name")).thenReturn("Foo");
+        when(mockResultSet.getString("last_name")).thenReturn("Bar");
+        when(mockResultSet.getString("email")).thenReturn(email);
+        when(mockResultSet.getString("password")).thenReturn("pw2");
+        when(mockResultSet.getInt("role_id")).thenReturn(1);
+        when(mockResultSet.getInt("group_id")).thenReturn(4);
+        when(mockResultSet.getString("password_hint")).thenReturn("hint");
 
-        cleanUpTestUser(UPDATED_EMAIL);
+        User u = userDAO.getUserByEmail(email);
 
-        String insertSettingsSql = "INSERT INTO settings (user_id, theme, default_view) VALUES (?, ?, ?)";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(insertSettingsSql)) {
-            stmt.setInt(1, testUser.getId());
-            stmt.setString(2, "default_theme");
-            stmt.setString(3, "default_view");
-            int insertedSettings = stmt.executeUpdate();
-            if (insertedSettings == 0) {
-                fail("Nie udało się wstawić rekordu do tabeli settings dla testUser.");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            fail("Nie udało się wstawić rekordu do tabeli settings dla testUser.");
-        }
+        assertNotNull(u);
+        assertEquals(email, u.getEmail());
 
-        testUser.setEmail(UPDATED_EMAIL);
-        testUser.setPassword("newhashedpassword");
-        testUser.setPasswordHint("new hint");
-
-        boolean updated = userDAO.updateUser(testUser);
-        assertTrue(updated, "UpdateUser powinno zwrócić true przy udanej aktualizacji");
-
-        User updatedUser = userDAO.getUserByEmail(testUser.getEmail());
-        assertNotNull(updatedUser, "Po aktualizacji użytkownik powinien zostać znaleziony");
-        assertEquals("newhashedpassword", updatedUser.getPassword());
-        assertEquals("new hint", updatedUser.getPasswordHint());
+        verify(mockPreparedStatement).setString(1, email);
+        verify(mockPreparedStatement).executeQuery();
     }
 
     /**
-     * Czyszczenie danych testowych po zakończeniu wszystkich testów.
+     * Test sprawdzający metodę getAllUsers.
+     * Weryfikuje, czy metoda poprawnie pobiera wszystkich użytkowników
+     * z bazy danych i tworzy z nich listę obiektów User.
      */
-    @AfterAll
-    static void tearDownAfterClass() {
-        try (Connection conn = DatabaseManager.getConnection();
-             Statement stmt = conn.createStatement()) {
-            stmt.execute("SET FOREIGN_KEY_CHECKS=0;");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    @Test
+    public void testGetAllUsers() throws SQLException {
+        when(mockResultSet.next()).thenReturn(true, true, false);
+        when(mockResultSet.getInt("id")).thenReturn(1, 2);
+        when(mockResultSet.getString("name")).thenReturn("A","B");
+        when(mockResultSet.getString("last_name")).thenReturn("X","Y");
+        when(mockResultSet.getString("email")).thenReturn("a@x","b@y");
+        when(mockResultSet.getString("password")).thenReturn("p1","p2");
+        when(mockResultSet.getInt("role_id")).thenReturn(10,20);
+        when(mockResultSet.getInt("group_id")).thenReturn(100,200);
+        when(mockResultSet.getString("password_hint")).thenReturn("hint1", "hint2");
 
-        String deleteSettingsSql = "DELETE FROM settings WHERE user_id = ?";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(deleteSettingsSql)) {
-            stmt.setInt(1, testUser.getId());
-            stmt.executeUpdate();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
+        List<User> list = userDAO.getAllUsers();
 
-        String deleteUserSql = "DELETE FROM users WHERE email = ? OR email = ?";
-        try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(deleteUserSql)) {
-            stmt.setString(1, ORIGINAL_EMAIL);
-            stmt.setString(2, UPDATED_EMAIL);
-            stmt.executeUpdate();
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
+        assertNotNull(list);
+        assertEquals(2, list.size());
+        assertEquals(1, list.get(0).getId());
+        assertEquals(2, list.get(1).getId());
 
-        try (Connection conn = DatabaseManager.getConnection();
-             Statement stmt = conn.createStatement()) {
-            stmt.execute("SET FOREIGN_KEY_CHECKS=1;");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        verify(mockPreparedStatement).executeQuery();
+    }
+
+    /**
+     * Test sprawdzający pomyślne dodanie nowego użytkownika.
+     * Weryfikuje, czy metoda insertUser poprawnie ustawia parametry
+     * zapytania i zwraca true w przypadku powodzenia operacji.
+     */
+    @Test
+    public void testInsertUser_success() throws SQLException {
+        User u = new User();
+        u.setName("N");
+        u.setLastName("L");
+        u.setEmail("e");
+        u.setPassword("p");
+        u.setRoleId(7);
+        u.setGroupId(8);
+
+        boolean ok = userDAO.insertUser(u);
+
+        assertTrue(ok);
+        assertEquals(0, u.getId());
+
+        verify(mockPreparedStatement).setString(1, "N");
+        verify(mockPreparedStatement).setString(2, "L");
+        verify(mockPreparedStatement).setString(3, "p");
+        verify(mockPreparedStatement).setString(4, "e");
+        verify(mockPreparedStatement).setInt(5, 7);
+        verify(mockPreparedStatement).setInt(6, 8);
+        verify(mockPreparedStatement).setString(7, null);
+        verify(mockPreparedStatement).executeUpdate();
+    }
+
+    /**
+     * Test sprawdzający niepowodzenie dodania nowego użytkownika.
+     * Symuluje sytuację, gdy operacja INSERT nie dodaje żadnych wierszy,
+     * i weryfikuje, czy metoda zwraca false w takim przypadku.
+     */
+    @Test
+    public void testInsertUser_failure() throws SQLException {
+        when(mockPreparedStatement.executeUpdate()).thenReturn(0);
+
+        User u = new User();
+        boolean ok = userDAO.insertUser(u);
+        assertFalse(ok);
+
+        verify(mockPreparedStatement).executeUpdate();
+    }
+
+    /**
+     * Test sprawdzający pomyślną aktualizację danych użytkownika,
+     * włącznie z automatycznym dodaniem rekordu ustawień.
+     * Weryfikuje poprawność transakcji bazodanowej i sprawdza,
+     * czy wszystkie parametry są poprawnie ustawione.
+     */
+    @Test
+    public void testUpdateUser_success() throws SQLException {
+        PreparedStatement mockUserStatement = mock(PreparedStatement.class);
+        PreparedStatement mockSettingsStatement = mock(PreparedStatement.class);
+
+        when(mockConnection.prepareStatement(contains("UPDATE users"))).thenReturn(mockUserStatement);
+        when(mockConnection.prepareStatement(contains("INSERT INTO settings"))).thenReturn(mockSettingsStatement);
+
+        when(mockUserStatement.executeUpdate()).thenReturn(1);
+        when(mockSettingsStatement.executeUpdate()).thenReturn(1);
+
+        User u = new User();
+        u.setId(55);
+        u.setName("N2");
+        u.setLastName("L2");
+        u.setEmail("e2");
+        u.setPassword("p2");
+        u.setRoleId(9);
+        u.setGroupId(10);
+        u.setPasswordHint("hint");
+
+        boolean ok = userDAO.updateUser(u);
+        assertTrue(ok);
+
+        verify(mockConnection).setAutoCommit(false);
+        verify(mockConnection).commit();
+        verify(mockConnection).setAutoCommit(true);
+
+        verify(mockUserStatement).setString(1, "e2");
+        verify(mockUserStatement).setString(2, "p2");
+        verify(mockUserStatement).setString(3, "hint");
+        verify(mockUserStatement).setString(4, "N2");
+        verify(mockUserStatement).setString(5, "L2");
+        verify(mockUserStatement).setInt(6, 9);
+        verify(mockUserStatement).setInt(7, 10);
+        verify(mockUserStatement).setInt(8, 55);
+
+        verify(mockSettingsStatement).setInt(1, 55);
+
+        verify(mockUserStatement).executeUpdate();
+        verify(mockSettingsStatement).executeUpdate();
+    }
+
+    /**
+     * Test sprawdzający obsługę błędów podczas aktualizacji danych użytkownika.
+     * Symuluje wyjątek SQLException podczas aktualizacji i weryfikuje,
+     * czy transakcja jest poprawnie wycofywana (rollback).
+     */
+    @Test
+    public void testUpdateUser_failure() throws SQLException {
+        PreparedStatement mockUserStatement = mock(PreparedStatement.class);
+        PreparedStatement mockSettingsStatement = mock(PreparedStatement.class);
+
+        when(mockConnection.prepareStatement(contains("UPDATE users"))).thenReturn(mockUserStatement);
+        when(mockConnection.prepareStatement(contains("INSERT INTO settings"))).thenReturn(mockSettingsStatement);
+
+        when(mockUserStatement.executeUpdate()).thenThrow(new SQLException("Update failed"));
+
+        User u = new User();
+        u.setId(55);
+        boolean ok = userDAO.updateUser(u);
+        assertFalse(ok);
+
+        verify(mockConnection).setAutoCommit(false);
+        verify(mockConnection, never()).commit();
+        verify(mockConnection).rollback();
+        verify(mockConnection).setAutoCommit(true);
+
+        verify(mockUserStatement).executeUpdate();
+    }
+
+    /**
+     * Test sprawdzający pomyślne usunięcie użytkownika i jego ustawień.
+     * Weryfikuje poprawność transakcji bazodanowej i sprawdza,
+     * czy wszystkie parametry zapytań są poprawnie ustawione.
+     */
+    @Test
+    public void testDeleteUser_success() throws SQLException {
+        PreparedStatement mockSettingsStatement = mock(PreparedStatement.class);
+        PreparedStatement mockUserStatement = mock(PreparedStatement.class);
+
+        when(mockConnection.prepareStatement(contains("DELETE FROM settings"))).thenReturn(mockSettingsStatement);
+        when(mockConnection.prepareStatement(contains("DELETE FROM users"))).thenReturn(mockUserStatement);
+
+        when(mockSettingsStatement.executeUpdate()).thenReturn(1);
+        when(mockUserStatement.executeUpdate()).thenReturn(1);
+
+        boolean ok = userDAO.deleteUser(77);
+        assertTrue(ok);
+
+        verify(mockConnection).setAutoCommit(false);
+        verify(mockConnection).commit();
+        verify(mockConnection).setAutoCommit(true);
+
+        verify(mockSettingsStatement).setInt(1, 77);
+        verify(mockUserStatement).setInt(1, 77);
+
+        verify(mockSettingsStatement).executeUpdate();
+        verify(mockUserStatement).executeUpdate();
+    }
+
+    /**
+     * Test sprawdzający niepowodzenie usunięcia użytkownika.
+     * Symuluje sytuację, gdy operacja DELETE nie usuwa żadnych wierszy,
+     * i weryfikuje, czy metoda zwraca false w takim przypadku.
+     */
+    @Test
+    public void testDeleteUser_failure() throws SQLException {
+        PreparedStatement mockSettingsStatement = mock(PreparedStatement.class);
+        PreparedStatement mockUserStatement = mock(PreparedStatement.class);
+
+        when(mockConnection.prepareStatement(contains("DELETE FROM settings"))).thenReturn(mockSettingsStatement);
+        when(mockConnection.prepareStatement(contains("DELETE FROM users"))).thenReturn(mockUserStatement);
+
+        when(mockSettingsStatement.executeUpdate()).thenReturn(1);
+        when(mockUserStatement.executeUpdate()).thenReturn(0);
+
+        boolean ok = userDAO.deleteUser(77);
+        assertFalse(ok);
+
+        verify(mockSettingsStatement).setInt(1, 77);
+        verify(mockUserStatement).setInt(1, 77);
+
+        verify(mockConnection).setAutoCommit(false);
+        verify(mockConnection).commit();
+        verify(mockConnection).setAutoCommit(true);
+    }
+
+    /**
+     * Test sprawdzający obsługę wyjątków SQLException w metodzie getUserById.
+     * Symuluje wyjątek podczas wykonania zapytania i weryfikuje,
+     * czy metoda poprawnie zwraca null w takim przypadku.
+     */
+    @Test
+    public void testSQLExceptionHandling_inGetUserById() throws SQLException {
+        when(mockPreparedStatement.executeQuery()).thenThrow(new SQLException("boom"));
+
+        User u = userDAO.getUserById(1);
+        assertNull(u);
+
+        verify(mockPreparedStatement).executeQuery();
     }
 }
