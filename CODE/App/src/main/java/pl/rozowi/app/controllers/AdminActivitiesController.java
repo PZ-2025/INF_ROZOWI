@@ -22,6 +22,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Kontroler odpowiedzialny za zarządzanie i wyświetlanie aktywności w systemie
+ * z perspektywy administratora. Zawiera funkcjonalności przeglądania, filtrowania
+ * i eksportowania historii aktywności użytkowników.
+ */
 public class AdminActivitiesController {
 
     @FXML
@@ -61,6 +66,10 @@ public class AdminActivitiesController {
     private Map<Integer, String> userNameCache = new HashMap<>();
     private Map<Integer, String> taskTitleCache = new HashMap<>();
 
+    /**
+     * Metoda inicjalizująca kontroler. Konfiguruje tabelę aktywności,
+     * ładuje dane i ustawia filtry.
+     */
     @FXML
     private void initialize() {
         colTimestamp.setCellValueFactory(data -> data.getValue().timestampProperty());
@@ -89,6 +98,9 @@ public class AdminActivitiesController {
         setupFilters();
     }
 
+    /**
+     * Ładuje wszystkie aktywności z bazy danych i przygotowuje je do wyświetlenia.
+     */
     private void loadActivities() {
         try {
             List<TaskActivity> activities = taskActivityDAO.getAllActivities();
@@ -135,6 +147,12 @@ public class AdminActivitiesController {
         }
     }
 
+    /**
+     * Pobiera pełną nazwę użytkownika na podstawie ID z cache lub bazy danych.
+     *
+     * @param userId ID użytkownika
+     * @return pełna nazwa użytkownika w formacie "Imię Nazwisko (email)"
+     */
     private String getUserName(int userId) {
         if (userNameCache.containsKey(userId)) {
             return userNameCache.get(userId);
@@ -154,6 +172,12 @@ public class AdminActivitiesController {
         return "Użytkownik ID: " + userId;
     }
 
+    /**
+     * Pobiera tytuł zadania na podstawie ID z cache lub bazy danych.
+     *
+     * @param taskId ID zadania
+     * @return tytuł zadania lub "Zadanie ID: X" jeśli nie znaleziono
+     */
     private String getTaskTitle(int taskId) {
         if (taskTitleCache.containsKey(taskId)) {
             return taskTitleCache.get(taskId);
@@ -175,10 +199,16 @@ public class AdminActivitiesController {
         return "Zadanie ID: " + taskId;
     }
 
+    /**
+     * Konfiguruje filtry dla listy aktywności.
+     */
     private void setupFilters() {
         searchField.textProperty().addListener((obs, oldVal, newVal) -> applyFilters());
     }
 
+    /**
+     * Stosuje aktualne filtry do listy aktywności.
+     */
     private void applyFilters() {
         String searchText = searchField.getText().toLowerCase().trim();
 
@@ -193,6 +223,12 @@ public class AdminActivitiesController {
         });
     }
 
+    /**
+     * Konwertuje typ aktywności z angielskiego na polski.
+     *
+     * @param englishType typ aktywności w języku angielskim
+     * @return przetłumaczony typ aktywności
+     */
     private String mapTypeToPolish(String englishType) {
         return switch (englishType.toUpperCase()) {
             case "CREATE" -> "UTWORZENIE";
@@ -209,6 +245,12 @@ public class AdminActivitiesController {
         };
     }
 
+    /**
+     * Konwertuje typ aktywności z polskiego na angielski.
+     *
+     * @param polishType typ aktywności w języku polskim
+     * @return przetłumaczony typ aktywności
+     */
     private String mapTypeToEnglish(String polishType) {
         return switch (polishType.toUpperCase()) {
             case "UTWORZENIE" -> "CREATE";
@@ -225,6 +267,11 @@ public class AdminActivitiesController {
         };
     }
 
+    /**
+     * Wyświetla szczegóły wybranej aktywności w panelu detali.
+     *
+     * @param activity wybrana aktywność do wyświetlenia
+     */
     private void displayActivityDetails(ActivityEntry activity) {
         detailTimestamp.setText(activity.getTimestamp());
         detailUser.setText(activity.getUser());
@@ -249,6 +296,9 @@ public class AdminActivitiesController {
         detailDescription.setText(activity.getDescription());
     }
 
+    /**
+     * Czyści panel szczegółów aktywności.
+     */
     private void clearActivityDetails() {
         detailTimestamp.setText("-");
         detailUser.setText("-");
@@ -260,17 +310,26 @@ public class AdminActivitiesController {
         detailDescription.setText("");
     }
 
+    /**
+     * Obsługuje akcję wyszukiwania aktywności.
+     */
     @FXML
     private void handleSearch() {
         applyFilters();
     }
 
+    /**
+     * Obsługuje akcję czyszczenia filtrów.
+     */
     @FXML
     private void handleClearFilters() {
         searchField.clear();
         filteredActivities.setPredicate(p -> true);
     }
 
+    /**
+     * Obsługuje akcję odświeżania listy aktywności.
+     */
     @FXML
     private void handleRefresh() {
         allActivities.clear();
@@ -281,6 +340,9 @@ public class AdminActivitiesController {
         clearActivityDetails();
     }
 
+    /**
+     * Obsługuje akcję eksportu aktywności do pliku.
+     */
     @FXML
     private void handleExportActivities() {
         if (filteredActivities == null || filteredActivities.isEmpty()) {
@@ -324,6 +386,12 @@ public class AdminActivitiesController {
         }
     }
 
+    /**
+     * Wyświetla okno dialogowe z informacją.
+     *
+     * @param title tytuł okna dialogowego
+     * @param message treść wiadomości
+     */
     private void showInfo(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
@@ -332,6 +400,11 @@ public class AdminActivitiesController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z ostrzeżeniem.
+     *
+     * @param message treść ostrzeżenia
+     */
     private void showWarning(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Ostrzeżenie");
@@ -340,6 +413,12 @@ public class AdminActivitiesController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z błędem.
+     *
+     * @param title tytuł okna dialogowego
+     * @param message treść błędu
+     */
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -348,6 +427,9 @@ public class AdminActivitiesController {
         alert.showAndWait();
     }
 
+    /**
+     * Klasa wewnętrzna reprezentująca pojedynczy wpis aktywności w tabeli.
+     */
     public static class ActivityEntry {
         private final int id;
         private final int taskId;
@@ -358,6 +440,18 @@ public class AdminActivitiesController {
         private final String description;
         private final String timestamp;
 
+        /**
+         * Tworzy nowy wpis aktywności.
+         *
+         * @param id ID aktywności
+         * @param taskId ID zadania
+         * @param taskTitle tytuł zadania
+         * @param userId ID użytkownika
+         * @param userName nazwa użytkownika
+         * @param activityType typ aktywności
+         * @param description opis aktywności
+         * @param timestamp data i czas aktywności
+         */
         public ActivityEntry(int id, int taskId, String taskTitle, int userId, String userName,
                              String activityType, String description, Timestamp timestamp) {
             this.id = id;

@@ -12,6 +12,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+/**
+ * Klasa odpowiedzialna za generowanie raportów PDF dla lidera zespołu.
+ * Obsługuje raporty dotyczące członków zespołu oraz przypisanych zadań.
+ * Wykorzystuje bibliotekę iText do tworzenia dokumentów PDF.
+ */
 public class TeamLeaderReportService {
 
     private Font titleFont;
@@ -25,6 +30,10 @@ public class TeamLeaderReportService {
 
     private BaseColor primaryColor = new BaseColor(0, 123, 255);
 
+    /**
+     * Inicjalizuje czcionki wykorzystywane w dokumencie PDF.
+     * W przypadku błędu ładowania czcionki podstawowej, stosuje czcionkę domyślną.
+     */
     public TeamLeaderReportService() {
         try {
             BaseFont base = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1250, BaseFont.EMBEDDED);
@@ -48,6 +57,13 @@ public class TeamLeaderReportService {
         }
     }
 
+    /**
+     * Generuje raport PDF zawierający listę członków zespołu.
+     *
+     * @param filename pełna ścieżka i nazwa pliku PDF do zapisania
+     * @param content dane wejściowe w postaci sformatowanego tekstu (np. z filtrami i listą członków)
+     * @throws IOException w przypadku błędu zapisu pliku PDF
+     */
     public void generateTeamMembersReportPdf(String filename, String content) throws IOException {
         Document doc = new Document(PageSize.A4);
         try {
@@ -154,6 +170,13 @@ public class TeamLeaderReportService {
         }
     }
 
+    /**
+     * Generuje raport PDF dotyczący zadań zespołu.
+     *
+     * @param filename pełna ścieżka i nazwa pliku PDF do zapisania
+     * @param content dane wejściowe w postaci sformatowanego tekstu (np. z listą zadań i podsumowaniem)
+     * @throws IOException w przypadku błędu zapisu pliku PDF
+     */
     public void generateTeamTasksReportPdf(String filename, String content) throws IOException {
         Document doc = new Document(PageSize.A4);
         try {
@@ -265,6 +288,13 @@ public class TeamLeaderReportService {
         }
     }
 
+    /**
+     * Dodaje nagłówek raportu do dokumentu PDF.
+     *
+     * @param doc obiekt dokumentu PDF
+     * @param title tytuł raportu wyświetlany na górze strony
+     * @throws DocumentException w przypadku błędu dodawania do dokumentu
+     */
     private void addReportHeader(Document doc, String title) throws DocumentException {
         Paragraph p = new Paragraph(title, titleFont);
         p.setAlignment(Element.ALIGN_CENTER);
@@ -277,6 +307,12 @@ public class TeamLeaderReportService {
         doc.add(d);
     }
 
+    /**
+     * Dodaje poziomy separator (linię) do dokumentu PDF.
+     *
+     * @param doc obiekt dokumentu PDF
+     * @throws DocumentException w przypadku błędu dodawania do dokumentu
+     */
     private void addSeparator(Document doc) throws DocumentException {
         Chunk line = new Chunk(new com.itextpdf.text.pdf.draw.LineSeparator(0.5f, 100, primaryColor, Element.ALIGN_CENTER, -2));
         Paragraph para = new Paragraph();
@@ -284,6 +320,9 @@ public class TeamLeaderReportService {
         doc.add(para);
     }
 
+    /**
+     * Zdarzenie wywoływane na końcu każdej strony, które dodaje stopkę z numerem strony.
+     */
     private class FooterEvent extends PdfPageEventHelper {
         @Override
         public void onEndPage(PdfWriter writer, Document doc) {
@@ -299,6 +338,12 @@ public class TeamLeaderReportService {
         }
     }
 
+    /**
+     * Dodaje stopkę raportu do dokumentu PDF z informacją o źródle wygenerowania.
+     *
+     * @param doc obiekt dokumentu PDF
+     * @throws DocumentException w przypadku błędu dodawania do dokumentu
+     */
     private void addReportFooter(Document doc) throws DocumentException {
         addSeparator(doc);
         Paragraph f = new Paragraph(

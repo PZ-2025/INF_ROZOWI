@@ -8,8 +8,19 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Data Access Object (DAO) dla zarządzania projektami w bazie danych.
+ * Zapewnia podstawowe operacje CRUD oraz dodatkowe metody do zarządzania projektami.
+ */
 public class ProjectDAO {
 
+    /**
+     * Dodaje nowy projekt do bazy danych.
+     *
+     * @param p Obiekt projektu do dodania
+     * @return true jeśli projekt został pomyślnie dodany, false w przeciwnym przypadku
+     * @throws SQLException jeśli wystąpi błąd podczas operacji na bazie danych
+     */
     public boolean insertProject(Project p) throws SQLException {
         String sql = "INSERT INTO projects (project_name, description, start_date, end_date, manager_id) VALUES (?, ?, ?, ?, ?)";
         try (Connection c = DatabaseManager.getConnection();
@@ -26,6 +37,13 @@ public class ProjectDAO {
         }
     }
 
+    /**
+     * Aktualizuje istniejący projekt w bazie danych.
+     *
+     * @param p Obiekt projektu z zaktualizowanymi danymi
+     * @return true jeśli projekt został pomyślnie zaktualizowany, false w przeciwnym przypadku
+     * @throws RuntimeException jeśli wystąpi błąd SQL
+     */
     public boolean updateProject(Project p) {
         String sql = "UPDATE projects SET project_name=?, description=?, start_date=?, end_date=?, manager_id=? WHERE id=?";
         try (Connection c = DatabaseManager.getConnection();
@@ -42,6 +60,11 @@ public class ProjectDAO {
         }
     }
 
+    /**
+     * Pobiera listę wszystkich projektów z bazy danych.
+     *
+     * @return Lista wszystkich projektów, pusta lista jeśli nie ma projektów
+     */
     public List<Project> getAllProjects() {
         List<Project> list = new ArrayList<>();
         String sql = "SELECT id, project_name, description, start_date, end_date, manager_id FROM projects";
@@ -64,6 +87,12 @@ public class ProjectDAO {
         return list;
     }
 
+    /**
+     * Pobiera listę projektów przypisanych do określonego menedżera.
+     *
+     * @param managerId ID menedżera
+     * @return Lista projektów menedżera, pusta lista jeśli nie ma projektów
+     */
     public List<Project> getProjectsForManager(int managerId) {
         List<Project> list = new ArrayList<>();
         String sql = """
@@ -92,6 +121,13 @@ public class ProjectDAO {
         return list;
     }
 
+    /**
+     * Pobiera nazwę projektu na podstawie ID.
+     *
+     * @param projectId ID projektu
+     * @return Nazwa projektu lub null jeśli projekt nie istnieje
+     * @throws RuntimeException jeśli wystąpi błąd podczas pobierania danych
+     */
     public String getProjectNameById(int projectId) {
         String sql = "SELECT project_name FROM projects WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();
@@ -110,10 +146,11 @@ public class ProjectDAO {
     }
 
     /**
-     * Deletes a project and all its related entities (tasks, teams, etc.)
+     * Usuwa projekt wraz z wszystkimi powiązanymi encjami (zadania, zespoły itp.).
+     * Operacja wykonuje się w transakcji - w przypadku błędu następuje rollback.
      *
-     * @param projectId The ID of the project to delete
-     * @return true if the project was successfully deleted
+     * @param projectId ID projektu do usunięcia
+     * @return true jeśli projekt został pomyślnie usunięty, false w przeciwnym przypadku
      */
     public boolean deleteProject(int projectId) {
         try (Connection conn = DatabaseManager.getConnection()) {
@@ -264,6 +301,12 @@ public class ProjectDAO {
         }
     }
 
+    /**
+     * Pobiera projekt na podstawie ID.
+     *
+     * @param projectId ID projektu
+     * @return Obiekt projektu lub null jeśli projekt nie istnieje
+     */
     public Project getProjectById(int projectId) {
         String sql = "SELECT id, project_name, description, start_date, end_date, manager_id FROM projects WHERE id = ?";
         try (Connection conn = DatabaseManager.getConnection();

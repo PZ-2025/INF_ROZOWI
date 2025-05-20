@@ -6,7 +6,7 @@ import pl.rozowi.app.util.ThemeManager;
 
 /**
  * Bazowy kontroler dla wszystkich dashboardów.
- * Zawiera wspólne funkcje, jak zarządzanie użytkownikiem i motywem.
+ * Zawiera wspólne funkcje jak zarządzanie użytkownikiem i motywem.
  */
 public abstract class BaseDashboardController {
 
@@ -41,7 +41,7 @@ public abstract class BaseDashboardController {
 
     /**
      * Zwraca aktualną scenę dla kontrolera
-     * @return Obiekt sceny lub null jeśli scena nie jest jeszcze dostępna
+     * @return Obiekt sceny lub null, jeśli scena nie jest jeszcze dostępna
      */
     protected abstract Scene getScene();
 }

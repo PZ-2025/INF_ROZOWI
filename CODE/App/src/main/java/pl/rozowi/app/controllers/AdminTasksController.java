@@ -20,6 +20,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Kontroler odpowiedzialny za zarządzanie zadaniami w panelu administracyjnym.
+ * Pozwala na wyświetlanie, dodawanie, edycję, usuwanie oraz filtrowanie zadań.
+ * Zapewnia również funkcjonalność przypisywania użytkowników do zadań oraz zmianę ich statusów.
+ */
 public class AdminTasksController {
 
     @FXML
@@ -92,6 +97,10 @@ public class AdminTasksController {
     private ObservableList<Task> allTasks = FXCollections.observableArrayList();
     private ObservableList<Task> filteredTasks = FXCollections.observableArrayList();
 
+    /**
+     * Inicjalizuje kontroler. Ładuje zadania, konfiguruje tabelę oraz ustawia filtry.
+     * Wywoływana automatycznie po załadowaniu pliku FXML.
+     */
     @FXML
     private void initialize() {
         colId.setCellValueFactory(data -> new SimpleObjectProperty<>(
@@ -133,6 +142,10 @@ public class AdminTasksController {
         loadTasks();
     }
 
+    /**
+     * Konfiguruje dostępne filtry dla listy zadań.
+     * Ustawia wartości domyślne dla filtrów projektów, zespołów, statusów i priorytetów.
+     */
     private void setupFilters() {
         try {
             List<Project> projects = projectDAO.getAllProjects();
@@ -191,6 +204,9 @@ public class AdminTasksController {
         }
     }
 
+    /**
+     * Ładuje listę wszystkich zadań z bazy danych i wyświetla je w tabeli.
+     */
     private void loadTasks() {
         try {
             List<Task> tasks = new ArrayList<>();
@@ -211,6 +227,10 @@ public class AdminTasksController {
         }
     }
 
+    /**
+     * Wyświetla szczegółowe informacje o wybranym zadaniu.
+     * @param task Zadanie, którego szczegóły mają zostać wyświetlone
+     */
     private void displayTaskDetails(Task task) {
         if (task == null) {
             clearTaskDetails();
@@ -244,6 +264,9 @@ public class AdminTasksController {
         detailLastUpdate.setText("2025-04-24 12:34:56");
     }
 
+    /**
+     * Czyści panel ze szczegółowymi informacjami o zadaniu.
+     */
     private void clearTaskDetails() {
         detailId.setText("-");
         detailTitle.setText("-");
@@ -258,6 +281,9 @@ public class AdminTasksController {
         detailDescription.setText("");
     }
 
+    /**
+     * Obsługuje akcję wyszukiwania zadań na podstawie wprowadzonego tekstu i ustawionych filtrów.
+     */
     @FXML
     private void handleSearch() {
         String searchText = searchField.getText().toLowerCase().trim();
@@ -323,11 +349,17 @@ public class AdminTasksController {
         tasksTable.setItems(filteredTasks);
     }
 
+    /**
+     * Stosuje ustawione filtry do listy zadań.
+     */
     @FXML
     private void handleApplyFilters() {
         handleSearch();
     }
 
+    /**
+     * Czyści wszystkie ustawione filtry i przywraca pełną listę zadań.
+     */
     @FXML
     private void handleClearFilters() {
         searchField.clear();
@@ -342,6 +374,10 @@ public class AdminTasksController {
         tasksTable.setItems(filteredTasks);
     }
 
+    /**
+     * Obsługuje akcję dodawania nowego zadania.
+     * Wyświetla okno dialogowe do wprowadzenia danych nowego zadania.
+     */
     @FXML
     private void handleAddTask() {
         Dialog<Task> dialog = createTaskDialog(null);
@@ -365,6 +401,10 @@ public class AdminTasksController {
         });
     }
 
+    /**
+     * Obsługuje akcję edycji istniejącego zadania.
+     * Wyświetla okno dialogowe z danymi wybranego zadania do modyfikacji.
+     */
     @FXML
     private void handleEditTask() {
         Task selectedTask = tasksTable.getSelectionModel().getSelectedItem();
@@ -393,6 +433,10 @@ public class AdminTasksController {
         });
     }
 
+    /**
+     * Obsługuje akcję usuwania wybranego zadania.
+     * Wyświetla okno potwierdzenia przed usunięciem zadania.
+     */
     @FXML
     private void handleDeleteTask() {
         Task selectedTask = tasksTable.getSelectionModel().getSelectedItem();
@@ -430,6 +474,10 @@ public class AdminTasksController {
         }
     }
 
+    /**
+     * Obsługuje akcję przypisywania użytkownika do wybranego zadania.
+     * Wyświetla okno dialogowe z listą dostępnych użytkowników.
+     */
     @FXML
     private void handleAssignUser() {
         Task selectedTask = tasksTable.getSelectionModel().getSelectedItem();
@@ -526,6 +574,10 @@ public class AdminTasksController {
         }
     }
 
+    /**
+     * Obsługuje akcję zmiany statusu wybranego zadania.
+     * Wyświetla okno dialogowe z dostępnymi statusami do wyboru.
+     */
     @FXML
     private void handleChangeStatus() {
         Task selectedTask = tasksTable.getSelectionModel().getSelectedItem();
@@ -586,6 +638,9 @@ public class AdminTasksController {
         });
     }
 
+    /**
+     * Odświeża listę zadań, ponownie ładując dane z bazy danych.
+     */
     @FXML
     private void handleRefresh() {
         loadTasks();
@@ -596,6 +651,11 @@ public class AdminTasksController {
         }
     }
 
+    /**
+     * Tworzy i konfiguruje okno dialogowe do dodawania/edycji zadania.
+     * @param task Zadanie do edycji lub null w przypadku dodawania nowego zadania
+     * @return Skonfigurowane okno dialogowe
+     */
     private Dialog<Task> createTaskDialog(Task task) {
         Dialog<Task> dialog = new Dialog<>();
         dialog.setTitle(task == null ? "Dodaj nowe zadanie" : "Edytuj zadanie");
@@ -857,6 +917,15 @@ public class AdminTasksController {
         return dialog;
     }
 
+    /**
+     * Sprawdza poprawność danych w formularzu zadania.
+     * @param saveButton Przycisk zapisu, który ma być włączony/wyłączony
+     * @param titleField Pole tytułu zadania
+     * @param projectComboBox ComboBox z listą projektów
+     * @param teamComboBox ComboBox z listą zespołów
+     * @param startDatePicker Data rozpoczęcia zadania
+     * @param endDatePicker Data zakończenia zadania
+     */
     private void validateTaskForm(Button saveButton, TextField titleField, ComboBox<Project> projectComboBox,
                                   ComboBox<Team> teamComboBox, DatePicker startDatePicker, DatePicker endDatePicker) {
         boolean titleValid = !titleField.getText().trim().isEmpty();
@@ -869,6 +938,10 @@ public class AdminTasksController {
         saveButton.setDisable(!(titleValid && projectValid && teamValid && datesValid));
     }
 
+    /**
+     * Wyświetla okno dialogowe z informacją.
+     * @param message Treść wiadomości do wyświetlenia
+     */
     private void showInfo(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Informacja");
@@ -877,6 +950,10 @@ public class AdminTasksController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z ostrzeżeniem.
+     * @param message Treść ostrzeżenia do wyświetlenia
+     */
     private void showWarning(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Ostrzeżenie");
@@ -885,6 +962,11 @@ public class AdminTasksController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z błędem.
+     * @param title Tytuł okna dialogowego
+     * @param message Treść błędu do wyświetlenia
+     */
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);

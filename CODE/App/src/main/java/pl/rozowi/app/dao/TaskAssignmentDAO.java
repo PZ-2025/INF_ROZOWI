@@ -7,8 +7,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+/**
+ * Data Access Object do operacji na przypisaniach zadań (TaskAssignment).
+ */
 public class TaskAssignmentDAO {
 
+    /**
+     * Wstawia nowe przypisanie zadania do bazy danych.
+     *
+     * @param assignment obiekt TaskAssignment zawierający identyfikatory zadania i użytkownika
+     * @return true, jeśli operacja zakończyła się powodzeniem; false w przeciwnym razie
+     */
     public boolean insertTaskAssignment(TaskAssignment assignment) {
         String sql = "INSERT INTO task_assignments (task_id, user_id) VALUES (?, ?)";
         try (Connection conn = DatabaseManager.getConnection();

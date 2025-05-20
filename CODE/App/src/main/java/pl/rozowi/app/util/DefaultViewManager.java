@@ -4,8 +4,22 @@ import pl.rozowi.app.dao.SettingsDAO;
 import pl.rozowi.app.models.Settings;
 import pl.rozowi.app.models.User;
 
+/**
+ * Klasa zarządzająca domyślnym widokiem użytkownika.
+ * Pozwala na zapisywanie preferencji dotyczących domyślnego widoku dla danego użytkownika.
+ */
 public class DefaultViewManager {
 
+    /**
+     * Zapisuje domyślny widok dla określonego użytkownika.
+     * Jeśli użytkownik istnieje w systemie, aktualizuje jego ustawienia.
+     * Jeśli użytkownik nie ma jeszcze ustawień, tworzy nowy rekord z preferencjami.
+     * Metoda również aktualizuje obiekt użytkownika przekazany jako parametr.
+     *
+     * @param user obiekt użytkownika, dla którego zapisywane są preferencje
+     * @param defaultView nazwa domyślnego widoku do zapisania
+     * @throws IllegalArgumentException jeśli parametr defaultView jest null
+     */
     public static void saveDefaultView(User user, String defaultView) {
         if (user == null) {
             return;

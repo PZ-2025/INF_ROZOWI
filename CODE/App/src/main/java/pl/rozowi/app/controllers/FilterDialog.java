@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Alternatywne rozwiązanie - okno dialogowe do filtrowania raportów zamiast
- * zintegrowanych kontrolek w głównym interfejsie raportów.
+ * Klasa odpowiedzialna za wyświetlanie i obsługę okna dialogowego do filtrowania raportów.
+ * Umożliwia użytkownikowi wybór różnych kryteriów filtrowania w zależności od typu raportu.
  */
 public class FilterDialog {
 
@@ -31,6 +31,11 @@ public class FilterDialog {
     private boolean showMembers = true;
     private boolean showStatistics = true;
 
+    /**
+     * Wyświetla okno dialogowe z opcjami filtrowania odpowiednimi dla danego typu raportu.
+     * @param reportType Typ raportu dla którego mają być wyświetlone opcje filtrowania
+     * @return Mapa zawierająca wybrane opcje filtrowania lub null jeśli anulowano
+     */
     public Map<String, Object> showFilterDialog(String reportType) {
         Dialog<Map<String, Object>> dialog = new Dialog<>();
         dialog.setTitle("Opcje filtrowania raportu");
@@ -83,6 +88,10 @@ public class FilterDialog {
         return dialog.showAndWait().orElse(null);
     }
 
+    /**
+     * Konfiguruje kontrolki do wyboru zespołów w oknie dialogowym.
+     * @param grid Panel GridPane do którego dodawane są kontrolki
+     */
     private void setupTeamsFilterControls(GridPane grid) {
         try {
             List<Team> teams = teamDAO.getAllTeams();
@@ -116,6 +125,10 @@ public class FilterDialog {
         }
     }
 
+    /**
+     * Konfiguruje kontrolki do wyboru zakresu dat w oknie dialogowym.
+     * @param grid Panel GridPane do którego dodawane są kontrolki
+     */
     private void setupDateFilterControls(GridPane grid) {
         Label startDateLabel = new Label("Data początkowa:");
         grid.add(startDateLabel, 0, 1);
@@ -135,6 +148,10 @@ public class FilterDialog {
         endDate = endDatePicker.getValue();
     }
 
+    /**
+     * Konfiguruje kontrolki do wyboru opcji wyświetlania zadań i członków zespołów.
+     * @param grid Panel GridPane do którego dodawane są kontrolki
+     */
     private void setupTaskMemberControls(GridPane grid) {
         CheckBox showTasksCheckBox = new CheckBox("Pokaż zadania zespołów");
         showTasksCheckBox.setSelected(true);
@@ -147,13 +164,21 @@ public class FilterDialog {
         grid.add(showMembersCheckBox, 0, 4, 2, 1);
     }
 
+    /**
+     * Konfiguruje kontrolki do wyboru opcji wyświetlania przynależności do zespołów.
+     * @param grid Panel GridPane do którego dodawane są kontrolki
+     */
     private void setupMemberFilterControls(GridPane grid) {
         CheckBox showMemberCheckBox = new CheckBox("Pokaż przynależność do zespołów");
         showMemberCheckBox.setSelected(true);
         showMemberCheckBox.setOnAction(e -> showMembers = showMemberCheckBox.isSelected());
         grid.add(showMemberCheckBox, 0, 0, 2, 1);
     }
-    
+
+    /**
+     * Konfiguruje kontrolki do wyboru opcji wyświetlania zadań i statystyk projektów.
+     * @param grid Panel GridPane do którego dodawane są kontrolki
+     */
     private void setupTaskStatsControls(GridPane grid) {
         CheckBox showTasksCheckBox = new CheckBox("Pokaż zadania projektów");
         showTasksCheckBox.setSelected(true);

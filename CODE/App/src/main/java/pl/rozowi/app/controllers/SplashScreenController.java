@@ -10,6 +10,10 @@ import pl.rozowi.app.MainApplication;
 
 import java.io.IOException;
 
+/**
+ * Kontroler odpowiedzialny za wyświetlanie ekranu powitalnego (splash screen) aplikacji.
+ * Zarządza animacjami pojawiania się i zanikania ekranu oraz przejściem do ekranu logowania.
+ */
 public class SplashScreenController {
 
     @FXML
@@ -18,6 +22,11 @@ public class SplashScreenController {
     @FXML
     private ImageView logoImageView;
 
+    /**
+     * Inicjalizacja kontrolera - uruchamia animacje ekranu powitalnego.
+     * Wykonuje animację powiększenia logo oraz płynne zanikanie całego ekranu.
+     * Po zakończeniu animacji automatycznie przełącza na ekran logowania.
+     */
     public void initialize() {
         ScaleTransition scaleTransition = new ScaleTransition(Duration.seconds(2), logoImageView);
         scaleTransition.setFromX(0.5);

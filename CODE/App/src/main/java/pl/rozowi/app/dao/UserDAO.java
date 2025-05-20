@@ -15,10 +15,20 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Klasa dostępu do danych dla użytkowników systemu.
+ * Zawiera metody do zarządzania użytkownikami, ich uprawnieniami i preferencjami.
+ */
 public class UserDAO {
 
     private static final Logger LOGGER = Logger.getLogger(UserDAO.class.getName());
 
+    /**
+     * Dodaje nowego użytkownika do bazy danych.
+     *
+     * @param user Obiekt User zawierający dane użytkownika
+     * @return true jeśli operacja się powiodła, false w przeciwnym przypadku
+     */
     public boolean insertUser(User user) {
         String sql = "INSERT INTO users (name, last_name, password, email, role_id, group_id, password_hint) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
@@ -38,7 +48,12 @@ public class UserDAO {
         return false;
     }
 
-
+    /**
+     * Pobiera użytkownika na podstawie adresu email.
+     *
+     * @param email Adres email użytkownika
+     * @return Obiekt User lub null jeśli nie znaleziono
+     */
     public User getUserByEmail(String email) {
         String sql = "SELECT u.*, s.theme, s.default_view " +
                 "FROM users u " +
@@ -71,7 +86,10 @@ public class UserDAO {
     }
 
     /**
-     * Pobiera użytkownika z bazy danych na podstawie ID
+     * Pobiera użytkownika na podstawie ID.
+     *
+     * @param userId ID użytkownika
+     * @return Obiekt User lub null jeśli nie znaleziono
      */
     public User getUserById(int userId) {
         String sql = "SELECT u.*, s.theme, s.default_view " +
@@ -104,6 +122,12 @@ public class UserDAO {
         return null;
     }
 
+    /**
+     * Aktualizuje dane użytkownika w bazie danych.
+     *
+     * @param user Obiekt User zawierający zaktualizowane dane
+     * @return true jeśli operacja się powiodła, false w przeciwnym przypadku
+     */
     public boolean updateUser(User user) {
         String sqlUser = "UPDATE users SET email = ?, password = ?, password_hint = ?, name = ?, last_name = ?, role_id = ?, group_id = ? WHERE id = ?";
         String sqlSettings = "INSERT INTO settings (user_id, theme, default_view) VALUES (?, ?, ?) " +
@@ -153,6 +177,12 @@ public class UserDAO {
         return false;
     }
 
+    /**
+     * Pobiera listę wszystkich użytkowników systemu.
+     *
+     * @return Lista obiektów User
+     * @throws SQLException w przypadku błędu dostępu do bazy danych
+     */
     public List<User> getAllUsers() throws SQLException {
         List<User> list = new ArrayList<>();
         String sql = "SELECT * FROM users";
@@ -174,6 +204,11 @@ public class UserDAO {
         return list;
     }
 
+    /**
+     * Pobiera listę wszystkich menedżerów systemu (użytkowników z rolą ID=2).
+     *
+     * @return Lista obiektów User będących menedżerami
+     */
     public List<User> getAllManagers() {
         List<User> list = new ArrayList<>();
         String sql = "SELECT id, name, last_name, email, role_id " +
@@ -198,7 +233,9 @@ public class UserDAO {
     }
 
     /**
-     * Pobiera mapę wszystkich ról (ID -> nazwa roli)
+     * Pobiera mapę wszystkich ról użytkowników.
+     *
+     * @return Mapa gdzie kluczem jest ID roli a wartością jej nazwa
      */
     public Map<Integer, String> getAllRolesMap() {
         Map<Integer, String> roles = new HashMap<>();
@@ -216,7 +253,9 @@ public class UserDAO {
     }
 
     /**
-     * Pobiera mapę wszystkich grup (ID -> nazwa grupy)
+     * Pobiera mapę wszystkich grup użytkowników.
+     *
+     * @return Mapa gdzie kluczem jest ID grupy a wartością jej nazwa
      */
     public Map<Integer, String> getAllGroupsMap() {
         Map<Integer, String> groups = new HashMap<>();
@@ -234,7 +273,10 @@ public class UserDAO {
     }
 
     /**
-     * Usuwa użytkownika z bazy danych
+     * Usuwa użytkownika z systemu.
+     *
+     * @param userId ID użytkownika do usunięcia
+     * @return true jeśli operacja się powiodła, false w przeciwnym przypadku
      */
     public boolean deleteUser(int userId) {
         String sqlSettings = "DELETE FROM settings WHERE user_id = ?";
@@ -267,6 +309,11 @@ public class UserDAO {
         return false;
     }
 
+    /**
+     * Pobiera listę nazw wszystkich grup użytkowników.
+     *
+     * @return Lista nazw grup posortowana alfabetycznie
+     */
     public List<String> getAllGroupNames() {
         List<String> groups = new ArrayList<>();
         String sql = "SELECT DISTINCT group_name FROM groups ORDER BY group_name";
@@ -282,6 +329,12 @@ public class UserDAO {
         return groups;
     }
 
+    /**
+     * Pobiera listę ID użytkowników należących do określonej grupy.
+     *
+     * @param groupName Nazwa grupy
+     * @return Lista ID użytkowników
+     */
     public List<Integer> getUsersByGroupName(String groupName) {
         List<Integer> userIds = new ArrayList<>();
         String sql = "SELECT id FROM users WHERE group_id = " +

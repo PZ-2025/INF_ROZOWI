@@ -23,6 +23,18 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+/**
+ * Kontroler panelu głównego dla zwykłego użytkownika systemu.
+ * Rozszerza funkcjonalność BaseDashboardController, dostosowując ją do potrzeb standardowego użytkownika.
+ *
+ * <p>Zapewnia następujące funkcjonalności:</p>
+ * <ul>
+ *   <li>Przełączanie między widokami zadań (własnych i wszystkich)</li>
+ *   <li>Dostęp do ustawień użytkownika</li>
+ *   <li>Możliwość wylogowania się z systemu</li>
+ *   <li>Podstawowe wyszukiwanie zadań</li>
+ * </ul>
+ */
 public class UserDashboardController extends BaseDashboardController {
 
     @FXML
@@ -47,10 +59,19 @@ public class UserDashboardController extends BaseDashboardController {
 
     private static final String ACTIVE_BUTTON_STYLE = "sidebar-button-active";
 
+    /**
+     * Inicjalizacja kontrolera.
+     * Metoda wywoływana automatycznie po załadowaniu pliku FXML.
+     */
     @FXML
     private void initialize() {
     }
 
+    /**
+     * Ustawia styl aktywnego przycisku w pasku bocznym.
+     *
+     * @param activeButton Przycisk, który ma zostać oznaczony jako aktywny
+     */
     private void setActiveButton(Button activeButton) {
         myTasksButton.getStyleClass().remove(ACTIVE_BUTTON_STYLE);
         allTasksButton.getStyleClass().remove(ACTIVE_BUTTON_STYLE);
@@ -61,6 +82,12 @@ public class UserDashboardController extends BaseDashboardController {
         }
     }
 
+    /**
+     * Metoda wywoływana po ustawieniu użytkownika.
+     * Inicjalizuje panel na podstawie domyślnego widoku użytkownika.
+     *
+     * @param user Obiekt użytkownika zalogowanego do systemu
+     */
     @Override
     protected void onUserSet(User user) {
         welcomeLabel.setText("Witaj, " + user.getName());
@@ -90,35 +117,66 @@ public class UserDashboardController extends BaseDashboardController {
         }
     }
 
+    /**
+     * Pobiera scenę główną panelu.
+     *
+     * @return Obiekt sceny lub null jeśli główny panel nie został załadowany
+     */
     @Override
     protected Scene getScene() {
         return mainPane != null ? mainPane.getScene() : null;
     }
 
+    /**
+     * Przechodzi do widoku własnych zadań użytkownika.
+     *
+     * @throws IOException gdy wystąpi błąd ładowania widoku
+     */
     @FXML
     private void goToMyTasks() throws IOException {
         setActiveButton(myTasksButton);
         loadView("/fxml/user/myTasks.fxml");
     }
 
+    /**
+     * Przechodzi do widoku wszystkich zadań dostępnych dla użytkownika.
+     *
+     * @throws IOException gdy wystąpi błąd ładowania widoku
+     */
     @FXML
     private void goToAllTasks() throws IOException {
         setActiveButton(allTasksButton);
         loadView("/fxml/user/tasks.fxml");
     }
 
+    /**
+     * Przechodzi do widoku ustawień użytkownika.
+     *
+     * @throws IOException gdy wystąpi błąd ładowania widoku
+     */
     @FXML
     private void goToSettings() throws IOException {
         setActiveButton(settingsButton);
         loadView("/fxml/user/settings.fxml");
     }
 
+    /**
+     * Wylogowuje użytkownika i przekierowuje do ekranu logowania.
+     *
+     * @throws IOException gdy wystąpi błąd ładowania widoku logowania
+     */
     @FXML
     private void logout() throws IOException {
         MainApplication.setCurrentUser(null);
         MainApplication.switchScene("/fxml/login.fxml", "TaskApp - Logowanie");
     }
 
+    /**
+     * Ładuje widok w głównym panelu.
+     *
+     * @param fxmlPath Ścieżka do pliku FXML z definicją widoku
+     * @throws IOException gdy wystąpi błąd ładowania widoku
+     */
     private void loadView(String fxmlPath) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath));
         Parent view = loader.load();

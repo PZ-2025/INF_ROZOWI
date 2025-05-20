@@ -16,6 +16,10 @@ import pl.rozowi.app.util.TaskEditDialog;
 import java.sql.SQLException;
 import java.util.List;
 
+/**
+ * Kontroler odpowiedzialny za wyświetlanie i edycję szczegółów zadania.
+ * Umożliwia przeglądanie informacji o zadaniu oraz modyfikację jego statusu i przypisania.
+ */
 public class TaskDetailsController {
 
     @FXML
@@ -50,11 +54,20 @@ public class TaskDetailsController {
     private final TeamDAO teamDAO = new TeamDAO();
 
 
+    /**
+     * Ustawia zadanie do wyświetlenia i inicjalizuje widok szczegółów.
+     * @param task Obiekt zadania do wyświetlenia
+     */
     public void setTask(Task task) {
         this.task = task;
         displayTaskDetails();
     }
 
+    /**
+     * Wyświetla szczegóły zadania w kontrolkach interfejsu użytkownika.
+     * Ładuje nazwę projektu i zespołu, ustawia dostępne opcje statusu i przypisania.
+     * Dostosowuje widoczność i dostępność kontrolek w zależności od roli użytkownika.
+     */
     private void displayTaskDetails() {
         titleLabel.setText(task.getTitle());
         descriptionLabel.setText(task.getDescription());
@@ -132,6 +145,11 @@ public class TaskDetailsController {
         saveButton.setVisible(isLeader || isEmployee || isManager || isAdmin);
     }
 
+    /**
+     * Obsługuje zapisywanie zmian w zadaniu.
+     * Aktualizuje status zadania i przypisanie użytkownika w zależności od uprawnień.
+     */
+
     @FXML
     private void handleSave() {
         User current = MainApplication.getCurrentUser();
@@ -173,8 +191,8 @@ public class TaskDetailsController {
     }
 
     /**
-     * Handles the new Edit button click to edit all task properties.
-     * Opens the comprehensive task editor dialog.
+     * Obsługuje edycję wszystkich właściwości zadania.
+     * Otwiera dialog edycji zadania dla użytkowników z odpowiednimi uprawnieniami.
      */
     @FXML
     private void handleEdit() {
@@ -217,16 +235,26 @@ public class TaskDetailsController {
         }
     }
 
+    /**
+     * Obsługuje anulowanie zmian i zamknięcie okna.
+     */
     @FXML
     private void handleCancel() {
         closeWindow();
     }
 
+    /**
+     * Zamyka bieżące okno.
+     */
     private void closeWindow() {
         Stage stage = (Stage) cancelButton.getScene().getWindow();
         stage.close();
     }
 
+    /**
+     * Wyświetla okno dialogowe z informacją.
+     * @param message Treść wiadomości do wyświetlenia
+     */
     private void showInfo(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Information");
@@ -235,6 +263,10 @@ public class TaskDetailsController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z błędem.
+     * @param message Treść błędu do wyświetlenia
+     */
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Error");

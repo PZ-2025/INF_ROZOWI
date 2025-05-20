@@ -19,6 +19,10 @@ import pl.rozowi.app.util.ThemeManager;
 
 import java.io.IOException;
 
+/**
+ * Kontroler odpowiedzialny za obsługę logowania użytkowników do systemu.
+ * Zarządza procesem uwierzytelniania oraz przekierowaniem do odpowiedniego panelu w zależności od roli użytkownika.
+ */
 public class LoginController {
 
     @FXML
@@ -28,10 +32,17 @@ public class LoginController {
 
     private LoginService loginService;
 
+    /**
+     * Konstruktor inicjalizujący serwis logowania.
+     */
     public LoginController() {
         this.loginService = new LoginService(new UserDAO(), new TeamMemberDAO());
     }
 
+    /**
+     * Inicjalizuje kontroler, ustawiając obsługę zdarzeń klawiatury.
+     * Enter w polu loginu lub hasła wywołuje próbę logowania.
+     */
     public void initialize() {
         usernameField.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER) {
@@ -45,6 +56,11 @@ public class LoginController {
         });
     }
 
+    /**
+     * Obsługuje proces logowania użytkownika.
+     * Weryfikuje dane logowania i w przypadku sukcesu przekierowuje do odpowiedniego panelu.
+     * W przypadku niepowodzenia wyświetla komunikat o błędzie.
+     */
     @FXML
     public void handleLogin() {
         String email = usernameField.getText();
@@ -121,11 +137,19 @@ public class LoginController {
         }
     }
 
+    /**
+     * Przekierowuje użytkownika do formularza rejestracji.
+     * @throws IOException w przypadku problemów z załadowaniem widoku rejestracji
+     */
     @FXML
     private void goToRegister() throws IOException {
         MainApplication.switchScene("/fxml/register.fxml", "TaskApp - Rejestracja");
     }
 
+    /**
+     * Wyświetla podpowiedź do hasła dla użytkownika o podanym emailu.
+     * Wymaga wprowadzenia emaila w polu nazwy użytkownika.
+     */
     @FXML
     private void forgotPassword() {
         String email = usernameField.getText();

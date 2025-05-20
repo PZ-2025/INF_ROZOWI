@@ -16,6 +16,10 @@ import pl.rozowi.app.util.Session;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Kontroler odpowiedzialny za zarządzanie listą zadań.
+ * Umożliwia wyświetlanie, filtrowanie, dodawanie i usuwanie zadań.
+ */
 public class TasksController {
 
     @FXML
@@ -44,6 +48,10 @@ public class TasksController {
     private TeamDAO teamDAO = new TeamDAO();
     private ObservableList<Task> allTasks;
 
+    /**
+     * Inicjalizacja kontrolera.
+     * Konfiguruje kolumny tabeli i ładuje listę zadań.
+     */
     @FXML
     private void initialize() {
         taskIdColumn.setCellValueFactory(cellData -> javafx.beans.binding.Bindings.createIntegerBinding(
@@ -71,6 +79,10 @@ public class TasksController {
 
 
 
+    /**
+     * Ładuje listę zadań z bazy danych.
+     * Pobiera zadania przypisane do aktualnego użytkownika i jego zespołu.
+     */
     private void loadTasks() {
         int teamId = 0;
         try {
@@ -84,6 +96,10 @@ public class TasksController {
         tasksTable.setItems(allTasks);
     }
 
+    /**
+     * Filtruje listę zadań na podstawie wprowadzonego tekstu.
+     * Wyszukuje w tytule, opisie, statusie i datach zadań.
+     */
     @FXML
     private void handleFilter() {
         String filterText = filterField.getText();
@@ -105,11 +121,19 @@ public class TasksController {
         tasksTable.setItems(filtered);
     }
 
+    /**
+     * Obsługuje akcję dodawania nowego zadania.
+     * (Obecnie tylko loguje informację do konsoli)
+     */
     @FXML
     private void handleAddTask() {
         System.out.println("Dodawanie nowego zadania...");
     }
 
+    /**
+     * Obsługuje akcję usuwania wybranego zadania.
+     * Sprawdza uprawnienia użytkownika i wyświetla potwierdzenie przed usunięciem.
+     */
     @FXML
     private void handleDeleteTask() {
         Task selectedTask = tasksTable.getSelectionModel().getSelectedItem();
@@ -149,6 +173,12 @@ public class TasksController {
         }
     }
 
+    /**
+     * Wyświetla okno dialogowe z komunikatem.
+     * @param type Typ komunikatu (ERROR, WARNING, INFORMATION)
+     * @param title Tytuł okna dialogowego
+     * @param message Treść komunikatu
+     */
     private void showAlert(Alert.AlertType type, String title, String message) {
         Alert alert = new Alert(type);
         alert.setTitle(title);

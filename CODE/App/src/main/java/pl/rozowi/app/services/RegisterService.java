@@ -7,17 +7,33 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * Klasa odpowiedzialna za proces rejestracji nowych użytkowników w systemie.
+ * Zapewnia walidację danych wejściowych, tworzenie nowych kont użytkowników
+ * i zwracanie wyników operacji rejestracji.
+ */
 public class RegisterService {
 
     private final UserDAO userDAO;
 
+    /**
+     * Konstruktor inicjalizujący serwis rejestracji.
+     *
+     * @param userDAO obiekt DAO do komunikacji z warstwą danych użytkowników
+     */
     public RegisterService(UserDAO userDAO) {
         this.userDAO = userDAO;
     }
 
     /**
-     * Metoda rejestruje nowego użytkownika z przekazanymi danymi.
-     * Zwraca obiekt z informacją o wyniku (np. status, komunikat).
+     * Rejestruje nowego użytkownika w systemie po przeprowadzeniu walidacji danych.
+     *
+     * @param firstName imię użytkownika
+     * @param lastName nazwisko użytkownika
+     * @param email adres email użytkownika
+     * @param password hasło użytkownika
+     * @param confirmPassword potwierdzenie hasła
+     * @return obiekt RegistrationResult zawierający status i komunikat wyniku operacji
      */
     public RegistrationResult register(String firstName, String lastName, String email,
                                        String password, String confirmPassword) {
@@ -42,8 +58,8 @@ public class RegisterService {
         newUser.setLastName(lastName);
         newUser.setEmail(email);
         newUser.setPassword(hashPassword(password));
-        newUser.setRoleId(3);  
-        newUser.setGroupId(1); 
+        newUser.setRoleId(3);
+        newUser.setGroupId(1);
         newUser.setPasswordHint("");
 
         boolean inserted = userDAO.insertUser(newUser);
@@ -54,22 +70,46 @@ public class RegisterService {
         return RegistrationResult.success("Rejestracja udana!");
     }
 
+    /**
+     * Sprawdza czy tekst zaczyna się od wielkiej litery.
+     *
+     * @param text tekst do sprawdzenia
+     * @return true jeśli tekst zaczyna się od wielkiej litery, false w przeciwnym wypadku
+     */
     private boolean isCapitalized(String text) {
         if (text == null || text.isEmpty()) return false;
         return Character.isUpperCase(text.charAt(0));
     }
 
+    /**
+     * Weryfikuje poprawność formatu adresu email.
+     *
+     * @param email adres email do walidacji
+     * @return true jeśli email jest w poprawnym formacie, false w przeciwnym wypadku
+     */
     private boolean isValidEmail(String email) {
         if (email == null) return false;
         String regex = "^.{2,}@.{2,}$";
         return email.matches(regex);
     }
 
+    /**
+     * Sprawdza czy hasło zawiera przynajmniej jeden znak specjalny.
+     *
+     * @param password hasło do sprawdzenia
+     * @return true jeśli hasło zawiera znak specjalny, false w przeciwnym wypadku
+     */
     private boolean hasSpecialChar(String password) {
         if (password == null) return false;
         return password.matches(".*[^A-Za-z0-9].*");
     }
 
+    /**
+     * Haszuje podane hasło algorytmem SHA-256.
+     *
+     * @param password hasło do zaszyfrowania
+     * @return zahashowane hasło jako ciąg znaków hex lub null w przypadku błędu
+     */
     private String hashPassword(String password) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

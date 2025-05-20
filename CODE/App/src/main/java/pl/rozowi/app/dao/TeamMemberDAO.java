@@ -7,8 +7,18 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Klasa dostępu do danych dla członków zespołów.
+ * Zawiera metody do zarządzania przypisaniami użytkowników do zespołów.
+ */
 public class TeamMemberDAO {
 
+    /**
+     * Pobiera listę członków określonego zespołu.
+     *
+     * @param teamId ID zespołu
+     * @return Lista obiektów User reprezentujących członków zespołu
+     */
     public List<User> getTeamMembers(int teamId) {
         String sql = """
                 SELECT u.id, u.name, u.last_name, u.email
@@ -35,6 +45,12 @@ public class TeamMemberDAO {
         return members;
     }
 
+    /**
+     * Pobiera ID zespołu, do którego przypisany jest użytkownik.
+     *
+     * @param userId ID użytkownika
+     * @return ID zespołu lub 0 jeśli użytkownik nie jest przypisany do żadnego zespołu
+     */
     public int getTeamIdForUser(int userId) {
         String sql = "SELECT team_id FROM team_members WHERE user_id = ? LIMIT 1";
         try (Connection conn = DatabaseManager.getConnection();
@@ -51,11 +67,11 @@ public class TeamMemberDAO {
     }
 
     /**
-     * Sprawdza, czy użytkownik jest liderem zespołu
+     * Sprawdza czy użytkownik jest liderem zespołu.
      *
      * @param teamId ID zespołu
      * @param userId ID użytkownika
-     * @return true jeśli użytkownik jest liderem zespołu, false w przeciwnym przypadku
+     * @return true jeśli użytkownik jest liderem, false w przeciwnym przypadku
      */
     public boolean isTeamLeader(int teamId, int userId) {
         String sql = "SELECT is_leader FROM team_members WHERE team_id = ? AND user_id = ?";
@@ -74,7 +90,13 @@ public class TeamMemberDAO {
     }
 
     /**
-     * Wstawia nowy rekord członka zespołu
+     * Dodaje użytkownika do zespołu.
+     *
+     * @param teamId ID zespołu
+     * @param userId ID użytkownika
+     * @param isLeader flaga określająca czy użytkownik ma być liderem
+     * @return true jeśli operacja się powiodła, false w przeciwnym przypadku
+     * @throws SQLException w przypadku błędu dostępu do bazy danych
      */
     public boolean insertTeamMember(int teamId, int userId, boolean isLeader) throws SQLException {
         String sql = "INSERT INTO team_members (team_id, user_id, is_leader) VALUES (?, ?, ?)";
@@ -89,7 +111,11 @@ public class TeamMemberDAO {
     }
 
     /**
-     * Usuwa powiązanie użytkownika z zespołem
+     * Usuwa użytkownika z zespołu.
+     *
+     * @param teamId ID zespołu
+     * @param userId ID użytkownika
+     * @return true jeśli operacja się powiodła, false w przeciwnym przypadku
      */
     public boolean deleteTeamMember(int teamId, int userId) {
         String sql = "DELETE FROM team_members WHERE team_id = ? AND user_id = ?";
@@ -107,7 +133,11 @@ public class TeamMemberDAO {
 
     /**
      * Aktualizuje przypisanie użytkownika do zespołu.
-     * Jeśli użytkownik jest już przypisany do innego zespołu, najpierw usuwa to przypisanie.
+     * Jeśli użytkownik jest już przypisany do innego zespołu, stare przypisanie jest usuwane.
+     *
+     * @param userId ID użytkownika
+     * @param newTeamId ID nowego zespołu
+     * @return true jeśli operacja się powiodła, false w przeciwnym przypadku
      */
     public boolean updateUserTeam(int userId, int newTeamId) {
         try (Connection conn = DatabaseManager.getConnection()) {
@@ -150,6 +180,12 @@ public class TeamMemberDAO {
         }
     }
 
+    /**
+     * Pobiera listę ID wszystkich zespołów, do których należy użytkownik.
+     *
+     * @param userId ID użytkownika
+     * @return Lista ID zespołów
+     */
     public List<Integer> getAllTeamIdsForUser(int userId) {
         List<Integer> teamIds = new ArrayList<>();
         String sql = "SELECT team_id FROM team_members WHERE user_id = ?";
@@ -166,6 +202,12 @@ public class TeamMemberDAO {
         return teamIds;
     }
 
+    /**
+     * Pobiera listę ID zespołów, w których użytkownik jest liderem.
+     *
+     * @param userId ID użytkownika
+     * @return Lista ID zespołów
+     */
     public List<Integer> getTeamIdsForTeamLeader(int userId) {
         List<Integer> teamIds = new ArrayList<>();
         String sql = "SELECT team_id FROM team_members WHERE user_id = ? AND is_leader = true";

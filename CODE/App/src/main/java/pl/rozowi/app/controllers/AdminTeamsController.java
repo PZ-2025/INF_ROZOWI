@@ -19,6 +19,11 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Kontroler odpowiedzialny za zarządzanie zespołami w panelu administracyjnym.
+ * Umożliwia tworzenie, edycję, usuwanie zespołów oraz przypisywanie członków i liderów.
+ * Zapewnia również podgląd zadań przypisanych do wybranego zespołu.
+ */
 public class AdminTeamsController {
 
     @FXML
@@ -71,6 +76,9 @@ public class AdminTeamsController {
     private final ObservableList<UserWithRole> memberData = FXCollections.observableArrayList();
     private final ObservableList<Task> taskData = FXCollections.observableArrayList();
 
+    /**
+     * Klasa pomocnicza reprezentująca użytkownika z przypisaną rolą w zespole.
+     */
     public static class UserWithRole {
         private final User user;
         private final String roleName;
@@ -115,6 +123,9 @@ public class AdminTeamsController {
         }
     }
 
+    /**
+     * Model wyboru użytkownika z możliwością oznaczenia jako lider zespołu.
+     */
     public static class UserSelectionModel {
         private final User user;
         private final SimpleBooleanProperty selected = new SimpleBooleanProperty(false);
@@ -191,6 +202,11 @@ public class AdminTeamsController {
         }
     }
 
+    /**
+     * Inicjalizuje kontroler. Ładuje dane zespołów, konfiguruje tabele
+     * oraz ustawia podstawowe parametry. Wywoływana automatycznie po załadowaniu FXML.
+     * @throws SQLException w przypadku błędu dostępu do bazy danych
+     */
     @FXML
     public void initialize() throws SQLException {
         allowedRoleIds.add(3); 
@@ -259,6 +275,10 @@ public class AdminTeamsController {
         loadAll();
     }
 
+    /**
+     * Ładuje nazwy ról użytkowników z bazy danych.
+     * W przypadku błędu używa domyślnych nazw ról.
+     */
     private void loadRoleNames() {
         try {
             Map<Integer, String> roles = userDAO.getAllRolesMap();
@@ -287,11 +307,20 @@ public class AdminTeamsController {
         }
     }
 
+    /**
+     * Ładuje listę wszystkich zespołów z bazy danych.
+     * @throws SQLException w przypadku błędu dostępu do bazy danych
+     */
     private void loadAll() throws SQLException {
         List<Team> allTeams = teamDAO.getAllTeams();
         teamData.setAll(allTeams);
     }
 
+    /**
+     * Obsługuje wybór zespołu z tabeli. Ładuje członków i zadania wybranego zespołu.
+     * @param team Wybrany zespół lub null, jeśli wybór został anulowany
+     * @throws SQLException w przypadku błędu dostępu do bazy danych
+     */
     private void onTeamSelected(Team team) throws SQLException {
         if (team == null) {
             memberData.clear();
@@ -302,6 +331,11 @@ public class AdminTeamsController {
         }
     }
 
+    /**
+     * Ładuje listę członków wybranego zespołu.
+     * @param teamId ID zespołu, którego członkowie mają zostać załadowani
+     * @throws SQLException w przypadku błędu dostępu do bazy danych
+     */
     private void loadTeamMembers(int teamId) throws SQLException {
         memberData.clear();
         List<User> members = teamDAO.getTeamMembers(teamId);
@@ -316,6 +350,11 @@ public class AdminTeamsController {
         }
     }
 
+    /**
+     * Obsługuje akcję dodawania nowego zespołu.
+     * Wyświetla okno dialogowe do wprowadzenia danych nowego zespołu.
+     * @throws SQLException w przypadku błędu dostępu do bazy danych
+     */
     @FXML
     private void onAddTeam() throws SQLException {
         Dialog<Team> dlg = new Dialog<>();
@@ -374,6 +413,11 @@ public class AdminTeamsController {
         });
     }
 
+    /**
+     * Obsługuje akcję edycji istniejącego zespołu.
+     * Wyświetla okno dialogowe z danymi wybranego zespołu do modyfikacji.
+     * @throws SQLException w przypadku błędu dostępu do bazy danych
+     */
     @FXML
     private void onEditTeam() throws SQLException {
         Team sel = teamsTable.getSelectionModel().getSelectedItem();
@@ -431,6 +475,11 @@ public class AdminTeamsController {
         }
     }
 
+    /**
+     * Obsługuje akcję przypisywania członków do zespołu.
+     * Wyświetla okno dialogowe z listą dostępnych użytkowników.
+     * @throws SQLException w przypadku błędu dostępu do bazy danych
+     */
     @FXML
     private void onAssignMembers() throws SQLException {
         Team selected = teamsTable.getSelectionModel().getSelectedItem();
@@ -603,6 +652,9 @@ public class AdminTeamsController {
         });
     }
 
+    /**
+     * Filtruje listę zespołów na podstawie wprowadzonego tekstu w polu wyszukiwania.
+     */
     @FXML
     private void handleSearch() {
         String searchText = searchField.getText().toLowerCase().trim();
@@ -620,6 +672,9 @@ public class AdminTeamsController {
         }
     }
 
+    /**
+     * Odświeża dane, ponownie ładując listę zespołów z bazy danych.
+     */
     @FXML
     private void handleRefresh() {
         try {
@@ -633,6 +688,10 @@ public class AdminTeamsController {
         }
     }
 
+    /**
+     * Wyświetla okno dialogowe z informacją.
+     * @param message Treść wiadomości do wyświetlenia
+     */
     private void showInfo(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Informacja");
@@ -641,6 +700,10 @@ public class AdminTeamsController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z ostrzeżeniem.
+     * @param message Treść ostrzeżenia do wyświetlenia
+     */
     private void showWarning(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Ostrzeżenie");
@@ -649,6 +712,11 @@ public class AdminTeamsController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z błędem.
+     * @param title Tytuł okna dialogowego
+     * @param message Treść błędu do wyświetlenia
+     */
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);

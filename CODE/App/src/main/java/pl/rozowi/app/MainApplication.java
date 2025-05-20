@@ -15,11 +15,23 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+/**
+ * Główna klasa aplikacji zarządzającej zadaniami (TaskApp).
+ * Rozszerza klasę Application z JavaFX i odpowiada za inicjalizację aplikacji,
+ * zarządzanie scenami oraz użytkownikiem obecnie zalogowanym.
+ */
 public class MainApplication extends Application {
 
     private static Stage primaryStage;
     private static User currentUser;
 
+    /**
+     * Główna metoda startowa aplikacji JavaFX.
+     * Inicjalizuje bazę danych, ładuje ekran startowy i konfiguruje główne okno aplikacji.
+     *
+     * @param stage główne okno aplikacji
+     * @throws IOException jeśli wystąpi błąd podczas ładowania pliku FXML
+     */
     @Override
     public void start(Stage stage) throws IOException {
         primaryStage = stage;
@@ -52,6 +64,13 @@ public class MainApplication extends Application {
         stage.show();
     }
 
+    /**
+     * Przełącza aktualną scenę na nową scenę załadowaną z pliku FXML.
+     *
+     * @param fxmlPath ścieżka do pliku FXML nowej sceny
+     * @param title tytuł okna po przełączeniu sceny
+     * @throws IOException jeśli wystąpi błąd podczas ładowania pliku FXML
+     */
     public static void switchScene(String fxmlPath, String title) throws IOException {
         FXMLLoader loader = new FXMLLoader(MainApplication.class.getResource(fxmlPath));
         Parent root = loader.load();
@@ -79,6 +98,12 @@ public class MainApplication extends Application {
         primaryStage.setTitle(title);
     }
 
+    /**
+     * Ustawia aktualnie zalogowanego użytkownika i ładuje jego ustawienia.
+     * Automatycznie aktualizuje motyw interfejsu użytkownika.
+     *
+     * @param user obiekt User reprezentujący zalogowanego użytkownika
+     */
     public static void setCurrentUser(User user) {
         currentUser = user;
 
@@ -91,6 +116,11 @@ public class MainApplication extends Application {
         }
     }
 
+    /**
+     * Ładuje ustawienia użytkownika z bazy danych i aplikuje je do obiektu User.
+     *
+     * @param user obiekt User, dla którego mają zostać załadowane ustawienia
+     */
     private static void loadUserSettings(User user) {
         SettingsDAO settingsDAO = new SettingsDAO();
         Settings userSettings = settingsDAO.getSettingsByUserId(user.getId());
@@ -106,14 +136,29 @@ public class MainApplication extends Application {
         }
     }
 
+    /**
+     * Zwraca aktualnie zalogowanego użytkownika.
+     *
+     * @return obiekt User reprezentujący zalogowanego użytkownika
+     */
     public static User getCurrentUser() {
         return currentUser;
     }
 
+    /**
+     * Zwraca główne okno aplikacji.
+     *
+     * @return obiekt Stage reprezentujący główne okno aplikacji
+     */
     public static Stage getPrimaryStage() {
         return primaryStage;
     }
 
+    /**
+     * Punkt wejścia aplikacji.
+     *
+     * @param args argumenty wiersza poleceń
+     */
     public static void main(String[] args) {
         launch();
     }

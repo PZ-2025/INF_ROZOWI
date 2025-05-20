@@ -2,7 +2,6 @@ package pl.rozowi.app.models;
 
 public class Group {
     private int id;
-    private String groupName;
 
     public int getId() {
         return id;
@@ -12,11 +11,4 @@ public class Group {
         this.id = id;
     }
 
-    public String getGroupName() {
-        return groupName;
-    }
-
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
-    }
 }

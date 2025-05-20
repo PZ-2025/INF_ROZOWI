@@ -15,6 +15,11 @@ import pl.rozowi.app.util.ThemeManager;
 
 import java.io.IOException;
 
+/**
+ * Kontroler panelu administratora systemu zarządzania zadaniami.
+ * Rozszerza funkcjonalność klasy BaseDashboardController, dostarczając
+ * specyficzne dla administratora widoki i akcje.
+ */
 public class AdminDashboardController extends BaseDashboardController {
 
     @FXML
@@ -45,6 +50,10 @@ public class AdminDashboardController extends BaseDashboardController {
 
     private static final String ACTIVE_BUTTON_STYLE = "sidebar-button-active";
 
+    /**
+     * Metoda inicjalizująca kontroler. Automatycznie ładuje widok użytkowników
+     * jako domyślny widok po uruchomieniu.
+     */
     @FXML
     private void initialize() {
         try {
@@ -55,6 +64,12 @@ public class AdminDashboardController extends BaseDashboardController {
         }
     }
 
+    /**
+     * Ustawia styl aktywnego przycisku w panelu bocznym i usuwa styl
+     * z pozostałych przycisków.
+     *
+     * @param activeButton przycisk, który ma zostać oznaczony jako aktywny
+     */
     private void setActiveButton(Button activeButton) {
         usersButton.getStyleClass().remove(ACTIVE_BUTTON_STYLE);
         teamsButton.getStyleClass().remove(ACTIVE_BUTTON_STYLE);
@@ -70,6 +85,12 @@ public class AdminDashboardController extends BaseDashboardController {
         }
     }
 
+    /**
+     * Metoda wywoływana po ustawieniu użytkownika. Aktualizuje powitanie
+     * i ładuje domyślny widok użytkownika.
+     *
+     * @param user obiekt zalogowanego użytkownika
+     */
     @Override
     protected void onUserSet(User user) {
         welcomeLabel.setText("Witaj, " + user.getName());
@@ -114,65 +135,121 @@ public class AdminDashboardController extends BaseDashboardController {
         }
     }
 
+    /**
+     * Pobiera aktualną scenę z głównego panelu.
+     *
+     * @return obiekt Scene lub null jeśli nie został jeszcze zainicjalizowany
+     */
     @Override
     protected Scene getScene() {
         return mainPane != null ? mainPane.getScene() : null;
     }
 
+    /**
+     * Przełącza na widok zarządzania użytkownikami.
+     *
+     * @throws IOException jeśli wystąpi błąd podczas ładowania pliku FXML
+     */
     @FXML
     private void goToUsers() throws IOException {
         setActiveButton(usersButton);
         loadView("/fxml/admin/adminUsers.fxml");
     }
 
+    /**
+     * Przełącza na widok zarządzania zespołami.
+     *
+     * @throws IOException jeśli wystąpi błąd podczas ładowania pliku FXML
+     */
     @FXML
     private void goToTeams() throws IOException {
         setActiveButton(teamsButton);
         loadView("/fxml/admin/adminTeams.fxml");
     }
 
+    /**
+     * Przełącza na widok zarządzania projektami.
+     *
+     * @throws IOException jeśli wystąpi błąd podczas ładowania pliku FXML
+     */
     @FXML
     private void goToProjects() throws IOException {
         setActiveButton(projectsButton);
         loadView("/fxml/admin/adminProjects.fxml");
     }
 
+    /**
+     * Przełącza na widok zarządzania zadaniami.
+     *
+     * @throws IOException jeśli wystąpi błąd podczas ładowania pliku FXML
+     */
     @FXML
     private void goToTasks() throws IOException {
         setActiveButton(tasksButton);
         loadView("/fxml/admin/adminTasks.fxml");
     }
 
+    /**
+     * Przełącza na widok raportów.
+     *
+     * @throws IOException jeśli wystąpi błąd podczas ładowania pliku FXML
+     */
     @FXML
     private void goToReports() throws IOException {
         setActiveButton(reportsButton);
         loadView("/fxml/admin/adminReports.fxml");
     }
 
+    /**
+     * Przełącza na widok aktywności systemowych.
+     *
+     * @throws IOException jeśli wystąpi błąd podczas ładowania pliku FXML
+     */
     @FXML
     private void goToActivities() throws IOException {
         setActiveButton(activitiesButton);
         loadView("/fxml/admin/adminActivities.fxml");
     }
 
+    /**
+     * Przełącza na widok ustawień użytkownika.
+     *
+     * @throws IOException jeśli wystąpi błąd podczas ładowania pliku FXML
+     */
     @FXML
     private void goToSettings() throws IOException {
         setActiveButton(settingsButton);
         loadView("/fxml/user/settings.fxml");
     }
 
+    /**
+     * Przełącza na widok ustawień systemowych.
+     *
+     * @throws IOException jeśli wystąpi błąd podczas ładowania pliku FXML
+     */
     @FXML
     private void goToSystem() throws IOException {
         setActiveButton(systemButton);
         loadView("/fxml/admin/adminSystem.fxml");
     }
 
+    /**
+     * Wylogowuje użytkownika i przełącza na ekran logowania.
+     *
+     * @throws IOException jeśli wystąpi błąd podczas ładowania pliku FXML
+     */
     @FXML
     private void logout() throws IOException {
         MainApplication.setCurrentUser(null);
         MainApplication.switchScene("/fxml/login.fxml", "TaskApp - Logowanie");
     }
 
+    /**
+     * Ładuje widok FXML do głównego panelu.
+     *
+     * @param fxmlPath ścieżka do pliku FXML
+     * @throws IOException jeśli wystąpi błąd podczas ładowania pliku FXML
+     */
     private void loadView(String fxmlPath) throws IOException {
         FXMLLoader loader = new FXMLLoader(MainApplication.class.getResource(fxmlPath));
         Parent view = loader.load();
@@ -198,6 +275,11 @@ public class AdminDashboardController extends BaseDashboardController {
         });
     }
 
+    /**
+     * Wyświetla okno dialogowe z komunikatem błędu.
+     *
+     * @param message treść komunikatu błędu
+     */
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Błąd");

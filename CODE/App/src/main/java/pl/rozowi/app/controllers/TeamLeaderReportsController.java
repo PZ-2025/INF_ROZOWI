@@ -28,6 +28,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Kontroler odpowiedzialny za generowanie i zarządzanie raportami dla liderów zespołów.
+ * Umożliwia tworzenie raportów dotyczących członków zespołu oraz zadań przypisanych do zespołów.
+ */
 public class TeamLeaderReportsController {
 
     @FXML
@@ -82,6 +86,10 @@ public class TeamLeaderReportsController {
     private boolean showMembers = true;
     private boolean showStatistics = true;
 
+    /**
+     * Inicjalizacja kontrolera.
+     * Konfiguruje dostępne typy raportów, ustawia style i inicjalizuje filtry.
+     */
     @FXML
     private void initialize() {
         reportService = new TeamLeaderReportService();
@@ -144,6 +152,10 @@ public class TeamLeaderReportsController {
         updateGenerateButtonState();
     }
 
+    /**
+     * Inicjalizuje opcje filtrów dla raportów.
+     * Ładuje listę zespołów, grup i użytkowników dostępnych dla aktualnego lidera.
+     */
     private void initFilterOptions() {
         try {
             User currentUser = MainApplication.getCurrentUser();
@@ -228,6 +240,9 @@ public class TeamLeaderReportsController {
         }
     }
 
+    /**
+     * Obsługuje pokazywanie/ukrywanie panelu z opcjami filtrowania.
+     */
     @FXML
     private void handleShowFilterOptions() {
         if (currentReportType == null || currentReportType.isEmpty()) {
@@ -245,6 +260,10 @@ public class TeamLeaderReportsController {
         }
     }
 
+    /**
+     * Aktualizuje widoczność sekcji filtrów w zależności od wybranego typu raportu.
+     * @param reportType Typ raportu wybrany przez użytkownika
+     */
     private void updateFilterVisibility(String reportType) {
         boolean isMembersReport = "Członkowie Zespołu".equals(reportType);
         boolean isTasksReport = "Zadania Zespołu".equals(reportType);
@@ -262,6 +281,10 @@ public class TeamLeaderReportsController {
         updateGenerateButtonState();
     }
 
+    /**
+     * Ustawia widoczność sekcji zespołów.
+     * @param visible Czy sekcja ma być widoczna
+     */
     private void setTeamSectionVisibility(boolean visible) {
         setVisibility(teamsContainer, visible);
         setVisibility(teamsButtonsContainer, visible);
@@ -273,6 +296,11 @@ public class TeamLeaderReportsController {
         }
     }
 
+    /**
+     * Ustawia widoczność elementu interfejsu.
+     * @param node Element interfejsu
+     * @param visible Czy element ma być widoczny
+     */
     private void setVisibility(Node node, boolean visible) {
         if (node != null) {
             node.setVisible(visible);
@@ -280,6 +308,9 @@ public class TeamLeaderReportsController {
         }
     }
 
+    /**
+     * Aktualizuje stan przycisku generowania raportu.
+     */
     private void updateGenerateButtonState() {
         boolean reportTypeSelected = currentReportType != null && !currentReportType.isEmpty();
         boolean teamsSelected = !selectedTeams.isEmpty();
@@ -287,6 +318,9 @@ public class TeamLeaderReportsController {
         generateButton.setDisable(!(reportTypeSelected && teamsSelected));
     }
 
+    /**
+     * Zaznacza wszystkie zespoły na liście.
+     */
     @FXML
     private void handleSelectAllTeams() {
         selectedTeams.setAll(teamsListView.getItems());
@@ -294,6 +328,9 @@ public class TeamLeaderReportsController {
         updateGenerateButtonState();
     }
 
+    /**
+     * Odznacza wszystkie zespoły na liście.
+     */
     @FXML
     private void handleDeselectAllTeams() {
         selectedTeams.clear();
@@ -301,6 +338,9 @@ public class TeamLeaderReportsController {
         updateGenerateButtonState();
     }
 
+    /**
+     * Generuje raport na podstawie wybranych filtrów i opcji.
+     */
     @FXML
     private void handleGenerateReport() {
         try {
@@ -346,6 +386,12 @@ public class TeamLeaderReportsController {
         }
     }
 
+    /**
+     * Generuje raport dotyczący członków zespołu.
+     * @param teamLeaderId ID lidera zespołu
+     * @param filterOptions Mapa zawierająca opcje filtrowania
+     * @throws SQLException W przypadku błędu dostępu do bazy danych
+     */
     private void generateTeamMembersReport(int teamLeaderId, Map<String, Object> filterOptions) throws SQLException {
         List<Team> teamsByLeader = teamDAO.getTeamsByLeaderIdAsList(teamLeaderId);
         List<Team> teamsToShow = new ArrayList<>();
@@ -452,6 +498,12 @@ public class TeamLeaderReportsController {
         reportsArea.setText(currentReportContent);
     }
 
+    /**
+     * Generuje raport dotyczący zadań zespołu.
+     * @param teamLeaderId ID lidera zespołu
+     * @param filterOptions Mapa zawierająca opcje filtrowania
+     * @throws SQLException W przypadku błędu dostępu do bazy danych
+     */
     private void generateTeamTasksReport(int teamLeaderId, Map<String, Object> filterOptions) throws SQLException {
         List<Team> teamsByLeader = teamDAO.getTeamsByLeaderIdAsList(teamLeaderId);
         List<Team> teamsToShow = new ArrayList<>();
@@ -582,6 +634,9 @@ public class TeamLeaderReportsController {
         reportsArea.setText(currentReportContent);
     }
 
+    /**
+     * Zapisuje wygenerowany raport do pliku PDF.
+     */
     @FXML
     private void handleSaveAsPdf() {
         if (currentReportContent.isEmpty()) {
@@ -630,6 +685,11 @@ public class TeamLeaderReportsController {
         }
     }
 
+    /**
+     * Wyświetla okno dialogowe z informacją.
+     * @param title Tytuł okna dialogowego
+     * @param message Treść wiadomości
+     */
     private void showInfo(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
@@ -638,6 +698,10 @@ public class TeamLeaderReportsController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z ostrzeżeniem.
+     * @param message Treść ostrzeżenia
+     */
     private void showWarning(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Ostrzeżenie");
@@ -646,6 +710,11 @@ public class TeamLeaderReportsController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z błędem.
+     * @param title Tytuł okna dialogowego
+     * @param message Treść błędu
+     */
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);

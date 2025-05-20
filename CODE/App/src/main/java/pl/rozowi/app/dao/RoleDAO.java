@@ -10,12 +10,17 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Data Access Object dla zarządzania rolami użytkowników w systemie.
+ * Zapewnia podstawowe operacje CRUD na tabeli ról w bazie danych.
+ */
 public class RoleDAO {
 
     /**
-     * Pobiera wszystkie role z bazy danych
-     * @return Lista obiektów Role
-     * @throws SQLException w przypadku błędu bazy danych
+     * Pobiera wszystkie role z bazy danych.
+     *
+     * @return Lista obiektów {@link Role} reprezentujących wszystkie role w systemie.
+     *         Pusta lista jeśli nie znaleziono żadnych ról.
      */
     public List<Role> getAllRoles() {
         List<Role> roles = new ArrayList<>();
@@ -36,6 +41,12 @@ public class RoleDAO {
         return roles;
     }
 
+    /**
+     * Wyszukuje rolę na podstawie nazwy.
+     *
+     * @param roleName Nazwa roli do wyszukania
+     * @return Obiekt {@link Role} jeśli znaleziono, null w przeciwnym przypadku
+     */
     public Role getRoleByName(String roleName) {
         Role role = null;
         String sql = "SELECT * FROM roles WHERE role_name = ?";
@@ -54,6 +65,12 @@ public class RoleDAO {
         return role;
     }
 
+    /**
+     * Dodaje nową rolę do bazy danych.
+     *
+     * @param role Obiekt {@link Role} zawierający nazwę nowej roli
+     * @return true jeśli rola została pomyślnie dodana, false w przypadku błędu
+     */
     public boolean insertRole(Role role) {
         String sql = "INSERT INTO roles (role_name) VALUES (?)";
         try (Connection conn = DatabaseManager.getConnection();

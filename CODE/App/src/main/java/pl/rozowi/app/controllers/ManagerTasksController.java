@@ -20,6 +20,10 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Kontroler zarządzający widokiem zadań dla kierowników projektów.
+ * Wyświetla listę projektów wraz ze statystykami dotyczącymi zadań.
+ */
 public class ManagerTasksController {
 
     @FXML
@@ -44,6 +48,10 @@ public class ManagerTasksController {
     private final ObservableList<ProjectRow> data = FXCollections.observableArrayList();
     private final ObservableList<ProjectRow> filteredData = FXCollections.observableArrayList();
 
+    /**
+     * Inicjalizuje kontroler, konfigurując tabelę projektów i ładując dane.
+     * @throws SQLException w przypadku problemów z dostępem do bazy danych
+     */
     @FXML
     public void initialize() throws SQLException {
         colId.setCellValueFactory(c -> new SimpleIntegerProperty(filteredData.indexOf(c.getValue()) + 1));
@@ -81,6 +89,10 @@ public class ManagerTasksController {
         });
     }
 
+    /**
+     * Ładuje wszystkie projekty przypisane do aktualnego kierownika wraz ze statystykami zadań.
+     * @throws SQLException w przypadku problemów z dostępem do bazy danych
+     */
     private void loadAll() throws SQLException {
         data.clear();
 
@@ -106,6 +118,9 @@ public class ManagerTasksController {
         projectsTable.setItems(filteredData);
     }
 
+    /**
+     * Filtruje wyświetlane projekty na podstawie wprowadzonego tekstu.
+     */
     @FXML
     private void onFilter() {
         String searchText = filterField.getText().toLowerCase().trim();
@@ -123,6 +138,9 @@ public class ManagerTasksController {
         projectsTable.setItems(filteredData);
     }
 
+    /**
+     * Odświeża dane w tabeli projektów.
+     */
     @FXML
     private void handleRefresh() {
         try {
@@ -132,6 +150,10 @@ public class ManagerTasksController {
         }
     }
 
+    /**
+     * Wyświetla okno dialogowe z informacją.
+     * @param message Treść wiadomości do wyświetlenia
+     */
     private void showInfo(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Informacja");
@@ -140,6 +162,11 @@ public class ManagerTasksController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z błędem.
+     * @param title Tytuł okna dialogowego
+     * @param message Treść błędu do wyświetlenia
+     */
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -148,6 +175,9 @@ public class ManagerTasksController {
         alert.showAndWait();
     }
 
+    /**
+     * Klasa reprezentująca wiersz projektu w tabeli z dodatkowymi statystykami zadań.
+     */
     public static class ProjectRow extends Project {
         private final javafx.beans.property.IntegerProperty totalTasks =
                 new javafx.beans.property.SimpleIntegerProperty();
@@ -156,6 +186,12 @@ public class ManagerTasksController {
         private final javafx.beans.property.DoubleProperty progress =
                 new javafx.beans.property.SimpleDoubleProperty();
 
+        /**
+         * Tworzy nowy wiersz projektu z danymi statystycznymi.
+         * @param p Obiekt projektu
+         * @param total Liczba wszystkich zadań w projekcie
+         * @param done Liczba zakończonych zadań w projekcie
+         */
         public ProjectRow(Project p, int total, int done) {
             setId(p.getId());
             setProjectName(p.getProjectName());
@@ -169,26 +205,50 @@ public class ManagerTasksController {
             progress.set(total == 0 ? 0.0 : (double) done / total);
         }
 
+        /**
+         * Zwraca właściwość z liczbą wszystkich zadań.
+         * @return Właściwość IntegerProperty
+         */
         public javafx.beans.property.IntegerProperty totalTasksProperty() {
             return totalTasks;
         }
 
+        /**
+         * Zwraca właściwość z liczbą zakończonych zadań.
+         * @return Właściwość IntegerProperty
+         */
         public javafx.beans.property.IntegerProperty completedTasksProperty() {
             return completedTasks;
         }
 
+        /**
+         * Zwraca właściwość z postępem zadań (wartość 0-1).
+         * @return Właściwość DoubleProperty
+         */
         public javafx.beans.property.DoubleProperty progressProperty() {
             return progress;
         }
 
+        /**
+         * Pobiera liczbę wszystkich zadań w projekcie.
+         * @return Liczba zadań
+         */
         public int getTotalTasks() {
             return totalTasks.get();
         }
 
+        /**
+         * Pobiera liczbę zakończonych zadań w projekcie.
+         * @return Liczba zakończonych zadań
+         */
         public int getCompletedTasks() {
             return completedTasks.get();
         }
 
+        /**
+         * Pobiera postęp realizacji zadań (wartość 0-1).
+         * @return Wartość postępu (0.0 - 1.0)
+         */
         public double getProgress() {
             return progress.get();
         }

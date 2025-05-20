@@ -10,8 +10,18 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Data Access Object (DAO) dla zarządzania raportami w bazie danych.
+ * Zapewnia podstawowe operacje CRUD dla encji raportów.
+ */
 public class ReportDAO {
 
+    /**
+     * Dodaje nowy raport do bazy danych.
+            *
+            * @param report Obiekt raportu do zapisania, zawierający wszystkie wymagane dane
+     * @return true jeśli raport został pomyślnie dodany, false w przypadku błędu
+     */
     public boolean insertReport(Report report) {
         String sql = "INSERT INTO reports (report_name, report_type, report_scope, created_by, created_at, exported_file) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getConnection();
@@ -30,6 +40,11 @@ public class ReportDAO {
         return false;
     }
 
+    /**
+     * Pobiera listę wszystkich raportów z bazy danych.
+     *
+     * @return Lista wszystkich raportów w systemie, pusta lista jeśli nie ma raportów
+     */
     public List<Report> getAllReports() {
         List<Report> reports = new ArrayList<>();
         String sql = "SELECT * FROM reports";

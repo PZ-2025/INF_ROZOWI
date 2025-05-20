@@ -17,6 +17,10 @@ import java.security.NoSuchAlgorithmException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Kontroler odpowiedzialny za proces rejestracji nowego użytkownika w systemie.
+ * Zapewnia walidację danych wejściowych i bezpieczne tworzenie kont użytkowników.
+ */
 public class RegisterController {
 
     @FXML
@@ -28,10 +32,17 @@ public class RegisterController {
 
     private UserDAO userDAO = new UserDAO();
 
+    /**
+     * Inicjalizuje kontroler, ustawiając obsługę zdarzeń klawiatury.
+     * Naciśnięcie Enter w dowolnym polu formularza wywołuje próbę rejestracji.
+     */
     public void initialize() {
         addEnterKeyHandlers();
     }
 
+    /**
+     * Obsługuje zdarzenie naciśnięcia klawisza Enter w polach formularza.
+     */
     private void addEnterKeyHandlers() {
         firstNameField.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ENTER) handleRegister();
@@ -50,6 +61,10 @@ public class RegisterController {
         });
     }
 
+    /**
+     * Obsługuje proces rejestracji nowego użytkownika.
+     * Wykonuje walidację danych i tworzy nowe konto użytkownika.
+     */
     @FXML
     private void handleRegister() {
         errorLabel.setText("");
@@ -101,15 +116,28 @@ public class RegisterController {
         }
     }
 
+    /**
+     * Przekierowuje użytkownika z powrotem do ekranu logowania.
+     * @throws IOException w przypadku problemów z załadowaniem widoku logowania
+     */
     @FXML
     private void goBack() throws IOException {
         MainApplication.switchScene("/fxml/login.fxml", "TaskApp - Panel logowania");
     }
 
+    /**
+     * Wyświetla komunikat o błędzie w interfejsie użytkownika.
+     * @param message Treść komunikatu o błędzie
+     */
     private void showError(String message) {
         errorLabel.setText(message);
     }
 
+    /**
+     * Wyświetla okno dialogowe z informacją o sukcesie.
+     * @param title Tytuł okna dialogowego
+     * @param message Treść komunikatu
+     */
     private void showSuccessAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
@@ -118,6 +146,11 @@ public class RegisterController {
         alert.showAndWait();
     }
 
+    /**
+     * Haszuje podane hasło algorytmem SHA-256.
+     * @param password Hasło do zahaszowania
+     * @return Zahaszowane hasło w postaci ciągu znaków hex
+     */
     private String hashPassword(String password) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -135,17 +168,32 @@ public class RegisterController {
         }
     }
 
+    /**
+     * Sprawdza czy tekst zaczyna się od wielkiej litery.
+     * @param text Tekst do sprawdzenia
+     * @return true jeśli tekst zaczyna się od wielkiej litery, false w przeciwnym przypadku
+     */
     private boolean isCapitalized(String text) {
         if (text == null || text.isEmpty()) return false;
         return Character.isUpperCase(text.charAt(0));
     }
 
+    /**
+     * Sprawdza poprawność formatu adresu email.
+     * @param email Adres email do walidacji
+     * @return true jeśli email jest poprawny, false w przeciwnym przypadku
+     */
     private boolean isValidEmail(String email) {
         if (email == null) return false;
         String regex = "^.{2,}@.{2,}$";
         return email.matches(regex);
     }
 
+    /**
+     * Sprawdza czy hasło zawiera przynajmniej jeden znak specjalny.
+     * @param password Hasło do sprawdzenia
+     * @return true jeśli hasło zawiera znak specjalny, false w przeciwnym przypadku
+     */
     private boolean hasSpecialChar(String password) {
         if (password == null) return false;
         Pattern pattern = Pattern.compile(".*[^A-Za-z0-9].*");

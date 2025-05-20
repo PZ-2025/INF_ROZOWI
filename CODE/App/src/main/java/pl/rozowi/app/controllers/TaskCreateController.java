@@ -16,6 +16,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Kontroler odpowiedzialny za tworzenie nowych zadań w aplikacji.
+ * Zawiera formularz do wprowadzania danych zadania oraz logikę związaną z jego zapisem.
+ */
 public class TaskCreateController {
     @FXML
     private ComboBox<Project> comboProject;
@@ -39,6 +43,9 @@ public class TaskCreateController {
     private final ProjectDAO projectDAO = new ProjectDAO();
     private final TeamDAO teamDAO = new TeamDAO();
 
+    /**
+     * Inicjalizacja kontrolera - ustawia początkowe wartości i konfiguruje listenery.
+     */
     @FXML
     private void initialize() {
         comboPriority.getItems().setAll("Niskie", "Średnie", "Wysokie");
@@ -66,6 +73,11 @@ public class TaskCreateController {
         setupConverters();
     }
 
+    /**
+     * Ładuje dostępne projekty w zależności od roli użytkownika.
+     * Dla administratora ładuje wszystkie projekty, dla managera - tylko przypisane projekty,
+     * dla team leadera - projekt przypisany do jego zespołu.
+     */
     private void loadAvailableProjects() {
         try {
             List<Project> projects;
@@ -140,6 +152,10 @@ public class TaskCreateController {
         }
     }
 
+    /**
+     * Ładuje zespoły przypisane do wybranego projektu.
+     * @param projectId ID projektu dla którego mają być załadowane zespoły
+     */
     private void loadTeamsForProject(int projectId) {
         try {
             List<Team> projectTeams = new ArrayList<>();
@@ -160,6 +176,10 @@ public class TaskCreateController {
         }
     }
 
+    /**
+     * Ładuje członków wybranego zespołu.
+     * @param teamId ID zespołu dla którego mają być załadowani członkowie
+     */
     private void loadMembersForTeam(int teamId) {
         try {
             List<User> members = teamMemberDAO.getTeamMembers(teamId);
@@ -169,6 +189,10 @@ public class TaskCreateController {
         }
     }
 
+    /**
+     * Konfiguruje konwertery tekstu dla ComboBoxów.
+     * Definiuje sposób wyświetlania obiektów Project, Team i User w kontrolkach ComboBox.
+     */
     private void setupConverters() {
         comboProject.setConverter(new StringConverter<>() {
             @Override
@@ -207,6 +231,10 @@ public class TaskCreateController {
         });
     }
 
+    /**
+     * Obsługuje zdarzenie tworzenia nowego zadania.
+     * Waliduje dane, tworzy nowe zadanie i przypisuje je wybranemu użytkownikowi.
+     */
     @FXML
     private void handleCreate() {
         Project proj = comboProject.getValue();
@@ -264,15 +292,26 @@ public class TaskCreateController {
         closeWindow();
     }
 
+    /**
+     * Obsługuje zdarzenie zamknięcia okna.
+     */
     @FXML
     private void handleClose() {
         closeWindow();
     }
 
+    /**
+     * Zamyka bieżące okno.
+     */
     private void closeWindow() {
         ((Stage) txtTitle.getScene().getWindow()).close();
     }
 
+    /**
+     * Wyświetla okno dialogowe z informacją.
+     * @param title tytuł okna dialogowego
+     * @param message treść wiadomości
+     */
     private void showInfo(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
@@ -281,6 +320,10 @@ public class TaskCreateController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z ostrzeżeniem.
+     * @param message treść ostrzeżenia
+     */
     private void showWarning(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Warning");
@@ -289,6 +332,11 @@ public class TaskCreateController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z błędem.
+     * @param title tytuł okna dialogowego
+     * @param message treść błędu
+     */
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);

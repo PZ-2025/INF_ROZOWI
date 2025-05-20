@@ -19,6 +19,10 @@ import pl.rozowi.app.util.DefaultViewManager;
 
 import java.io.IOException;
 
+/**
+ * Kontroler odpowiedzialny za obsługę panelu ustawień użytkownika.
+ * Pozwala na zmianę hasła, podpowiedzi do hasła, adresu email, motywu oraz domyślnego widoku.
+ */
 public class SettingsController {
 
     @FXML
@@ -41,6 +45,11 @@ public class SettingsController {
     private final PasswordChangeService passwordService = new PasswordChangeService();
     private User currentUser;
 
+    /**
+     * Ustawia aktualnego użytkownika i inicjalizuje formularz jego danymi.
+     *
+     * @param user obiekt użytkownika, którego ustawienia będą edytowane
+     */
     public void setUser(User user) {
         this.currentUser = user;
         emailField.setText(user.getEmail());
@@ -110,11 +119,18 @@ public class SettingsController {
         });
     }
 
+    /**
+     * Inicjalizacja kontrolera - ustawia obsługę zdarzenia dla przycisku zapisywania.
+     */
     @FXML
     private void initialize() {
         saveSettingsButton.setOnAction(e -> handleSaveSettings());
     }
 
+    /**
+     * Obsługuje zdarzenie zapisywania ustawień.
+     * Waliduje dane, aktualizuje użytkownika i przełącza na odpowiedni widok w zależności od roli.
+     */
     @FXML
     private void handleSaveSettings() {
         if (currentUser == null) {
@@ -210,10 +226,23 @@ public class SettingsController {
         }
     }
 
+    /**
+     * Sprawdza poprawność formatu adresu email.
+     *
+     * @param email adres email do walidacji
+     * @return true jeśli email jest poprawny, false w przeciwnym wypadku
+     */
     private boolean isValidEmail(String email) {
         return email != null && email.matches("^[A-Za-z0-9+_.-]+@(.+)$");
     }
 
+    /**
+     * Wyświetla okno dialogowe z komunikatem.
+     *
+     * @param type typ komunikatu (ERROR, INFORMATION itp.)
+     * @param title tytuł okna dialogowego
+     * @param content treść komunikatu
+     */
     private void showAlert(Alert.AlertType type, String title, String content) {
         Alert a = new Alert(type);
         a.setTitle(title);

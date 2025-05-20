@@ -29,6 +29,10 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Optional;
 
+/**
+ * Kontroler odpowiedzialny za zarządzanie użytkownikami w panelu administracyjnym.
+ * Umożliwia dodawanie, edycję, usuwanie użytkowników oraz zarządzanie ich uprawnieniami.
+ */
 public class AdminUsersController {
 
     @FXML
@@ -78,6 +82,10 @@ public class AdminUsersController {
 
     private ObservableList<User> allUsers = FXCollections.observableArrayList();
 
+    /**
+     * Inicjalizuje kontroler. Ładuje dane użytkowników, konfiguruje tabele
+     * oraz ustawia podstawowe parametry. Wywoływana automatycznie po załadowaniu FXML.
+     */
     @FXML
     private void initialize() {
         loadRolesAndGroups();
@@ -119,6 +127,10 @@ public class AdminUsersController {
         loadUsers();
     }
 
+    /**
+     * Ładuje nazwy ról i grup użytkowników z bazy danych.
+     * W przypadku błędu używa domyślnych wartości.
+     */
     private void loadRolesAndGroups() {
         try {
             roleNames = userDAO.getAllRolesMap();
@@ -148,6 +160,9 @@ public class AdminUsersController {
         }
     }
 
+    /**
+     * Ładuje listę wszystkich użytkowników z bazy danych.
+     */
     private void loadUsers() {
         try {
             List<User> users = userDAO.getAllUsers();
@@ -159,6 +174,10 @@ public class AdminUsersController {
         }
     }
 
+    /**
+     * Wyświetla szczegółowe informacje o wybranym użytkowniku.
+     * @param user Obiekt użytkownika do wyświetlenia
+     */
     private void showUserDetails(User user) {
         detailId.setText(String.valueOf(user.getId()));
         detailName.setText(user.getName() + " " + user.getLastName());
@@ -193,6 +212,9 @@ public class AdminUsersController {
         }
     }
 
+    /**
+     * Filtruje listę użytkowników na podstawie wprowadzonego tekstu.
+     */
     @FXML
     private void handleSearch() {
         String searchText = searchField.getText().toLowerCase().trim();
@@ -213,6 +235,10 @@ public class AdminUsersController {
         usersTable.setItems(filtered);
     }
 
+    /**
+     * Obsługuje akcję dodawania nowego użytkownika.
+     * Wyświetla okno dialogowe do wprowadzenia danych.
+     */
     @FXML
     private void handleAddUser() {
         Dialog<UserTeamPair> dialog = createUserDialog(null);
@@ -243,6 +269,10 @@ public class AdminUsersController {
         });
     }
 
+    /**
+     * Obsługuje akcję edycji istniejącego użytkownika.
+     * Wyświetla okno dialogowe z danymi użytkownika.
+     */
     @FXML
     private void handleEditUser() {
         User selectedUser = usersTable.getSelectionModel().getSelectedItem();
@@ -281,6 +311,9 @@ public class AdminUsersController {
         });
     }
 
+    /**
+     * Klasa pomocnicza przechowująca parę użytkownik-zespół.
+     */
     private static class UserTeamPair {
         User user;
         Team team;
@@ -291,6 +324,10 @@ public class AdminUsersController {
         }
     }
 
+    /**
+     * Obsługuje akcję usuwania użytkownika.
+     * Wyświetla okno potwierdzenia przed usunięciem.
+     */
     @FXML
     private void handleDeleteUser() {
         User selectedUser = usersTable.getSelectionModel().getSelectedItem();
@@ -331,6 +368,10 @@ public class AdminUsersController {
         }
     }
 
+    /**
+     * Obsługuje akcję resetowania hasła użytkownika.
+     * Ustawia domyślne hasło i aktualizuje datę ostatniej zmiany.
+     */
     @FXML
     private void handleResetPassword() {
         User selectedUser = usersTable.getSelectionModel().getSelectedItem();
@@ -376,6 +417,10 @@ public class AdminUsersController {
         }
     }
 
+    /**
+     * Obsługuje akcję zmiany roli użytkownika.
+     * Wyświetla okno dialogowe z listą dostępnych ról.
+     */
     @FXML
     private void handleChangeRole() {
         User selectedUser = usersTable.getSelectionModel().getSelectedItem();
@@ -439,6 +484,10 @@ public class AdminUsersController {
         });
     }
 
+    /**
+     * Obsługuje akcję zmiany grupy użytkownika.
+     * Wyświetla okno dialogowe z listą dostępnych grup.
+     */
     @FXML
     private void handleChangeGroup() {
         User selectedUser = usersTable.getSelectionModel().getSelectedItem();
@@ -502,12 +551,20 @@ public class AdminUsersController {
         });
     }
 
+    /**
+     * Odświeża dane, ponownie ładując listę użytkowników.
+     */
     @FXML
     private void handleRefresh() {
         loadRolesAndGroups();
         loadUsers();
     }
 
+    /**
+     * Tworzy i konfiguruje okno dialogowe do edycji/dodawania użytkownika.
+     * @param user Obiekt użytkownika do edycji lub null dla nowego użytkownika
+     * @return Skonfigurowane okno dialogowe
+     */
     private Dialog<UserTeamPair> createUserDialog(User user) {
         Dialog<UserTeamPair> dialog = new Dialog<>();
         dialog.setTitle(user == null ? "Dodaj nowego użytkownika" : "Edytuj użytkownika");
@@ -653,6 +710,13 @@ public class AdminUsersController {
         return dialog;
     }
 
+    /**
+     * Sprawdza poprawność danych w formularzu użytkownika.
+     * @param saveButton Przycisk zapisu do aktywacji/dezaktywacji
+     * @param nameField Pole z imieniem użytkownika
+     * @param lastNameField Pole z nazwiskiem użytkownika
+     * @param emailField Pole z emailem użytkownika
+     */
     private void validateForm(Node saveButton, TextField nameField, TextField lastNameField, TextField emailField) {
         boolean isValid = !nameField.getText().trim().isEmpty() &&
                 !lastNameField.getText().trim().isEmpty() &&
@@ -661,10 +725,19 @@ public class AdminUsersController {
         saveButton.setDisable(!isValid);
     }
 
+    /**
+     * Sprawdza poprawność formatu adresu email.
+     * @param email Adres email do walidacji
+     * @return true jeśli email jest poprawny, false w przeciwnym przypadku
+     */
     private boolean isValidEmail(String email) {
         return email != null && email.matches("^[\\w.-]+@([\\w-]+\\.)+[\\w-]{2,4}$");
     }
 
+    /**
+     * Wyświetla okno dialogowe z informacją.
+     * @param message Treść wiadomości do wyświetlenia
+     */
     private void showInfo(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Informacja");
@@ -673,6 +746,10 @@ public class AdminUsersController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z ostrzeżeniem.
+     * @param message Treść ostrzeżenia do wyświetlenia
+     */
     private void showWarning(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Ostrzeżenie");
@@ -682,6 +759,10 @@ public class AdminUsersController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z błędem.
+     * @param message Treść błędu do wyświetlenia
+     */
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Błąd");

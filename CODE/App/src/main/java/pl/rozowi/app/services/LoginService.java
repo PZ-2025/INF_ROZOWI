@@ -8,19 +8,32 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * Klasa odpowiedzialna za logowanie użytkowników do systemu.
+ * Zapewnia funkcjonalność uwierzytelniania użytkowników oraz zarządzania ich sesjami.
+ */
 public class LoginService {
 
     private final UserDAO userDAO;
     private final TeamMemberDAO teamMemberDAO;
 
+    /**
+     * Konstruktor tworzący serwis logowania.
+     *
+     * @param userDAO DAO do obsługi użytkowników
+     * @param teamMemberDAO DAO do obsługi członków zespołów
+     */
     public LoginService(UserDAO userDAO, TeamMemberDAO teamMemberDAO) {
         this.userDAO = userDAO;
         this.teamMemberDAO = teamMemberDAO;
     }
 
     /**
-     * Sprawdza, czy użytkownik istnieje oraz czy zahashowane hasło odpowiada.
-     * Zwraca obiekt User w przypadku powodzenia lub null, jeśli autoryzacja się nie powiodła.
+     * Uwierzytelnia użytkownika na podstawie adresu email i hasła.
+     *
+     * @param email adres email użytkownika
+     * @param rawPassword hasło w postaci niezaszyfrowanej
+     * @return obiekt User w przypadku poprawnego uwierzytelnienia, null w przeciwnym wypadku
      */
     public User authenticate(String email, String rawPassword) {
         if (email == null || email.isEmpty() || rawPassword == null) {
@@ -36,14 +49,20 @@ public class LoginService {
     }
 
     /**
-     * Pobiera ID teamu przypisanego do danego usera.
+     * Pobiera identyfikator zespołu przypisanego do użytkownika.
+     *
+     * @param userId identyfikator użytkownika
+     * @return identyfikator zespołu lub wartość domyślna jeśli użytkownik nie należy do żadnego zespołu
      */
     public int findTeamIdForUser(int userId) {
         return teamMemberDAO.getTeamIdForUser(userId);
     }
 
     /**
-     * Znajduje użytkownika po emailu.
+     * Wyszukuje użytkownika na podstawie adresu email.
+     *
+     * @param email adres email użytkownika
+     * @return obiekt User jeśli znaleziono, null w przeciwnym wypadku
      */
     public User findUserByEmail(String email) {
         if (email == null || email.isEmpty()) {
@@ -53,7 +72,10 @@ public class LoginService {
     }
 
     /**
-     * Metoda do hashowania hasła (SHA-256).
+     * Haszuje podane hasło algorytmem SHA-256.
+     *
+     * @param password hasło do zaszyfrowania
+     * @return zahashowane hasło jako ciąg znaków hex lub null w przypadku błędu
      */
     private String hashPassword(String password) {
         try {

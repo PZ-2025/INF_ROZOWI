@@ -22,6 +22,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Kontroler odpowiedzialny za zarządzanie widokiem listy pracowników.
+ * Umożliwia przeglądanie pracowników z podziałem na zespoły z możliwością wyszukiwania.
+ */
 public class EmployeesController {
 
     @FXML
@@ -48,6 +52,11 @@ public class EmployeesController {
 
     private ObservableList<User> allEmployees;
 
+    /**
+     * Inicjalizuje kontroler. Konfiguruje tabelę pracowników i mechanizm wyszukiwania.
+     * Wywoływana automatycznie po załadowaniu pliku FXML.
+     * @throws SQLException w przypadku problemów z dostępem do bazy danych
+     */
     @FXML
     private void initialize() throws SQLException {
         colId.setCellValueFactory(c -> {
@@ -78,6 +87,13 @@ public class EmployeesController {
         searchButton.setOnAction(e -> searchField.setText(searchField.getText()));
     }
 
+    /**
+     * Ładuje listę pracowników w zależności od roli obecnie zalogowanego użytkownika:
+     * - Administrator widzi wszystkich pracowników
+     * - Kierownik widzi pracowników ze swoich zespołów
+     * - Team Leader widzi członków swoich zespołów (z wyłączeniem siebie)
+     * @throws SQLException w przypadku problemów z dostępem do bazy danych
+     */
     private void loadEmployees() throws SQLException {
         User current = MainApplication.getCurrentUser();
         if (current == null) {

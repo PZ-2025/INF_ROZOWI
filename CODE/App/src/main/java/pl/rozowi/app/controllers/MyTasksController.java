@@ -18,6 +18,10 @@ import pl.rozowi.app.util.Session;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Kontroler odpowiedzialny za zarządzanie widokiem zadań przypisanych do aktualnie zalogowanego użytkownika.
+ * Umożliwia przeglądanie, wyszukiwanie i zarządzanie zadaniami użytkownika.
+ */
 public class MyTasksController {
 
     @FXML
@@ -42,6 +46,9 @@ public class MyTasksController {
     private ObservableList<Task> allTasks = FXCollections.observableArrayList();
     private ObservableList<Task> filteredTasks = FXCollections.observableArrayList();
 
+    /**
+     * Inicjalizuje kontroler, konfigurując tabelę zadań i ładując dane.
+     */
     @FXML
     private void initialize() {
         setupTableColumns();
@@ -75,6 +82,9 @@ public class MyTasksController {
         loadTasks();
     }
 
+    /**
+     * Konfiguruje kolumny tabeli zadań.
+     */
     private void setupTableColumns() {
         colId.setCellValueFactory(data -> new SimpleIntegerProperty(tasksTable.getItems().indexOf(data.getValue()) + 1));
         colTitle.setCellValueFactory(data -> data.getValue().titleProperty());
@@ -84,6 +94,10 @@ public class MyTasksController {
         colTeam.setCellValueFactory(data -> data.getValue().teamNameProperty());
     }
 
+    /**
+     * Otwiera okno ze szczegółami wybranego zadania.
+     * @param task Zadanie do wyświetlenia
+     */
     private void openTaskDetails(Task task) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/user/taskDetails.fxml"));
@@ -104,6 +118,9 @@ public class MyTasksController {
         }
     }
 
+    /**
+     * Ładuje zadania przypisane do aktualnego użytkownika.
+     */
     private void loadTasks() {
         List<Task> tasks = taskDAO.getTasksForUser(Session.currentUserId);
         allTasks.setAll(tasks);
@@ -111,6 +128,9 @@ public class MyTasksController {
         tasksTable.setItems(filteredTasks);
     }
 
+    /**
+     * Filtruje zadania na podstawie wprowadzonego tekstu w polu wyszukiwania.
+     */
     @FXML
     private void handleSearch() {
         String searchText = searchField.getText().toLowerCase().trim();
@@ -133,12 +153,21 @@ public class MyTasksController {
         tasksTable.setItems(filteredTasks);
     }
 
+    /**
+     * Odświeża listę zadań, resetując filtr wyszukiwania.
+     */
     @FXML
     private void handleRefresh() {
         searchField.clear();
         loadTasks();
     }
 
+    /**
+     * Wyświetla okno dialogowe z komunikatem.
+     * @param type Typ komunikatu (INFORMATION, WARNING, ERROR)
+     * @param title Tytuł okna dialogowego
+     * @param message Treść komunikatu
+     */
     private void showAlert(Alert.AlertType type, String title, String message) {
         Alert alert = new Alert(type);
         alert.setTitle(title);

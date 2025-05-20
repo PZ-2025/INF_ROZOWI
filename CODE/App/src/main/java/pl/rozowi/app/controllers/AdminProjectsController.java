@@ -23,6 +23,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Kontroler odpowiedzialny za zarządzanie projektami w panelu administratora.
+ * Udostępnia funkcjonalności przeglądania, dodawania, edycji i usuwania projektów,
+ * a także zarządzania powiązanymi zespołami i zadaniami.
+ */
 public class AdminProjectsController {
 
     @FXML
@@ -79,6 +84,10 @@ public class AdminProjectsController {
     private final ObservableList<Team> projectTeams = FXCollections.observableArrayList();
     private final ObservableList<Task> projectTasks = FXCollections.observableArrayList();
 
+    /**
+     * Metoda inicjalizująca kontroler. Konfiguruje tabele projektów, zespołów i zadań,
+     * ustawia wartości domyślne i ładuje dane.
+     */
     @FXML
     private void initialize() {
         colId.setCellValueFactory(data -> new SimpleObjectProperty<>(data.getValue().getId()));
@@ -154,6 +163,9 @@ public class AdminProjectsController {
         loadProjects();
     }
 
+    /**
+     * Ładuje listę wszystkich projektów z bazy danych.
+     */
     private void loadProjects() {
         try {
             List<Project> projects = projectDAO.getAllProjects();
@@ -164,6 +176,11 @@ public class AdminProjectsController {
         }
     }
 
+    /**
+     * Ładuje listę zespołów powiązanych z wybranym projektem.
+     *
+     * @param projectId ID projektu dla którego mają zostać załadowane zespoły
+     */
     private void loadProjectTeams(int projectId) {
         try {
             List<Team> teams = teamDAO.getAllTeams();
@@ -178,6 +195,11 @@ public class AdminProjectsController {
         }
     }
 
+    /**
+     * Ładuje listę zadań powiązanych z wybranym projektem.
+     *
+     * @param projectId ID projektu dla którego mają zostać załadowane zadania
+     */
     private void loadProjectTasks(int projectId) {
         try {
             List<Task> tasks = taskDAO.getTasksByProjectId(projectId);
@@ -188,6 +210,9 @@ public class AdminProjectsController {
         }
     }
 
+    /**
+     * Wyszukuje projekty na podstawie wprowadzonego tekstu.
+     */
     @FXML
     private void handleSearch() {
         String searchText = searchField.getText().toLowerCase().trim();
@@ -207,6 +232,9 @@ public class AdminProjectsController {
         projectsTable.setItems(filtered);
     }
 
+    /**
+     * Obsługuje akcję dodawania nowego projektu.
+     */
     @FXML
     private void handleAddProject() {
         Dialog<Project> dialog = createProjectDialog(null);
@@ -227,6 +255,9 @@ public class AdminProjectsController {
         });
     }
 
+    /**
+     * Obsługuje akcję edycji istniejącego projektu.
+     */
     @FXML
     private void handleEditProject() {
         Project selectedProject = projectsTable.getSelectionModel().getSelectedItem();
@@ -249,6 +280,9 @@ public class AdminProjectsController {
         });
     }
 
+    /**
+     * Obsługuje akcję usuwania projektu.
+     */
     @FXML
     private void handleDeleteProject() {
         Project selectedProject = projectsTable.getSelectionModel().getSelectedItem();
@@ -290,6 +324,9 @@ public class AdminProjectsController {
         }
     }
 
+    /**
+     * Obsługuje akcję przypisania kierownika do projektu.
+     */
     @FXML
     private void handleAssignManager() {
         Project selectedProject = projectsTable.getSelectionModel().getSelectedItem();
@@ -370,6 +407,9 @@ public class AdminProjectsController {
         }
     }
 
+    /**
+     * Odświeża listę projektów i powiązanych danych.
+     */
     @FXML
     private void handleRefresh() {
         loadProjects();
@@ -381,6 +421,12 @@ public class AdminProjectsController {
         }
     }
 
+    /**
+     * Tworzy okno dialogowe do dodawania/edycji projektu.
+     *
+     * @param project istniejący projekt (null dla nowego projektu)
+     * @return skonfigurowane okno dialogowe
+     */
     private Dialog<Project> createProjectDialog(Project project) {
         Dialog<Project> dialog = new Dialog<>();
         dialog.setTitle(project == null ? "Dodaj nowy projekt" : "Edytuj projekt");
@@ -494,6 +540,14 @@ public class AdminProjectsController {
         return dialog;
     }
 
+    /**
+     * Waliduje formularz projektu.
+     *
+     * @param saveButton przycisk zapisu
+     * @param nameField pole nazwy projektu
+     * @param startDatePicker data rozpoczęcia
+     * @param endDatePicker data zakończenia
+     */
     private void validateProjectForm(Button saveButton, TextField nameField, DatePicker startDatePicker, DatePicker endDatePicker) {
         boolean nameValid = !nameField.getText().trim().isEmpty();
         boolean datesValid = startDatePicker.getValue() != null &&
@@ -503,6 +557,11 @@ public class AdminProjectsController {
         saveButton.setDisable(!(nameValid && datesValid));
     }
 
+    /**
+     * Wyświetla okno dialogowe z informacją.
+     *
+     * @param message treść wiadomości
+     */
     private void showInfo(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Informacja");
@@ -511,6 +570,11 @@ public class AdminProjectsController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z ostrzeżeniem.
+     *
+     * @param message treść ostrzeżenia
+     */
     private void showWarning(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Ostrzeżenie");
@@ -519,6 +583,12 @@ public class AdminProjectsController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z błędem.
+     *
+     * @param title tytuł okna
+     * @param message treść błędu
+     */
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);

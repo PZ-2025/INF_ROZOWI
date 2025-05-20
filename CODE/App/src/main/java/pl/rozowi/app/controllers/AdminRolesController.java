@@ -14,6 +14,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Kontroler odpowiedzialny za zarządzanie rolami użytkowników w systemie.
+ * Udostępnia funkcjonalności tworzenia, edycji i usuwania ról,
+ * a także przypisywania uprawnień do poszczególnych ról.
+ */
 public class AdminRolesController {
 
     @FXML
@@ -71,6 +76,10 @@ public class AdminRolesController {
     private ObservableList<Role> allRoles = FXCollections.observableArrayList();
     private Role currentRole;
 
+    /**
+     * Metoda inicjalizująca kontroler. Konfiguruje listę ról,
+     * ustawia wartości domyślne i ładuje dane.
+     */
     @FXML
     private void initialize() {
         configureRolesListView();
@@ -80,6 +89,9 @@ public class AdminRolesController {
         loadRoles();
     }
 
+    /**
+     * Konfiguruje wygląd i zachowanie listy ról.
+     */
     private void configureRolesListView() {
         rolesListView.setCellFactory(param -> new ListCell<Role>() {
             @Override
@@ -106,6 +118,9 @@ public class AdminRolesController {
         });
     }
 
+    /**
+     * Ładuje listę dostępnych ról (w wersji demonstracyjnej - dane testowe).
+     */
     private void loadRoles() {
         try {
             Role adminRole = new Role();
@@ -135,6 +150,11 @@ public class AdminRolesController {
         }
     }
 
+    /**
+     * Ładuje uprawnienia dla wybranej roli.
+     *
+     * @param role rola, dla której mają zostać załadowane uprawnienia
+     */
     private void loadPermissions(Role role) {
 
         resetPermissions();
@@ -180,6 +200,9 @@ public class AdminRolesController {
         }
     }
 
+    /**
+     * Resetuje wszystkie checkboxy uprawnień.
+     */
     private void resetPermissions() {
         permViewUsers.setSelected(false);
         permEditUsers.setSelected(false);
@@ -207,6 +230,11 @@ public class AdminRolesController {
         permAssignTasks.setSelected(false);
     }
 
+    /**
+     * Ustawia wszystkie uprawnienia na określoną wartość.
+     *
+     * @param value wartość do ustawienia (true/false)
+     */
     private void setAllPermissions(boolean value) {
         permViewUsers.setSelected(value);
         permEditUsers.setSelected(value);
@@ -234,6 +262,11 @@ public class AdminRolesController {
         permAssignTasks.setSelected(value);
     }
 
+    /**
+     * Włącza/wyłącza kontrolki uprawnień.
+     *
+     * @param disabled true - wyłącza kontrolki, false - włącza
+     */
     private void setPermissionsDisabled(boolean disabled) {
         permViewUsers.setDisable(disabled);
         permEditUsers.setDisable(disabled);
@@ -261,6 +294,9 @@ public class AdminRolesController {
         permAssignTasks.setDisable(disabled);
     }
 
+    /**
+     * Obsługuje akcję dodawania nowej roli.
+     */
     @FXML
     private void handleAddRole() {
         Dialog<Role> dialog = createRoleDialog(null);
@@ -273,6 +309,9 @@ public class AdminRolesController {
         });
     }
 
+    /**
+     * Obsługuje akcję edycji istniejącej roli.
+     */
     @FXML
     private void handleEditRole() {
         Role selectedRole = rolesListView.getSelectionModel().getSelectedItem();
@@ -300,6 +339,9 @@ public class AdminRolesController {
         });
     }
 
+    /**
+     * Obsługuje akcję usuwania roli.
+     */
     @FXML
     private void handleDeleteRole() {
         Role selectedRole = rolesListView.getSelectionModel().getSelectedItem();
@@ -333,6 +375,9 @@ public class AdminRolesController {
         }
     }
 
+    /**
+     * Obsługuje akcję zapisywania uprawnień dla wybranej roli.
+     */
     @FXML
     private void handleSavePermissions() {
         if (currentRole == null) {
@@ -381,6 +426,11 @@ public class AdminRolesController {
         }
     }
 
+    /**
+     * Sprawdza czy wszystkie uprawnienia są zaznaczone.
+     *
+     * @return true jeśli wszystkie uprawnienia są zaznaczone, false w przeciwnym wypadku
+     */
     private boolean areAllPermissionsSelected() {
         return permViewUsers.isSelected() && permEditUsers.isSelected() && permDeleteUsers.isSelected() &&
                permResetPasswords.isSelected() && permViewRoles.isSelected() && permEditRoles.isSelected() &&
@@ -392,6 +442,12 @@ public class AdminRolesController {
                permEditTasks.isSelected() && permDeleteTasks.isSelected() && permAssignTasks.isSelected();
     }
 
+    /**
+     * Tworzy okno dialogowe do dodawania/edycji roli.
+     *
+     * @param role istniejąca rola (null dla nowej roli)
+     * @return skonfigurowane okno dialogowe
+     */
     private Dialog<Role> createRoleDialog(Role role) {
         Dialog<Role> dialog = new Dialog<>();
         dialog.setTitle(role == null ? "Dodaj nową rolę" : "Edytuj rolę");
@@ -445,6 +501,11 @@ public class AdminRolesController {
         return dialog;
     }
 
+    /**
+     * Wyświetla okno dialogowe z informacją.
+     *
+     * @param message treść wiadomości
+     */
     private void showInfo(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Informacja");
@@ -453,6 +514,11 @@ public class AdminRolesController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z ostrzeżeniem.
+     *
+     * @param message treść ostrzeżenia
+     */
     private void showWarning(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Ostrzeżenie");
@@ -461,6 +527,12 @@ public class AdminRolesController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z błędem.
+     *
+     * @param title tytuł okna
+     * @param message treść błędu
+     */
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);

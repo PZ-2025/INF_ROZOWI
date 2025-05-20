@@ -13,8 +13,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * Controller for editing task details.
- * This controller is used by admin and other privileged users to edit task properties.
+ * Kontroler odpowiedzialny za edycję szczegółów zadania.
+ * Umożliwia administratorom i uprzywilejowanym użytkownikom modyfikację wszystkich właściwości zadania.
  */
 public class TaskEditController {
 
@@ -48,7 +48,8 @@ public class TaskEditController {
     private DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /**
-     * Initialize the controller.
+     * Inicjalizacja kontrolera.
+     * Ustawia dostępne wartości dla pól wyboru statusu i priorytetu.
      */
     @FXML
     private void initialize() {
@@ -60,9 +61,8 @@ public class TaskEditController {
     }
 
     /**
-     * Sets the task to be edited and populates form fields.
-     *
-     * @param task The task to edit
+     * Ustawia zadanie do edycji i wypełnia formularz jego danymi.
+     * @param task Zadanie do edycji
      */
     public void setTask(Task task) {
         this.currentTask = task;
@@ -97,7 +97,9 @@ public class TaskEditController {
     }
 
     /**
-     * Loads available teams for the project and selects the current team.
+     * Ładuje listę zespołów dla danego projektu i zaznacza aktualny zespół zadania.
+     * @param projectId ID projektu
+     * @param currentTeamId ID aktualnego zespołu zadania
      */
     private void loadTeams(int projectId, int currentTeamId) {
         try {
@@ -123,7 +125,9 @@ public class TaskEditController {
     }
 
     /**
-     * Loads team members for the selected team and sets the current assignee.
+     * Ładuje członków wybranego zespołu i zaznacza aktualnego przypisanego użytkownika.
+     * @param teamId ID zespołu
+     * @param currentAssigneeId ID aktualnie przypisanego użytkownika
      */
     private void loadTeamMembers(int teamId, int currentAssigneeId) {
         try {
@@ -145,7 +149,7 @@ public class TaskEditController {
     }
 
     /**
-     * Sets up string converters for dropdown controls.
+     * Konfiguruje konwertery tekstu dla pól wyboru.
      */
     private void setupConverters() {
         teamComboBox.setConverter(new StringConverter<Team>() {
@@ -174,8 +178,8 @@ public class TaskEditController {
     }
 
     /**
-     * Handles the save button action.
-     * Updates the task with the new values and closes the dialog.
+     * Obsługuje akcję zapisywania zmian.
+     * Aktualizuje zadanie na podstawie danych z formularza i zamyka okno.
      */
     @FXML
     private void handleSave() {
@@ -224,8 +228,8 @@ public class TaskEditController {
     }
 
     /**
-     * Handles the cancel button action.
-     * Closes the dialog without saving changes.
+     * Obsługuje akcję anulowania edycji.
+     * Zamyka okno bez zapisywania zmian.
      */
     @FXML
     private void handleCancel() {
@@ -233,9 +237,8 @@ public class TaskEditController {
     }
 
     /**
-     * Validates form fields before saving.
-     *
-     * @return true if all fields are valid, false otherwise
+     * Sprawdza poprawność danych w formularzu przed zapisem.
+     * @return true jeśli wszystkie pola są poprawne, false w przeciwnym przypadku
      */
     private boolean validateForm() {
         if (titleField.getText().trim().isEmpty()) {
@@ -277,7 +280,7 @@ public class TaskEditController {
     }
 
     /**
-     * Closes the dialog window.
+     * Zamyka okno dialogowe.
      */
     private void closeDialog() {
         Stage stage = (Stage) cancelButton.getScene().getWindow();
@@ -285,7 +288,9 @@ public class TaskEditController {
     }
 
     /**
-     * Shows an information alert.
+     * Wyświetla okno dialogowe z informacją.
+     * @param title Tytuł okna dialogowego
+     * @param message Treść wiadomości
      */
     private void showInfo(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -296,7 +301,8 @@ public class TaskEditController {
     }
 
     /**
-     * Shows a warning alert.
+     * Wyświetla okno dialogowe z ostrzeżeniem.
+     * @param message Treść ostrzeżenia
      */
     private void showWarning(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -307,7 +313,9 @@ public class TaskEditController {
     }
 
     /**
-     * Shows an error alert.
+     * Wyświetla okno dialogowe z błędem.
+     * @param title Tytuł okna dialogowego
+     * @param message Treść błędu
      */
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);

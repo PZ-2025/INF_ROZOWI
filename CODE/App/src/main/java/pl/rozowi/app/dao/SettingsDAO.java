@@ -8,18 +8,25 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Data Access Object for the Settings table.
- * Handles database operations related to user settings.
+ * Data Access Object (DAO) dla tabeli ustawień.
+ * Zapewnia operacje bazodanowe związane z ustawieniami użytkowników, w tym:
+ * <ul>
+ *   <li>Pobieranie ustawień użytkowników</li>
+ *   <li>Aktualizację i wstawianie ustawień</li>
+ *   <li>Zarządzanie znacznikami czasu zmiany hasła</li>
+ *   <li>Obsługę preferencji motywów i widoków</li>
+ * </ul>
  */
 public class SettingsDAO {
 
     private static final Logger LOGGER = Logger.getLogger(SettingsDAO.class.getName());
 
     /**
-     * Retrieves settings for a specific user.
+     * Pobiera ustawienia dla określonego użytkownika z bazy danych.
      *
-     * @param userId The ID of the user whose settings are to be retrieved
-     * @return The Settings object if found, null otherwise
+     * @param userId ID użytkownika, którego ustawienia mają zostać pobrane
+     * @return Obiekt Settings zawierający wszystkie preferencje użytkownika jeśli znaleziono,
+     *         null jeśli nie istnieją ustawienia dla użytkownika
      */
     public Settings getSettingsByUserId(int userId) {
         String sql = "SELECT id, user_id, theme, default_view, last_password_change FROM settings WHERE user_id = ?";
@@ -48,11 +55,11 @@ public class SettingsDAO {
     }
 
     /**
-     * Updates the last password change timestamp for a user.
-     * If no settings record exists for the user, creates a new one.
+     * Aktualizuje znacznik czasu ostatniej zmiany hasła dla użytkownika.
+     * Tworzy nowy rekord ustawień jeśli nie istnieje dla użytkownika.
      *
-     * @param userId The ID of the user whose password change timestamp should be updated
-     * @return true if the operation was successful, false otherwise
+     * @param userId ID użytkownika, którego znacznik czasu powinien zostać zaktualizowany
+     * @return true jeśli operacja się powiodła, false w przypadku błędu
      */
     public boolean updateLastPasswordChange(int userId) {
         Settings existingSettings = getSettingsByUserId(userId);
@@ -87,10 +94,11 @@ public class SettingsDAO {
     }
 
     /**
-     * Inserts a new settings record for a user.
+     * Wstawia nowy rekord ustawień dla użytkownika ze wszystkimi dostępnymi preferencjami.
+     * Poprawnie obsługuje wartości null dla pól opcjonalnych.
      *
-     * @param settings The Settings object to insert
-     * @return true if the insertion was successful, false otherwise
+     * @param settings Obiekt Settings zawierający wszystkie preferencje użytkownika do wstawienia
+     * @return true jeśli wstawienie się powiodło, false w przypadku błędu
      */
     public boolean insertSettings(Settings settings) {
         String sql = "INSERT INTO settings (user_id, theme, default_view, last_password_change) VALUES (?, ?, ?, ?)";
@@ -127,10 +135,10 @@ public class SettingsDAO {
     }
 
     /**
-     * Updates existing settings for a user.
+     * Aktualizuje istniejące ustawienia dla użytkownika.
      *
-     * @param settings The Settings object with updated values
-     * @return true if the update was successful, false otherwise
+     * @param settings Obiekt Settings z zaktualizowanymi wartościami
+     * @return true jeśli aktualizacja się powiodła, false w przypadku błędu
      */
     public boolean updateSettings(Settings settings) {
         String sql = "UPDATE settings SET theme = ?, default_view = ? WHERE user_id = ?";
@@ -161,10 +169,10 @@ public class SettingsDAO {
     }
 
     /**
-     * Deletes settings for a specific user.
+     * Usuwa ustawienia dla określonego użytkownika.
      *
-     * @param userId The ID of the user whose settings are to be deleted
-     * @return true if the deletion was successful, false otherwise
+     * @param userId ID użytkownika, którego ustawienia mają zostać usunięte
+     * @return true jeśli usunięcie się powiodło, false w przypadku błędu
      */
     public boolean deleteSettings(int userId) {
         String sql = "DELETE FROM settings WHERE user_id = ?";
@@ -181,6 +189,13 @@ public class SettingsDAO {
         }
     }
 
+    /**
+     * Aktualizuje domyślny widok dla użytkownika.
+     *
+     * @param userId ID użytkownika
+     * @param defaultView Nazwa domyślnego widoku do ustawienia
+     * @return true jeśli aktualizacja się powiodła, false w przypadku błędu
+     */
     public boolean updateDefaultView(int userId, String defaultView) {
         String sql = "UPDATE settings SET default_view = ? WHERE user_id = ?";
 

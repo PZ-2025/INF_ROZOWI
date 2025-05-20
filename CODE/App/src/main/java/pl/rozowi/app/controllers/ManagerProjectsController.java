@@ -17,6 +17,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Kontroler zarządzania projektami dla użytkowników z rolą Kierownika.
+ * Umożliwia przeglądanie, dodawanie, edycję i usuwanie projektów,
+ * wraz z powiązanymi zadaniami i zespołami.
+ */
 public class ManagerProjectsController {
 
     @FXML
@@ -36,6 +41,9 @@ public class ManagerProjectsController {
     private final TaskDAO taskDAO = new TaskDAO();
     private final ObservableList<Project> data = FXCollections.observableArrayList();
 
+    /**
+     * Inicjalizuje kontroler, konfigurując tabelę projektów i ładując dane.
+     */
     @FXML
     public void initialize() {
         colId.setCellValueFactory(data -> new ReadOnlyObjectWrapper<>(
@@ -49,6 +57,9 @@ public class ManagerProjectsController {
         loadAll();
     }
 
+    /**
+     * Ładuje wszystkie projekty przypisane do aktualnego kierownika.
+     */
     private void loadAll() {
         data.clear();
         List<Project> projects = projectDAO.getProjectsForManager(Session.currentUserId);
@@ -56,6 +67,10 @@ public class ManagerProjectsController {
         projectsTable.setItems(data);
     }
 
+    /**
+     * Obsługuje dodawanie nowego projektu.
+     * Wyświetla okno dialogowe do wprowadzenia danych projektu.
+     */
     @FXML
     private void onAddProject() {
         ProjectFormDialog dlg = new ProjectFormDialog(null);
@@ -71,6 +86,10 @@ public class ManagerProjectsController {
         });
     }
 
+    /**
+     * Obsługuje edycję istniejącego projektu.
+     * Wyświetla okno dialogowe z danymi wybranego projektu.
+     */
     @FXML
     private void onEditProject() {
         Project sel = projectsTable.getSelectionModel().getSelectedItem();
@@ -84,6 +103,10 @@ public class ManagerProjectsController {
         });
     }
 
+    /**
+     * Obsługuje usuwanie projektu.
+     * Wyświetla ostrzeżenie jeśli projekt zawiera powiązane zadania.
+     */
     @FXML
     private void onDeleteProject() {
         Project selectedProject = projectsTable.getSelectionModel().getSelectedItem();
@@ -124,6 +147,10 @@ public class ManagerProjectsController {
         }
     }
 
+    /**
+     * Wyświetla okno dialogowe z informacją.
+     * @param message Treść wiadomości do wyświetlenia
+     */
     private void showInfo(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Informacja");
@@ -132,6 +159,10 @@ public class ManagerProjectsController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z ostrzeżeniem.
+     * @param message Treść ostrzeżenia do wyświetlenia
+     */
     private void showWarning(String message) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Ostrzeżenie");
@@ -140,6 +171,11 @@ public class ManagerProjectsController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z błędem.
+     * @param title Tytuł okna dialogowego
+     * @param message Treść błędu do wyświetlenia
+     */
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
@@ -148,12 +184,20 @@ public class ManagerProjectsController {
         alert.showAndWait();
     }
 
+    /**
+     * Wewnętrzna klasa okna dialogowego do tworzenia/edycji projektu.
+     */
+
     private static class ProjectFormDialog extends Dialog<Project> {
         private final TextField nameField = new TextField();
         private final TextArea descArea = new TextArea();
         private final DatePicker dpStart = new DatePicker();
         private final DatePicker dpEnd = new DatePicker();
 
+        /**
+         * Tworzy nowe okno dialogowe do edycji projektu.
+         * @param p Projekt do edycji lub null dla nowego projektu
+         */
         public ProjectFormDialog(Project p) {
             setTitle(p == null ? "Nowy projekt" : "Edytuj projekt");
             ButtonType cancelButtonType = new ButtonType("Anuluj", ButtonBar.ButtonData.CANCEL_CLOSE);
@@ -204,6 +248,10 @@ public class ManagerProjectsController {
             });
         }
 
+        /**
+         * Sprawdza poprawność danych w formularzu.
+         * @param okButton Przycisk OK do aktywacji/dezaktywacji
+         */
         private void validateForm(Button okButton) {
             boolean nameValid = !nameField.getText().trim().isEmpty();
             boolean datesValid = dpStart.getValue() != null &&

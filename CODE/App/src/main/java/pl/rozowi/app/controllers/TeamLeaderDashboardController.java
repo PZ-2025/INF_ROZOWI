@@ -17,6 +17,11 @@ import pl.rozowi.app.util.ThemeManager;
 
 import java.io.IOException;
 
+/**
+ * Kontroler panelu głównego dla lidera zespołu.
+ * Rozszerza funkcjonalność BaseDashboardController, dostosowując ją do potrzeb lidera zespołu.
+ * Zawiera nawigację po modułach dostępnych dla lidera zespołu.
+ */
 public class TeamLeaderDashboardController extends BaseDashboardController {
 
     @FXML
@@ -41,10 +46,18 @@ public class TeamLeaderDashboardController extends BaseDashboardController {
 
     private static final String ACTIVE_BUTTON_STYLE = "sidebar-button-active";
 
+    /**
+     * Inicjalizacja kontrolera.
+     * Metoda wywoływana automatycznie po załadowaniu pliku FXML.
+     */
     @FXML
     private void initialize() {
     }
 
+    /**
+     * Ustawia styl aktywnego przycisku w pasku bocznym.
+     * @param activeButton Przycisk, który ma zostać oznaczony jako aktywny
+     */
     private void setActiveButton(Button activeButton) {
         myTasksButton.getStyleClass().remove(ACTIVE_BUTTON_STYLE);
         tasksButton.getStyleClass().remove(ACTIVE_BUTTON_STYLE);
@@ -57,6 +70,11 @@ public class TeamLeaderDashboardController extends BaseDashboardController {
         }
     }
 
+    /**
+     * Metoda wywoływana po ustawieniu użytkownika.
+     * Inicjalizuje panel na podstawie domyślnego widoku użytkownika.
+     * @param user Obiekt użytkownika zalogowanego do systemu
+     */
     @Override
     protected void onUserSet(User user) {
         welcomeLabel.setText("Witaj, " + user.getName());
@@ -92,23 +110,39 @@ public class TeamLeaderDashboardController extends BaseDashboardController {
         }
     }
 
+    /**
+     * Pobiera scenę główną panelu.
+     * @return Obiekt sceny
+     */
     @Override
     protected Scene getScene() {
         return mainPane != null ? mainPane.getScene() : null;
     }
 
+    /**
+     * Przechodzi do widoku moich zadań.
+     * @throws IOException gdy wystąpi błąd ładowania widoku
+     */
     @FXML
     private void goToMyTasks() throws IOException {
         setActiveButton(myTasksButton);
         loadView("/fxml/teamleader/teamLeaderMyTasks.fxml");
     }
 
+    /**
+     * Przechodzi do widoku zadań zespołu.
+     * @throws IOException gdy wystąpi błąd ładowania widoku
+     */
     @FXML
     private void goToTasks() throws IOException {
         setActiveButton(tasksButton);
         loadView("/fxml/teamleader/teamLeaderTasks.fxml");
     }
 
+    /**
+     * Przechodzi do widoku raportów.
+     * @throws IOException gdy wystąpi błąd ładowania widoku
+     */
     @FXML
     private void goToReports() throws IOException {
         setActiveButton(reportsButton);
@@ -124,24 +158,41 @@ public class TeamLeaderDashboardController extends BaseDashboardController {
         }
     }
 
+    /**
+     * Przechodzi do widoku pracowników.
+     * @throws IOException gdy wystąpi błąd ładowania widoku
+     */
     @FXML
     private void goToEmployees() throws IOException {
         setActiveButton(employeesButton);
         loadView("/fxml/teamleader/teamLeaderEmployees.fxml");
     }
 
+    /**
+     * Przechodzi do widoku ustawień.
+     * @throws IOException gdy wystąpi błąd ładowania widoku
+     */
     @FXML
     private void goToSettings() throws IOException {
         setActiveButton(settingsButton);
         loadView("/fxml/user/settings.fxml");
     }
 
+    /**
+     * Wylogowuje użytkownika i przekierowuje do ekranu logowania.
+     * @throws IOException gdy wystąpi błąd ładowania widoku logowania
+     */
     @FXML
     private void logout() throws IOException {
         MainApplication.setCurrentUser(null);
         MainApplication.switchScene("/fxml/login.fxml", "TaskApp - Logowanie");
     }
 
+    /**
+     * Ładuje widok w głównym panelu.
+     * @param fxmlPath Ścieżka do pliku FXML z definicją widoku
+     * @throws IOException gdy wystąpi błąd ładowania widoku
+     */
     private void loadView(String fxmlPath) throws IOException {
         FXMLLoader loader = new FXMLLoader(MainApplication.class.getResource(fxmlPath));
         Parent view = loader.load();

@@ -11,7 +11,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Kontroler odpowiedzialny za zarządzanie widokiem ustawień systemowych.
+ * Kontroler odpowiedzialny za zarządzanie ustawieniami systemowymi aplikacji.
+ * Udostępnia funkcjonalności testowania połączenia z bazą danych, konfiguracji
+ * parametrów systemowych, zarządzania logami oraz operacji na bazie danych.
+ * Implementuje interfejs UserAwareController do obsługi aktualnie zalogowanego użytkownika.
  */
 public class AdminSystemController implements UserAwareController {
 
@@ -34,6 +37,10 @@ public class AdminSystemController implements UserAwareController {
 
     private User currentUser;
 
+    /**
+     * Metoda inicjalizująca kontroler. Ustawia podstawowe informacje o systemie,
+     * sprawdza status połączenia z bazą danych i dodaje początkowe wpisy do logów.
+     */
     @FXML
     private void initialize() {
         versionLabel.setText("1.0.0");
@@ -45,11 +52,20 @@ public class AdminSystemController implements UserAwareController {
         addLogEntry("INFO", "Załadowano konfigurację systemową");
     }
 
+    /**
+     * Ustawia aktualnie zalogowanego użytkownika.
+     *
+     * @param user obiekt reprezentujący zalogowanego użytkownika
+     */
     @Override
     public void setUser(User user) {
         this.currentUser = user;
     }
 
+    /**
+     * Obsługuje akcję testowania połączenia z bazą danych.
+     * Wyświetla wynik testu w oknie dialogowym i dodaje wpis do logów.
+     */
     @FXML
     private void handleTestConnection() {
         updateConnectionStatus();
@@ -70,6 +86,10 @@ public class AdminSystemController implements UserAwareController {
         alert.showAndWait();
     }
 
+    /**
+     * Obsługuje akcję zapisywania ustawień systemowych.
+     * Waliduje wprowadzone wartości i wyświetla odpowiedni komunikat.
+     */
     @FXML
     private void handleSaveSettings() {
 
@@ -86,6 +106,9 @@ public class AdminSystemController implements UserAwareController {
         }
     }
 
+    /**
+     * Obsługuje akcję resetowania ustawień do wartości domyślnych.
+     */
     @FXML
     private void handleResetSettings() {
         maxTasksField.setText("10");
@@ -96,6 +119,10 @@ public class AdminSystemController implements UserAwareController {
         showSuccessAlert("Przywrócono domyślne ustawienia.");
     }
 
+    /**
+     * Obsługuje akcję zmiany poziomu logowania.
+     * Dodaje wpis do logów o zmianie poziomu.
+     */
     @FXML
     private void handleApplyLogLevel() {
         String logLevel = logLevelComboBox.getValue();
@@ -105,12 +132,19 @@ public class AdminSystemController implements UserAwareController {
         }
     }
 
+    /**
+     * Obsługuje akcję czyszczenia logów systemowych.
+     */
     @FXML
     private void handleClearLogs() {
         logsTextArea.clear();
         addLogEntry("INFO", "Wyczyszczono logi systemowe");
     }
 
+    /**
+     * Obsługuje akcję tworzenia kopii zapasowej bazy danych.
+     * Wyświetla okno dialogowe z postępem operacji.
+     */
     @FXML
     private void handleBackupDatabase() {
         showProgressDialog("Tworzenie kopii zapasowej...", () -> {
@@ -125,6 +159,10 @@ public class AdminSystemController implements UserAwareController {
         });
     }
 
+    /**
+     * Obsługuje akcję przywracania bazy danych z kopii zapasowej.
+     * Wyświetla okno potwierdzenia przed wykonaniem operacji.
+     */
     @FXML
     private void handleRestoreDatabase() {
         Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -148,6 +186,10 @@ public class AdminSystemController implements UserAwareController {
         });
     }
 
+    /**
+     * Obsługuje akcję optymalizacji bazy danych.
+     * Wyświetla okno dialogowe z postępem operacji.
+     */
     @FXML
     private void handleOptimizeDatabase() {
         showProgressDialog("Optymalizacja bazy danych...", () -> {
@@ -163,6 +205,10 @@ public class AdminSystemController implements UserAwareController {
     }
 
 
+    /**
+     * Aktualizuje status połączenia z bazą danych.
+     * Zmienia wygląd etykiety w zależności od stanu połączenia.
+     */
     private void updateConnectionStatus() {
         try (Connection conn = DatabaseManager.getConnection()) {
             dbStatusLabel.setText("Połączono");
@@ -173,6 +219,12 @@ public class AdminSystemController implements UserAwareController {
         }
     }
 
+    /**
+     * Dodaje nowy wpis do logów systemowych.
+     *
+     * @param level poziom logowania (np. INFO, ERROR)
+     * @param message treść wiadomości do zalogowania
+     */
     private void addLogEntry(String level, String message) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String timestamp = dateFormat.format(new Date());
@@ -180,6 +232,11 @@ public class AdminSystemController implements UserAwareController {
         logsTextArea.appendText(logEntry);
     }
 
+    /**
+     * Wyświetla okno dialogowe z komunikatem o sukcesie.
+     *
+     * @param message treść komunikatu
+     */
     private void showSuccessAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Sukces");
@@ -188,6 +245,11 @@ public class AdminSystemController implements UserAwareController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z komunikatem o błędzie.
+     *
+     * @param message treść komunikatu
+     */
     private void showErrorAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Błąd");
@@ -196,6 +258,12 @@ public class AdminSystemController implements UserAwareController {
         alert.showAndWait();
     }
 
+    /**
+     * Wyświetla okno dialogowe z paskiem postępu dla długotrwałych operacji.
+     *
+     * @param title tytuł okna dialogowego
+     * @param task zadanie do wykonania w tle
+     */
     private void showProgressDialog(String title, java.util.function.Supplier<String> task) {
         Dialog<String> dialog = new Dialog<>();
         dialog.setTitle(title);
