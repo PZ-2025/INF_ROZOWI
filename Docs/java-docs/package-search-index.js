@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"pl.rozowi.app"},{"l":"pl.rozowi.app.controllers"},{"l":"pl.rozowi.app.dao"},{"l":"pl.rozowi.app.database"},{"l":"pl.rozowi.app.models"},{"l":"pl.rozowi.app.services"},{"l":"pl.rozowi.app.util"}];updateSearchResults();
