@@ -164,6 +164,8 @@
                                 <argument>${project.build.directory}/apidocs</argument>
                                 <argument>-sourcepath</argument>
                                 <argument>${project.basedir}/src/main/java</argument>
+                                <argument>-exclude</argument>
+                                <argument>${project.basedir}/src/test</argument>
                                 <argument>-subpackages</argument>
                                 <argument>pl.rozowi.app</argument>
                                 <argument>-encoding</argument>
@@ -173,6 +175,8 @@
                                 <argument>-private</argument>
                                 <argument>-Xdoclint:none</argument>
                                 <argument>-quiet</argument>
+                                <argument>--add-reads</argument>
+                                <argument>pl.rozowi.app=ALL-UNNAMED</argument>
                             </arguments>
                         </configuration>
                     </execution>
