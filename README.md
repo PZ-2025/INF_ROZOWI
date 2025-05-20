@@ -41,38 +41,6 @@ Projekt realizowany jest przez czterech członków zespołu:
 
 ---
 
-## Zrzuty ekranu
-
-Poniżej przykładowe ekrany aplikacji (wszystkie pliki `.png` znajdują się w folderze [`Docs/img/`](Docs/img/)):
-
-### Ekran logowania
-
-![Ekran logowania](Docs/img/loginView.png)
-
-_(Opis: Ekran, na którym użytkownik podaje login i hasło w celu uzyskania dostępu do systemu.)_
-
-### Ekran rejestracji
-
-![Ekran rejestracji](Docs/img/registerView.png)
-
-_(Opis: Formularz do tworzenia nowego konta w systemie.)_
-
-### Panel użytkownika
-
-![Panel użytkownika](Docs/img/settingsView.png)
-
-_(Opis: Panel z bocznym menu, gdzie pracownik widzi swoje zadania, może je aktualizować i zgłaszać postępy.)_
-
-### Menu główne / Dashboard
-
-![Menu główne](Docs/img/mainView.png)
-
-_(Opis: Przykładowy widok głównego menu, dostępnego po zalogowaniu w zależności od roli.)_
-
-Więcej widoków i zrzutów ekranu znajdziesz w katalogu [`docs/img/`](docs/img/).
-
----
-
 ## Architektura systemu
 
 Projekt opiera się na **architekturze warstwowej**, dzielącej się na:
@@ -92,7 +60,7 @@ Przykładowe drzewo projektu:
 
 ```
 
-App/
+CODE/App/
 ├─ .idea/
 ├─ .mvn/
 ├─ src/
@@ -127,13 +95,6 @@ App/
 │ ├─ images/
 │ │ └─ logo.png
 │ └─ ...
-├─ Docs/
-│ ├─ img/
-│ │ └─ ...
-│ └─ README.md
-├─ Db/
-│ ├─ README.md
-│ └─ ...
 ├─ target/
 ├─ .gitignore
 ├─ mvnw
@@ -143,10 +104,6 @@ App/
 
 ```
 
-- **docs/**
-  Katalog zawierający dokumentację, zrzuty ekranu, notatki.
-- **database/**
-  Katalog z plikami i skryptami bazy danych (np. schemat, migracje, testowe dane).
 - **src/main/java/**
   Kody źródłowe aplikacji w Javie (kontrolery, klasy modelu, logika biznesowa).
 - **src/main/resources/**
@@ -204,8 +161,6 @@ Aby uruchomić aplikację lokalnie:
 ---
 
 ## Licencja
-
-_[MIT](LICENSE)_
 
 > **Uwaga**: Projekt jest w ciągłym rozwoju w ramach Programowania Zespołowego.
 > Część modułów może nie być w pełni ukończona lub wymagać dodatkowych testów.
