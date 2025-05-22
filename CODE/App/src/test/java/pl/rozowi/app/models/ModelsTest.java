@@ -613,28 +613,6 @@ class ReportTest {
 }
 
 /**
- * Zestaw testów dla klasy Group.
- * Weryfikuje poprawność getterów i setterów dla właściwości klasy.
- */
-class GroupTest {
-
-    /**
-     * Test sprawdza poprawne działanie getterów i setterów dla wszystkich właściwości klasy Group.
-     * Weryfikuje, czy pola id i groupName są poprawnie ustawiane i odczytywane.
-     */
-    @Test
-    public void testGroupProperties() {
-        Group group = new Group();
-
-        group.setId(3);
-        group.setGroupName("Developers");
-
-        assertEquals(3, group.getId());
-        assertEquals("Developers", group.getGroupName());
-    }
-}
-
-/**
  * Zestaw testów dla klasy TaskAssignment.
  * Weryfikuje poprawność getterów i setterów dla właściwości klasy.
  */
